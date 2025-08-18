@@ -1,0 +1,16 @@
+header:
+  version: 14
+
+  includes:
+    - vendors/nxp/imx-6.6.52-2.2.0-scarthgap.yml
+
+repos:
+  meta-eecc-nxp:
+    url: "https://github.com/Advantech-EECC/meta-eecc-nxp.git"
+    branch: "scarthgap"
+    path: "layers/meta-eecc-nxp"
+    layers:
+      .:
+
+target:
+  - imx-image-core
