@@ -1,0 +1,16 @@
+header:
+  version: 14
+
+local_conf_header:
+  common: |
+    PACKAGE_CLASSES = "package_deb"
+    EXTRA_IMAGE_FEATURES += "package-management"
+
+    DISTRO_FEATURES += "usrmerge"
+    IMAGE_FEATURES += "empty-root-password allow-empty-password allow-root-login post-install-logging"
+
+    INHERIT += "report-error"
+    INHERIT += "rm_work"
+
+    INHERIT_DISTRO:remove = "create-spdx"
+    TEMPLATECONF = ""
