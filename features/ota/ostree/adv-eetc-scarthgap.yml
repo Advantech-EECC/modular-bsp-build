@@ -1,0 +1,12 @@
+header:
+  version: 14
+  includes:
+    - features/ota/ostree/scarthgap.yml
+
+repos:
+  meta-eecc-ota:
+    url: "https://github.com/Advantech-EECC/meta-eecc-ota.git"
+    branch: "scarthgap-dev"
+    path: "layers/meta-eecc-ota"
+    layers:
+      meta-ostree-eecc-nxp:
