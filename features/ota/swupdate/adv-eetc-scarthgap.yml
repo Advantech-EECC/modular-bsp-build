@@ -1,0 +1,10 @@
+header:
+  version: 14
+
+repos:
+  meta-eecc-ota:
+    url: "https://github.com/Advantech-EECC/meta-eecc-ota.git"
+    branch: "scarthgap-dev"
+    path: "layers/meta-eecc-ota"
+    layers:
+      meta-swupdate-eecc-nxp:
