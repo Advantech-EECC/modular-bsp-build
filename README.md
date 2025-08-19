@@ -1,4 +1,4 @@
-# Modular BSP KAS Configurations
+# Modular BSP build configurations
 
 KAS tool configurations for Modular BSP.
 
