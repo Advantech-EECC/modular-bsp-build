@@ -1,1 +1,13 @@
-zsh: command not found: pip3
+attrs==25.3.0
+distro==1.9.0
+gitdb==4.0.12
+GitPython==3.1.45
+jsonschema==4.25.0
+jsonschema-specifications==2025.4.1
+kas==4.8.2
+PyYAML==6.0.2
+referencing==0.36.2
+rpds-py==0.27.0
+rust-just==1.42.4
+smmap==5.0.2
+typing_extensions==4.14.1
