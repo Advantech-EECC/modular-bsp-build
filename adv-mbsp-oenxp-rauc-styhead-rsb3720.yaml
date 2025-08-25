@@ -1,0 +1,12 @@
+header:
+  version: 14
+  includes:
+    - features/ota/rauc/adv-ota-styhead.yml
+    - yocto/styhead.yml
+    - vendors/advantech/nxp/imx-6.12.3-1.0.0-styhead.yml
+    - machine/nxp/imx8/rsb3720.yml
+    - vendors/nxp/common.yml
+    - common.yml
+
+target:
+  - imx-image-core-update-bundle
