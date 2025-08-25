@@ -1,7 +1,7 @@
 header:
   version: 14
   includes:
-    - features/ota/rauc/adv-eetc-scarthgap.yml
+    - features/ota/rauc/adv-ota-scarthgap.yml
     - yocto/scarthgap.yml
     - vendors/advantech/nxp/imx-6.6.52-2.2.0-scarthgap.yml
     - machine/nxp/imx8/rsb3720.yml

@@ -8,3 +8,11 @@ image machine yocto: docker
 
 shell machine yocto: docker
     kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml
+
+ota-image machine ota yocto: docker
+    kas-container build adv-mbsp-oenxp-{{ota}}-{{yocto}}-{{machine}}.yaml
+
+ota-shell machine ota yocto: docker
+    kas-container shell adv-mbsp-oenxp-{{ota}}-{{yocto}}-{{machine}}.yaml
+
+
