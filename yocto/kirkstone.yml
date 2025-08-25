@@ -7,12 +7,14 @@ defaults:
 
 # https://downloads.yoctoproject.org/releases/yocto/yocto-4.0.28/RELEASENOTES
 repos:
-  openembedded-core:
-    url: "https://github.com/openembedded/openembedded-core.git"
-    commit: "bd620eb14660075fd0f7476bbbb65d5da6293874"
-    path: "layers/openembedded-core"
+  poky:
+    url: "https://git.yoctoproject.org/poky"
+    commit: "24a3f7b3648185e33133f5d96b184a6cb6524f3d"
+    path: "layers/poky"
     layers:
       meta:
+      meta-poky:
+      meta-yocto-bsp:
 
   bitbake:
     url: "https://github.com/openembedded/bitbake.git"
@@ -38,10 +40,13 @@ repos:
       meta-webserver:
       meta-xfce:
 
-  python-ai:
+  meta-virtualization:
+    url: "https://git.yoctoproject.org/meta-virtualization"
+    commit: "9482648daf0bb42ff3475e7892542cf99f3b8d48"
     branch: "master"
+    path: "layers/meta-virtualization"
     layers:
-      meta-python-ai: "disabled"
+      .:
 
 local_conf_header:
   distro: |

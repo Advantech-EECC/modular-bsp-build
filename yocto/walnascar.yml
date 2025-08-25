@@ -7,41 +7,66 @@ defaults:
 
 # https://downloads.yoctoproject.org/releases/yocto/yocto-5.2.2/RELEASENOTES
 repos:
-  openembedded-core:
-    url: "https://github.com/openembedded/openembedded-core.git"
-    commit: "c855be07828c9cff3aa7ddfa04eb0c4df28658e4"
-    path: "layers/openembedded-core"
+  poky:
+    url: "https://git.yoctoproject.org/poky"
+    commit: "9b96fdbb0cab02f4a6180e812b02bc9d4c41b1a5"
+    path: "layers/poky"
     layers:
       meta:
+      meta-poky:
+      meta-yocto-bsp:
+
+  meta-security:
+    url: "https://git.yoctoproject.org/meta-security"
+    commit: "784ca4b6584101e971b2d5d76ec7b716ad1301b5"
+    path: "layers/meta-security"
+    layers:
+      meta-parsec:
+      meta-tpm:
+
+  meta-virtualization:
+    url: "https://git.yoctoproject.org/meta-virtualization"
+    commit: "4fedb61ebf60745a367d857af255006bd3509a39"
+    path: "layers/meta-virtualization"
+    layers:
+      .:
+
+  meta-arm:
+    url: "https://git.yoctoproject.org/meta-arm"
+    commit: "42928dcc171629b495bbfcd8eda17ef6b8bdbfa3"
+    path: "layers/meta-arm"
+    layers:
+      meta-arm:
+      meta-arm-toolchain:
+      # meta-arm-systemready:
 
   bitbake:
     url: "https://github.com/openembedded/bitbake.git"
-    branch: "2.12"
-    commit: "74c28e14a9b5e2ff908a03f93c189efa6f56b0ca"
+    branch: "2.14"
+    commit: "546b347b4d3d82c01ecc99f45296f66e44638adc"
     path: "layers/bitbake"
     layers:
       bitbake: "disabled"
 
   meta-openembedded:
     url: "https://github.com/openembedded/meta-openembedded.git"
-    commit: "c009244a045923a9dfc32d7f2996cb61629870f6"
+    commit: "0d2d2d193a1619b6dbebaf335f1ef785478049e3"
     path: "layers/meta-openembedded"
     layers:
       meta-filesystems:
-      meta-gnome:
-      meta-initramfs:
+      # meta-initramfs:
       meta-multimedia:
       meta-networking:
       meta-oe:
-      meta-perl:
+      # meta-perl:
       meta-python:
-      meta-webserver:
-      meta-xfce:
+      # meta-webserver:
 
-  zenoh:
-    branch: "master"
-    commit: "207e9cb6b8c03308882e000ddeabf51b4fd11205"
+bblayers_conf_header:
+  walnascar: |
+    LCONF_VERSION = "7"
 
 local_conf_header:
-  distro: |
+  walnascar: |
     ERROR_QA:remove = "license-exists"
+    DISTRO_FEATURES += "ipv6"

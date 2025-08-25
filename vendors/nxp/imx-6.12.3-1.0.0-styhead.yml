@@ -2,40 +2,40 @@ header:
   version: 14
   includes:
     - vendors/nxp/common.yml
-    - compilers/clang/scarthgap.yml
-    - features/sbom/timesys-scarthgap.yml
-    - features/browser/scarthgap.yml
+    - compilers/clang/styhead.yml
+    - features/sbom/timesys-styhead.yml
+    - features/browser/styhead.yml
     - features/qt/qt6.8.yml
 
 repos:
   meta-freescale:
     url: "https://github.com/Freescale/meta-freescale.git"
-    commit: "0627128b341cfb2bef7a0832ce8cac0ce1127f13"
-    branch: "scarthgap"
+    commit: "8cc3bb0ff75e38becfd0a9eced0b7dc22cb3f86c"
+    branch: "master"
     path: "layers/meta-freescale"
     layers:
       .:
 
   meta-freescale-3rdparty:
     url: "https://github.com/Freescale/meta-freescale-3rdparty.git"
-    commit: "6c063450d464eb2f380443c7d9af1b94ce9b9d75"
+    commit: "774ca54bc00cc6c55fd92163441716d4c32f732f"
+    branch: "master"
     path: "layers/meta-freescale-3rdparty"
-    branch: "scarthgap"
     layers:
       .:
 
   meta-freescale-distro:
     url: "https://github.com/Freescale/meta-freescale-distro.git"
-    commit: "b9d6a5d9931922558046d230c1f5f4ef6ee72345"
-    branch: "scarthgap"
+    commit: "f7be03965e7a0563761a73d5f3988cd9be40d3e9"
+    branch: "master"
     path: "layers/meta-freescale-distro"
     layers:
       .:
 
   meta-nxp-connectivity:
     url: "https://github.com/nxp-imx/meta-nxp-connectivity.git"
-    branch: "imx_matter_2024_q3-post"
-    commit: "f58365ec75a5768ff3e8e8bcd64f237738c93160"
+    branch: "imx_matter_2024_q4-post"
+    commit: "9728012463cb9c99bf766801a13edc07732a9195"
     path: "layers/meta-connectivity"
     layers:
       meta-nxp-matter-baseline:
@@ -44,16 +44,17 @@ repos:
 
   meta-nxp-demo-experience:
     url: "https://github.com/nxp-imx-support/meta-nxp-demo-experience.git"
-    branch: "scarthgap-6.6.52-2.2.0"
-    commit: "e8e646e22b1f926aac83bb7ad522efa9cd8ccc45"
+    branch: "styhead-6.12.3-1.0.0"
+    commit: "1d3d7d4fb9c738c09981062e7df4ae025d543f89"
     path: "layers/meta-nxp-demo-experience"
     layers:
       .:
 
   meta-imx:
     url: "https://github.com/nxp-imx/meta-imx.git"
-    commit: "a0cf309d2e2d544111e520f572db8dff335eca01"
-    branch: "scarthgap-6.6.52-2.2.0"
+    commit: "8bfc3570041bf57957c4df4f16c15bbae6148bc4"
+    tag: "refs/tags/rel_imx_6.12.3_1.0.0"
+    branch: ""
     path: "layers/meta-imx"
     layers:
       meta-imx-bsp:

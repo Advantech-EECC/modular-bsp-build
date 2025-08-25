@@ -1,0 +1,8 @@
+header:
+  version: 14
+  includes:
+    - yocto/styhead.yml
+    - vendors/advantech/nxp/imx-6.12.3-1.0.0-styhead.yml
+    - machine/nxp/imx8/rom2820-ed93.yml
+    - vendors/nxp/common.yml
+    - common.yml

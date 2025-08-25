@@ -1,0 +1,25 @@
+From 1ce41d908c73195a1b247501635cc571c6c88cdd Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Sun, 24 Aug 2025 22:40:36 +0000
+Subject: [PATCH] Fix folder name in walnascar branch
+
+---
+ .../recipes-extended/xen/xen-tools_4.19.imx.bb                  | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/meta-imx-sdk/dynamic-layers/virtualization-layer/recipes-extended/xen/xen-tools_4.19.imx.bb b/meta-imx-sdk/dynamic-layers/virtualization-layer/recipes-extended/xen/xen-tools_4.19.imx.bb
+index 66defbba02..b7859d3f31 100644
+--- a/meta-imx-sdk/dynamic-layers/virtualization-layer/recipes-extended/xen/xen-tools_4.19.imx.bb
++++ b/meta-imx-sdk/dynamic-layers/virtualization-layer/recipes-extended/xen/xen-tools_4.19.imx.bb
+@@ -4,7 +4,7 @@ LICENSE = "GPL-2.0-only"
+ SECTION = "console/tools"
+ LIC_FILES_CHKSUM ?= "file://COPYING;md5=d1a1e216f80b6d8da95fec897d0dbec9"
+ 
+-FILESEXTRAPATHS:prepend := "${BSPDIR}/sources/meta-virtualization/recipes-extended/xen/files:"
++FILESEXTRAPATHS:prepend := "${BSPDIR}/layers/meta-virtualization/recipes-extended/xen/files:"
+ S = "${WORKDIR}/git"
+ 
+ DEFAULT_PREFERENCE ??= "-1"
+-- 
+2.43.0
+
