@@ -205,3 +205,5 @@ __marimo__/
 venv
 build 
 layers 
+.kas_shell_history
+.vscode
