@@ -1,10 +1,10 @@
 set dotenv-load
 
 docker:
-    docker build . -t mbsp:latest
+    docker build . -t kas:latest
 
 image machine yocto: docker
     kas-container build adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml
 
-rauc-image machine yocto: docker
-    kas-container build adv-mbsp-oenxp-rauc-{{yocto}}-{{machine}}.yaml
+shell machine yocto: docker
+    kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml

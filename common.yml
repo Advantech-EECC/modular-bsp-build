@@ -1,5 +1,7 @@
 header:
   version: 14
+  includes:
+    - diskmon.yml
 
 local_conf_header:
   common: |
@@ -14,3 +16,6 @@ local_conf_header:
 
     INHERIT_DISTRO:remove = "create-spdx"
     TEMPLATECONF = ""
+
+    USER_CLASSES ?= "buildstats"
+    PATCHRESOLVE = "noop"

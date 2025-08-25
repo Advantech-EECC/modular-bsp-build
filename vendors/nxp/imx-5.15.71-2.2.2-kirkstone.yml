@@ -2,58 +2,45 @@ header:
   version: 14
   includes:
     - vendors/nxp/common.yml
-    - compilers/clang/scarthgap.yml
-    - features/sbom/timesys-scarthgap.yml
-    - features/browser/scarthgap.yml
+    - compilers/clang/kirkstone.yml
+    - features/sbom/timesys-kirkstone.yml
+    - features/browser/kirkstone.yml
     - features/qt/qt6.8.yml
 
 repos:
   meta-freescale:
     url: "https://github.com/Freescale/meta-freescale.git"
-    commit: "0627128b341cfb2bef7a0832ce8cac0ce1127f13"
-    branch: "scarthgap"
+    commit: "c82d4634e7aba8bc0de73ce1dfc997b630051571"
     path: "layers/meta-freescale"
     layers:
       .:
 
   meta-freescale-3rdparty:
     url: "https://github.com/Freescale/meta-freescale-3rdparty.git"
-    commit: "6c063450d464eb2f380443c7d9af1b94ce9b9d75"
+    commit: "5977197340c7a7db17fe3e02a4e014ad997565ae"
     path: "layers/meta-freescale-3rdparty"
-    branch: "scarthgap"
     layers:
       .:
 
   meta-freescale-distro:
     url: "https://github.com/Freescale/meta-freescale-distro.git"
-    commit: "b9d6a5d9931922558046d230c1f5f4ef6ee72345"
-    branch: "scarthgap"
+    commit: "d5bbb487b2816dfc74984a78b67f7361ce404253"
     path: "layers/meta-freescale-distro"
     layers:
       .:
 
-  meta-nxp-connectivity:
-    url: "https://github.com/nxp-imx/meta-nxp-connectivity.git"
-    branch: "imx_matter_2024_q3-post"
-    commit: "f58365ec75a5768ff3e8e8bcd64f237738c93160"
-    path: "layers/meta-connectivity"
-    layers:
-      meta-nxp-matter-baseline:
-      meta-nxp-openthread:
-
-
   meta-nxp-demo-experience:
     url: "https://github.com/nxp-imx-support/meta-nxp-demo-experience.git"
-    branch: "scarthgap-6.6.52-2.2.0"
-    commit: "e8e646e22b1f926aac83bb7ad522efa9cd8ccc45"
+    branch: "kirkstone-5.15.71-2.2.0"
+    commit: "52eaf8bf42f8eda2917a1c8c046003c8c2c8f629"
     path: "layers/meta-nxp-demo-experience"
     layers:
       .:
 
   meta-imx:
     url: "https://github.com/nxp-imx/meta-imx.git"
-    commit: "a0cf309d2e2d544111e520f572db8dff335eca01"
-    branch: "scarthgap-6.6.52-2.2.0"
+    commit: "af4c67f25fff2dce54487ee5bfd618ab9789a8dc"
+    branch: "kirkstone-5.15.71-2.2.2"
     path: "layers/meta-imx"
     layers:
       meta-imx-bsp:

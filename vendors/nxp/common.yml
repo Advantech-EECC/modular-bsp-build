@@ -11,3 +11,7 @@ local_conf_header:
     USER_CLASSES ?= "buildstats"
     PATCHRESOLVE = "noop"
     PACKAGECONFIG:append:pn-qemu-system-native = " sdl"
+
+bblayers_conf_header:
+  nxp: |
+    BSPDIR := "${@os.path.abspath(os.path.dirname(d.getVar('FILE', True)) + '/../..')}"

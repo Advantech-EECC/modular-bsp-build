@@ -2,58 +2,62 @@ header:
   version: 14
   includes:
     - vendors/nxp/common.yml
-    - compilers/clang/scarthgap.yml
-    - features/sbom/timesys-scarthgap.yml
-    - features/browser/scarthgap.yml
-    - features/qt/qt6.8.yml
+    - compilers/clang/walnascar.yml
+    - features/sbom/timesys-walnascar.yml
+    - features/browser/walnascar.yml
+    - features/qt/qt6.8.3.yml
 
 repos:
+  this:
+    layers:
+      .: "disabled"
+
   meta-freescale:
     url: "https://github.com/Freescale/meta-freescale.git"
-    commit: "0627128b341cfb2bef7a0832ce8cac0ce1127f13"
-    branch: "scarthgap"
+    commit: "7431918c86ac6d3be2a273e091227157446960a7"
+    branch: "master"
     path: "layers/meta-freescale"
     layers:
       .:
 
   meta-freescale-3rdparty:
     url: "https://github.com/Freescale/meta-freescale-3rdparty.git"
-    commit: "6c063450d464eb2f380443c7d9af1b94ce9b9d75"
+    commit: "e7ce12ee3a3d0e6aa8dbbab598088b50b7625a33"
+    branch: "master"
     path: "layers/meta-freescale-3rdparty"
-    branch: "scarthgap"
     layers:
       .:
 
   meta-freescale-distro:
     url: "https://github.com/Freescale/meta-freescale-distro.git"
-    commit: "b9d6a5d9931922558046d230c1f5f4ef6ee72345"
-    branch: "scarthgap"
+    commit: "b9c3536b68271c420fe5de36fc284781ceaa32ab"
+    branch: "master"
     path: "layers/meta-freescale-distro"
     layers:
       .:
 
   meta-nxp-connectivity:
     url: "https://github.com/nxp-imx/meta-nxp-connectivity.git"
-    branch: "imx_matter_2024_q3-post"
-    commit: "f58365ec75a5768ff3e8e8bcd64f237738c93160"
+    branch: "imx_matter_2025_q1-post"
+    commit: "3409f5dcf55233ed3e285d8c7f2d4be773576da5"
     path: "layers/meta-connectivity"
     layers:
       meta-nxp-matter-baseline:
       meta-nxp-openthread:
 
-
   meta-nxp-demo-experience:
     url: "https://github.com/nxp-imx-support/meta-nxp-demo-experience.git"
-    branch: "scarthgap-6.6.52-2.2.0"
-    commit: "e8e646e22b1f926aac83bb7ad522efa9cd8ccc45"
+    branch: "walnascar-6.12.20-2.0.0"
+    commit: "23c759fc1b7ab1eb9b786ec6942207165688169c"
     path: "layers/meta-nxp-demo-experience"
     layers:
       .:
 
   meta-imx:
     url: "https://github.com/nxp-imx/meta-imx.git"
-    commit: "a0cf309d2e2d544111e520f572db8dff335eca01"
-    branch: "scarthgap-6.6.52-2.2.0"
+    commit: "e8e971a41dd140e313bdb26bee02bce1093a24a4"
+    tag: "refs/tags/rel_imx_6.12.20_2.0.0"
+    branch: ""
     path: "layers/meta-imx"
     layers:
       meta-imx-bsp:
@@ -61,3 +65,7 @@ repos:
       meta-imx-ml:
       meta-imx-sdk:
       meta-imx-v2x:
+    patches: 
+      path-fix:
+        repo: this
+        path: patches/nxp/walnascar/0001-meta-imx-folder-name-walnascar.patch

@@ -6,11 +6,22 @@ defaults:
     branch: "master"
 
 repos:
-  openembedded-core:
-    url: "https://github.com/openembedded/openembedded-core.git"
-    path: "layers/openembedded-core"
+  poky:
+    url: "https://git.yoctoproject.org/poky"
+    commit: "e7423ae09e62a1f5f72391e61cad2381f917c113"
+    path: "layers/poky"
     layers:
       meta:
+      meta-poky:
+      meta-yocto-bsp:
+
+  meta-arm:
+    url: "https://git.yoctoproject.org/meta-arm"
+    commit: "950a4afce46a359def2958bd9ae33fc08ff9bb0d"
+    path: "layers/meta-arm"
+    layers:
+      meta-arm:
+      meta-arm-toolchain:
 
   bitbake:
     url: "https://github.com/openembedded/bitbake.git"

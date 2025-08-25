@@ -2,19 +2,19 @@ header:
   version: 14
 
   includes:
-    - vendors/nxp/imx-6.6.52-2.2.0-scarthgap.yml
+    - vendors/nxp/imx-5.15.71-2.2.2-kirkstone.yml
 
 repos:
   meta-eecc-nxp:
     url: "https://github.com/Advantech-EECC/meta-eecc-nxp.git"
-    branch: "scarthgap"
+    branch: "kirkstone"
     path: "layers/meta-eecc-nxp"
     layers:
       .:
 
   meta-nxp-security-reference-design":
     url: "https://github.com/nxp-imx-support/meta-nxp-security-reference-design.git"
-    branch: "scarthgap-6.6.23-2.0.0"
+    branch: "kirkstone-6.6.23-2.0.0"
     commit: "b9ddc151c452ae09232f5d5cb5c8e52a77617f6e"
     path: "layers/meta-nxp-security-reference-design"
     layers:

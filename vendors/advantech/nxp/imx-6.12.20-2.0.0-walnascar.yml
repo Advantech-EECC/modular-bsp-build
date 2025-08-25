@@ -1,0 +1,16 @@
+header:
+  version: 14
+
+  includes:
+    - vendors/nxp/imx-6.12.20-2.0.0-walnascar.yml
+
+repos:
+  meta-eecc-nxp:
+    url: "https://github.com/Advantech-EECC/meta-eecc-nxp.git"
+    commit: "8070094948c2fb195db596a9a0524f5ad572c11d"
+    path: "layers/meta-eecc-nxp"
+    layers:
+      .:
+
+target:
+  - imx-image-core

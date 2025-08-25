@@ -7,16 +7,9 @@ defaults:
 
 # https://downloads.yoctoproject.org/releases/yocto/yocto-5.0.11/RELEASENOTES
 repos:
-  # openembedded-core:
-  #   url: "https://github.com/openembedded/openembedded-core.git"
-  #   commit: "7a59dc5ee6edd9596e87c2fbcd1f2594c06b3d1b"
-  #   path: "layers/openembedded-core"
-  #   layers:
-  #     meta:
-
   poky:
     url: "https://git.yoctoproject.org/poky"
-    commit: "200d12b6a58ad961d60a7774ca0f7a9d29498724"
+    commit: "ec220ae083dba35c279192b2249ad03fe238446e"
     path: "layers/poky"
     layers:
       meta:
