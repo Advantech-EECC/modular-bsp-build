@@ -71,9 +71,22 @@ SSTATE_DIR=<absolute-path>/cache/sstate/
 Run the build using command below
 
 ```bash
-# just build {{board name}} {{yocto release}}
-just build rsb3720 scarthgap
+# just image {{board name}} {{yocto release}}
+just image rsb3720 scarthgap
 ```
+
+example command to build imx core image with OTA
+
+```bash
+just ota-image rsb3720 rauc scarthgap
+```
+
+example command to build ROS image
+
+```bash
+just ros-image rsb3720 humble scarthgap
+```
+
 
 # Links
 
