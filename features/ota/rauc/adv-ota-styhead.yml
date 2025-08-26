@@ -14,3 +14,6 @@ local_conf_header:
   rauc: |
     DISTRO ?= "adv-eiot-imx"
     WKS_FILE = "sdimage-dual-nxp.wks.in"
+
+target:
+  - imx-image-core-update-bundle
