@@ -1,0 +1,30 @@
+From 300dba0b688ba336568ff5f0552ef73d6e6af877 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Thu, 28 Aug 2025 12:13:32 +0000
+Subject: [PATCH] Fix dependency names
+
+sof-imx to firmware-sof-imx
+---
+ meta-fsl-imx/conf/layer.conf | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/meta-fsl-imx/conf/layer.conf b/meta-fsl-imx/conf/layer.conf
+index 9b093f6..8aabc2d 100644
+--- a/meta-fsl-imx/conf/layer.conf
++++ b/meta-fsl-imx/conf/layer.conf
+@@ -95,10 +95,10 @@ MACHINE_FIRMWARE:append:mx8qxp-nxp-bsp = " sof-imx sof-zephyr zephyr-demo-imx"
+ MACHINE_FIRMWARE:append:mx8dx-nxp-bsp  = " sof-imx sof-zephyr"
+ MACHINE_FIRMWARE:append:mx8mnul-nxp-bsp = " firmware-imx-easrc-imx8mn"
+ MACHINE_FIRMWARE:remove:mx8mp-nxp-bsp  = "firmware-sof-imx"
+-MACHINE_FIRMWARE:append:mx8mp-nxp-bsp  = " sof-imx sof-zephyr zephyr-demo-imx"
++MACHINE_FIRMWARE:append:mx8mp-nxp-bsp  = " firmware-sof-imx sof-zephyr zephyr-demo-imx"
+ MACHINE_FIRMWARE:remove:mx8mpul-nxp-bsp  = "firmware-sof-imx"
+ MACHINE_FIRMWARE:append:mx8mpul-nxp-bsp  = " sof-imx sof-zephyr"
+-MACHINE_FIRMWARE:append:mx8ulp-nxp-bsp = " sof-imx sof-zephyr firmware-ele-imx-ext"
++MACHINE_FIRMWARE:append:mx8ulp-nxp-bsp = " firmware-sof-imx sof-zephyr firmware-ele-imx-ext"
+ 
+ # DPDK extra SDK
+ MACHINE_EXTRA_RRECOMMENDS:append = " ${@bb.utils.contains('MACHINE_FEATURES', 'dpdk', 'kernel-module-dpdk-extras', '', d)}"
+-- 
+2.43.0
+

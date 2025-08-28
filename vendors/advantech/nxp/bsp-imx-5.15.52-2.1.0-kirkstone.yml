@@ -1,0 +1,19 @@
+header:
+  version: 14
+  includes:
+    - vendors/nxp/imx-5.15.52-2.1.0-kirkstone.yml
+    - features/deep-learning/hailo.yml
+
+distro: fsl-imx-xwayland
+
+repos:
+  meta-advantech2:
+    url: https://github.com/ADVANTECH-Corp/meta-advantech2.git
+    branch: "aim34-kirkstone"
+    path: "layers/meta-advantech2"
+    layers:
+      meta-fsl-imx:
+      meta-tools:
+      
+target:
+  - imx-image-core

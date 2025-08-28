@@ -1,6 +1,5 @@
 header:
   version: 14
-
   includes:
     - vendors/nxp/imx-6.6.52-2.2.0-scarthgap.yml
 

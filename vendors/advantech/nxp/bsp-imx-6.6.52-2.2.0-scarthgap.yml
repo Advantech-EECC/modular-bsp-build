@@ -1,0 +1,27 @@
+header:
+  version: 14
+  includes:
+    - vendors/nxp/imx-6.6.52-2.2.0-scarthgap.yml
+
+distro: fsl-imx-xwayland
+
+repos:
+  this:
+    layers:
+      .: "disabled"
+
+  meta-advantech2:
+    url: https://github.com/ADVANTECH-Corp/meta-advantech2.git
+    branch: "aim38-scarthgap"
+    commit: "98b13572527f136d464749a6b88eed09eacdfe42"
+    path: "layers/meta-advantech2"
+    layers:
+      meta-fsl-imx:
+      meta-tools:
+    patches: 
+      fix-dependency-name:
+        repo: this
+        path: patches/nxp/scarthgap/0001-Fix-dependency-names.patch
+
+target:
+  - imx-image-core

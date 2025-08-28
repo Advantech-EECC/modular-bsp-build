@@ -1,0 +1,14 @@
+header:
+  version: 14
+  includes:
+    - yocto/kirkstone.yml
+    - vendors/advantech/nxp/bsp-imx-5.15.52-2.1.0-kirkstone.yml
+    - vendors/nxp/common.yml
+    - common.yml
+
+# Advantech RSB3720
+machine: imx8mprsb3720a1
+
+local_conf_header:
+  common: |
+    DISTRO_FEATURES += "systemd"

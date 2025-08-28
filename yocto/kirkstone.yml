@@ -42,7 +42,7 @@ repos:
 
   meta-virtualization:
     url: "https://git.yoctoproject.org/meta-virtualization"
-    commit: "9482648daf0bb42ff3475e7892542cf99f3b8d48"
+    commit: "cca772a457a75b2661371932ff79c392da3118db"
     branch: "master"
     path: "layers/meta-virtualization"
     layers:

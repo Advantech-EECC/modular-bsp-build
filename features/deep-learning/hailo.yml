@@ -1,0 +1,13 @@
+header:
+  version: 14
+
+repos:
+  meta-hailo:
+    url: https://github.com/hailo-ai/meta-hailo.git
+    branch: "kirkstone"
+    path: "layers/meta-hailo"
+    layers:
+      # meta-hailo-accelerator:
+      meta-hailo-libhailort:
+      meta-hailo-tappas:
+      # meta-hailo-vpu:

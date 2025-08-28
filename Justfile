@@ -14,19 +14,22 @@ set dotenv-load
 docker:
     docker build . -t kas:latest
 
-image machine yocto: docker
+bsp machine yocto: docker
+    kas-container build adv-bsp-oenxp-{{yocto}}-{{machine}}.yaml
+
+mbsp machine yocto: docker
     kas-container build adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml
 
-shell machine yocto: docker
+mbsp-shell machine yocto: docker
     kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml
 
-ota-image machine ota yocto: docker
+ota-mbsp machine ota yocto: docker
     kas-container build adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ota/{{ota}}/adv-ota-{{yocto}}.yml
 
 ota-shell machine ota yocto: docker
     kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ota/{{ota}}/adv-ota-{{yocto}}.yml
 
-ros-image machine ros yocto: docker
+ros-mbsp machine ros yocto: docker
     kas-container build adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ros2/{{ros}}.yml
 
 ros-shell machine ros yocto: docker
