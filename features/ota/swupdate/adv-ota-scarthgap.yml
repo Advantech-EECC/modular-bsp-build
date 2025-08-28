@@ -1,0 +1,10 @@
+header:
+  version: 14
+
+repos:
+  meta-eecc-ota:
+    url: "https://github.com/Advantech-EECC/meta-modular-bsp-ota.git"
+    branch: "scarthgap-next"
+    path: "layers/meta-modular-bsp-ota"
+    layers:
+      meta-swupdate-mbsp-nxp:

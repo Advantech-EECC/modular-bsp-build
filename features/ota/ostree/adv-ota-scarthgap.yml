@@ -5,7 +5,7 @@ header:
 
 repos:
   meta-eecc-ota:
-    url: "https://github.com/Advantech-EECC/meta-eecc-ota.git"
+    url: "https://github.com/Advantech-EECC/meta-modular-bsp-ota.git"
     branch: "scarthgap-dev"
     path: "layers/meta-eecc-ota"
     layers:
