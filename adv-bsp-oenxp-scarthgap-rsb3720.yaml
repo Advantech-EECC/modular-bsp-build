@@ -2,7 +2,7 @@ header:
   version: 14
   includes:
     - yocto/scarthgap.yml
-    - vendors/advantech/nxp/bsp-imx-6.6.52-2.2.0-scarthgap.yml
+    - vendors/advantech/nxp/bsp-imx-6.6.23-2.0.0-scarthgap.yml
     - vendors/nxp/common.yml
     - common.yml
 

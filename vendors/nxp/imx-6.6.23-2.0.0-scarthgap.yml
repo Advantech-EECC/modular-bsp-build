@@ -1,0 +1,63 @@
+header:
+  version: 14
+  includes:
+    - vendors/nxp/common.yml
+    - compilers/clang/scarthgap.yml
+    - features/sbom/timesys-scarthgap.yml
+    - features/browser/scarthgap.yml
+    - features/qt/qt6.7.yml
+
+repos:
+  meta-freescale:
+    url: "https://github.com/Freescale/meta-freescale.git"
+    commit: "41b923e59e048b9b2942ff737a4ddac386954c62"
+    branch: "scarthgap"
+    path: "layers/meta-freescale"
+    layers:
+      .:
+
+  meta-freescale-3rdparty:
+    url: "https://github.com/Freescale/meta-freescale-3rdparty.git"
+    commit: "8b61684f0b1ba8bacdf3a69d993445e9791d4932"
+    path: "layers/meta-freescale-3rdparty"
+    branch: "scarthgap"
+    layers:
+      .:
+
+  meta-freescale-distro:
+    url: "https://github.com/Freescale/meta-freescale-distro.git"
+    commit: "158cc55b6ee30d09957b380859dba52c0f6af68d"
+    branch: "scarthgap"
+    path: "layers/meta-freescale-distro"
+    layers:
+      .:
+
+  meta-nxp-connectivity:
+    url: "https://github.com/nxp-imx/meta-nxp-connectivity.git"
+    branch: "imx_matter_2024_q1-post"
+    commit: "96311d23e51ddd76cfa73a8bbd65b13c82ab5f7d"
+    path: "layers/meta-connectivity"
+    layers:
+      meta-nxp-matter-baseline:
+      meta-nxp-openthread:
+
+
+  meta-nxp-demo-experience:
+    url: "https://github.com/nxp-imx-support/meta-nxp-demo-experience.git"
+    branch: "scarthgap-6.6.23-2.0.0"
+    commit: "5c0d6796620b911f7445da5537a6d71cb9764ab4"
+    path: "layers/meta-nxp-demo-experience"
+    layers:
+      .:
+
+  meta-imx:
+    url: "https://github.com/nxp-imx/meta-imx.git"
+    commit: "1a29f48d0a3c17f5f6fb241cb82dc31b8f0bf697"
+    branch: "scarthgap-6.6.23-2.0.0"
+    path: "layers/meta-imx"
+    layers:
+      meta-imx-bsp:
+      meta-imx-cockpit:
+      meta-imx-ml:
+      meta-imx-sdk:
+      meta-imx-v2x:
