@@ -1,0 +1,11 @@
+header:
+  version: 14
+  includes:
+    - yocto/scarthgap.yml
+    - vendors/qualcomm/qcom-6.6.90-qli.1.5-ver.1.1-scarthgap.yml
+    - common.yml
+
+machine: qcs6490-rb3gen2-vision-kit
+distro: qcom-wayland
+
+target: qcom-console-image
