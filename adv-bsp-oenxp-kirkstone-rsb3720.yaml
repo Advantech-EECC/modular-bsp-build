@@ -2,6 +2,7 @@ header:
   version: 14
   includes:
     - yocto/kirkstone.yml
+    - features/deep-learning/hailo.yml
     - vendors/advantech/nxp/bsp-imx-5.15.52-2.1.0-kirkstone.yml
     - vendors/nxp/common.yml
     - common.yml

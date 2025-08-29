@@ -14,6 +14,23 @@ repos:
     layers:
       meta-fsl-imx:
       meta-tools:
+
+  poky:
+    commit: "6b05a9736953089e1f900a1c49cca37404737cfd"
+
+  meta-hailo:
+    commit: "9b97850557a21eae51c69078b81ab6443ba78fa3"
+
+  meta-virtualization: 
+    branch: "master"
+    commit: "cca772a457a75b2661371932ff79c392da3118db"
+
+  meta-timesys:
+    branch: "master"
+    commit: "d1ad27bfacc937048e7f9084b17f4d7c917d2004"
       
+  meta-openembedded:
+    commit: "8f2dc1023482863e2630d1b94052c41ce748b38f"
+
 target:
   - imx-image-core
