@@ -1,10 +1,10 @@
 header:
   version: 14
   includes: 
-    - features/ota/rauc/scarthgap.yml
+    - features/ota/rauc/styhead.yml
 
 repos:
-  meta-eecc-ota:
+  meta-meta-modular-bsp-ota:
     url: "https://github.com/Advantech-EECC/meta-modular-bsp-ota.git"
     path: "layers/meta-modular-bsp-ota"
     layers:

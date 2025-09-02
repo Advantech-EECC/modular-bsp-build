@@ -34,5 +34,3 @@ ros-mbsp machine ros yocto: docker
 
 ros-shell machine ros yocto: docker
     kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ros2/{{ros}}.yml
-
-
