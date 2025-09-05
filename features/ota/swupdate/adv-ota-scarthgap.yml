@@ -1,10 +1,20 @@
 header:
   version: 14
+  includes:
+    - features/ota/swupdate/scarthgap.yml
 
 repos:
-  meta-eecc-ota:
+  meta-modular-bsp-ota:
     url: "https://github.com/Advantech-EECC/meta-modular-bsp-ota.git"
     branch: "scarthgap-next"
     path: "layers/meta-modular-bsp-ota"
     layers:
       meta-swupdate-mbsp-nxp:
+
+local_conf_header:
+  swupdate: |
+    IMAGE_FSTYPES += "ext4.gz"
+    WKS_FILE = "sdimage-dual-nxp.wks.in"
+
+target:
+  - imx-core-update-image

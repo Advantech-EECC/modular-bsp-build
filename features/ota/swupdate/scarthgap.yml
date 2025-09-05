@@ -1,7 +1,5 @@
 header:
   version: 14
-  includes:
-    - features/ota/swupdate/scarthgap.yml
 
 repos:
   meta-swupdate:
@@ -10,3 +8,9 @@ repos:
     path: "layers/meta-swupdate"
     layers:
       .:
+  # INFO: demo swupdate layer
+  # meta-swupdate-boards:
+  #   url: "https://github.com/sbabic/meta-swupdate-boards.git"
+  #   path: "layers/meta-swupdate-boards"
+  #   layers:
+  #     .:
