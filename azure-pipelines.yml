@@ -1,0 +1,91 @@
+#
+# azure-pipelines.yml
+#
+# Advantech Modular BSP KAS image builder pipeline
+#
+# Copyright (c) 2023-2026 Advantech Co., Ltd. All rights reserved.
+#
+
+pool:
+  name: aeu.de
+
+trigger: none
+
+parameters:
+- name: MACHINE
+  type: string
+  default: 'rom2620-ed91'
+  values:
+    - 'rom2620-ed91'
+    - 'rom2820-ed93'
+    - 'rsb3720'
+    - 'rom5720-db5901'
+    - 'rom5721-db5901'
+    - 'rom5722-db2510'
+    - 'none'
+- name: YOCTO_BRANCH
+  type: string
+  default: 'scarthgap'
+  values:
+    - 'walnascar'      # Y5.2 (Mod BSP)'
+    - 'styhead'        # Y5.1 (Mod BSP)'
+    - 'scarthgap'      # Y5.0 (Mod BSP)
+
+jobs:
+
+- job: PRE_CHECKOUT
+  timeoutInMinutes: 10
+  variables:
+     WORKSPACE: "$(Build.SourcesDirectory)/image"
+     WORKSPACE_YOCTO: "$(WORKSPACE)/tmp/yocto"
+  steps:
+  - checkout: self
+    fetchDepth: 1
+    clean: false
+    displayName: 'Pre-checkout (chown-related cleanup)'
+  - bash: |
+       echo "[$(date)] Cleaning previous build artifacts... $PWD [$BUILD_MODE]"
+    displayName: "Cleanup"
+
+- job: CHECKOUT
+  dependsOn: PRE_CHECKOUT
+  timeoutInMinutes: 10
+  steps:
+  - checkout: self
+    fetchDepth: 1
+    clean: true
+    displayName: 'Checkout repository'
+
+- job: BUILD_BSP
+  dependsOn: CHECKOUT
+  timeoutInMinutes: 500
+  variables:
+     MACHINE: ${{ parameters.MACHINE }}
+     YOCTO_BRANCH: ${{ parameters.YOCTO_BRANCH }}
+     YOCTO_DOWNLOADS: "$(Build.SourcesDirectory)/../downloads/$(YOCTO_BRANCH)"
+     YOCTO_SSTATE_DIR: "$(Build.SourcesDirectory)/../sstate-data/$(YOCTO_BRANCH)"
+     WORKSPACE: "$(Build.SourcesDirectory)/image"
+     WORKSPACE_YOCTO: "$(WORKSPACE)/tmp/yocto"
+     IMAGE_FOLDER: "$(WORKSPACE_YOCTO)/$(YOCTO_WD)/tmp/deploy/images/$(MACHINE)"
+     BUILD_INFO: build_info.txt
+     IMG_LOG: "$(IMAGE_FOLDER)/$(MACHINE)-image-build.log"
+     INFO_VERSION: "$(YOCTO_MANIFEST)"
+     INFO_BUILD_TYPE: "$(BUILD_MODE)"
+
+  steps:
+  - checkout: none # Done in the previous job, for allowing faster restart/rebuild
+    fetchDepth: 1
+    displayName: 'Checkout repository'
+
+  - bash: |
+      echo "
+      KAS_WORKDIR=build-${MACHINE}-${YOCTO_BRANCH} 
+      KAS_CONTAINER_ENGINE=docker
+      KAS_CONTAINER_IMAGE=kas:latest
+      DL_DIR=${YOCTO_DOWNLOADS}
+      SSTATE_DIR=${YOCTO_SSTATE_DIR}
+      " >  .env 
+  
+      python3 -m venv venv
+      . venv/bin/activate && pip3 install -r requirements.txt
+      . venv/bin/activate && just mbsp ${MACHINE} ${YOCTO_BRANCH} 
