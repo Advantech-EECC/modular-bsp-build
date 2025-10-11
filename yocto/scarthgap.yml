@@ -9,7 +9,7 @@ defaults:
 repos:
   poky:
     url: "https://git.yoctoproject.org/poky"
-    commit: "ec220ae083dba35c279192b2249ad03fe238446e"
+    commit: "200d12b6a58ad961d60a7774ca0f7a9d29498724"
     path: "layers/poky"
     layers:
       meta:
