@@ -4,8 +4,8 @@ header:
 repos:
   meta-qt6:
     url: "https://github.com/YoeDistro/meta-qt6.git"
-    branch: "6.8"
-    commit: "586a6cb5aec755803a3be3cec359baafe89d6432"
+    branch: "6.8.1"
+    commit: "f4ef1331f0cc49bd4aa1e1aace6dc7f000b9651e"
     path: "layers/meta-qt6"
     layers:
       .:

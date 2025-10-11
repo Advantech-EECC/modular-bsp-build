@@ -5,7 +5,7 @@ header:
     - compilers/clang/styhead.yml
     - features/sbom/timesys-styhead.yml
     - features/browser/styhead.yml
-    - features/qt/qt6.8.yml
+    - features/qt/qt6.8.1.yml
 
 repos:
   meta-freescale:
