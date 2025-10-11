@@ -20,7 +20,7 @@ env:
     SSTATE_DIR=${HOME}/cache/sstate/\n \
     " > .env
 
-docker: .env
+docker:
     docker build . -t kas:latest
 
 bsp machine yocto: docker
