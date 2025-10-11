@@ -33,4 +33,6 @@ repos:
     commit: "8f2dc1023482863e2630d1b94052c41ce748b38f"
 
 target:
-  - imx-image-core
+  - imx-image-core  
+  # - imx-image-multimedia
+  # - imx-image-full
