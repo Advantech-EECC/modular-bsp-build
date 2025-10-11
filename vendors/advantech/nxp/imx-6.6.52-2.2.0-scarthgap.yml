@@ -17,7 +17,7 @@ repos:
     commit: "b9ddc151c452ae09232f5d5cb5c8e52a77617f6e"
     path: "layers/meta-nxp-security-reference-design"
     layers:
-      meta-secure-boot:
+      meta-secure-boot: "disabled"
 
 target:
   - imx-image-core

@@ -12,5 +12,13 @@ repos:
     layers:
       .:
 
+  meta-nxp-security-reference-design:
+    url: "https://github.com/Advantech-EECC/meta-nxp-security-reference-design.git"
+    branch: "walnascar-6.12.20-2.0.0-adv"
+    commit: "730aaf344e5f946bb7131e69b93fbab90c667ae9"
+    path: "layers/meta-nxp-security-reference-design"
+    layers:
+      meta-secure-boot: "disabled"
+
 target:
   - imx-image-core
