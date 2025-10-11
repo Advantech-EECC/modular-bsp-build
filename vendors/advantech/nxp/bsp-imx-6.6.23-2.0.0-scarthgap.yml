@@ -53,3 +53,4 @@ repos:
 
 target:
   - imx-image-core
+  - imx-image-multimedia
