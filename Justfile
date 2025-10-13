@@ -36,13 +36,13 @@ mbsp-shell machine yocto: docker
     @KAS_BUILD_DIR="$PWD/build-mbsp-{{yocto}}-{{machine}}" kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml
 
 ota-mbsp machine ota yocto: docker
-    @KAS_BUILD_DIR="$PWD/build-ota-mbsp-{{yocto}}-{{machine}}" kas-container build adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ota/{{ota}}/adv-ota-{{yocto}}.yml
+    @KAS_BUILD_DIR="$PWD/build-ota-{{ota}}-mbsp-{{yocto}}-{{machine}}" kas-container build adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ota/{{ota}}/adv-ota-{{yocto}}.yml
 
 ota-shell machine ota yocto: docker
-    @KAS_BUILD_DIR="$PWD/build-ota-mbsp-{{yocto}}-{{machine}}" kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ota/{{ota}}/adv-ota-{{yocto}}.yml
+    @KAS_BUILD_DIR="$PWD/build-ota-{{ota}}-mbsp-{{yocto}}-{{machine}}" kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ota/{{ota}}/adv-ota-{{yocto}}.yml
 
 ros-mbsp machine ros yocto: docker
-    @KAS_BUILD_DIR="$PWD/build-ros-mbsp-{{yocto}}-{{machine}}" kas-container build adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ros2/{{ros}}.yml
+    @KAS_BUILD_DIR="$PWD/build-ros-{{ros}}-mbsp-{{yocto}}-{{machine}}" kas-container build adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ros2/{{ros}}.yml
 
 ros-shell machine ros yocto: docker
-    @KAS_BUILD_DIR="$PWD/build-ros-mbsp-{{yocto}}-{{machine}}" kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ros2/{{ros}}.yml
+    @KAS_BUILD_DIR="$PWD/build-ros-{{ros}}-mbsp-{{yocto}}-{{machine}}" kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ros2/{{ros}}.yml
