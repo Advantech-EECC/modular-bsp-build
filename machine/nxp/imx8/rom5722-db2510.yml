@@ -2,3 +2,8 @@ header:
   version: 14
 
 machine: "rom5722-db2510"
+
+local_conf_header:
+  ostree-rom5722-db2510: |
+
+    SOTA_MACHINE:rom5722-db2510 ?= "rom5722-db2510"

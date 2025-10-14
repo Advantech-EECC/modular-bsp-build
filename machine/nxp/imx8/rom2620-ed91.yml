@@ -2,3 +2,8 @@ header:
   version: 14
 
 machine: "rom2620-ed91"
+
+local_conf_header:
+  ostree-rom2620-ed91: |
+
+    SOTA_MACHINE:rom2620-ed91 ?= "rom2620-ed91"

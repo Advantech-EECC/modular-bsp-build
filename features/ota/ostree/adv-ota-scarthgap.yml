@@ -4,9 +4,17 @@ header:
     - features/ota/ostree/scarthgap.yml
 
 repos:
-  meta-eecc-ota:
+  meta-modular-bsp-ota:
     url: "https://github.com/Advantech-EECC/meta-modular-bsp-ota.git"
     branch: "scarthgap"
-    path: "layers/meta-eecc-ota"
+    path: "layers/meta-modular-bsp-ota"
     layers:
-      meta-ostree-eecc-nxp:
+      meta-ostree-mbsp-nxp:
+
+local_conf_header:
+  ostree: |
+    WKS_FILE = "sdimage-sota-nxp.wks.in"
+
+    require conf/distro/sota.conf.inc
+
+    INHERIT += " sota"

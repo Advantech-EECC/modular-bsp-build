@@ -2,3 +2,8 @@ header:
   version: 14
 
 machine: "rom5720-db5901"
+
+local_conf_header:
+  ostree-rom5720-ed5901: |
+
+    SOTA_MACHINE:rom5720-ed5901 ?= "rom5720-ed5901"

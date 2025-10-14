@@ -4,7 +4,6 @@ header:
 repos:
   meta-updater:
     url: "https://github.com/uptane/meta-updater.git"
-    commit: "b275153c9c8ea09e27d41db9f2faba3ebf92d2c2"
     path: "layers/meta-updater"
     layers:
       .:
