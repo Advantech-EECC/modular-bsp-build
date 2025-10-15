@@ -1,7 +1,7 @@
 header:
   version: 14
   includes:
-    - features/ota/swupdate/scarthgap.yml
+    - features/ota/swupdate/walnascar.yml
     - features/ota/swupdate/common.yml
 
 repos:
