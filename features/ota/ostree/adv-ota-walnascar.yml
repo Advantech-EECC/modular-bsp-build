@@ -1,13 +1,13 @@
 header:
   version: 14
   includes:
-    - features/ota/ostree/scarthgap.yml
+    - features/ota/ostree/walnascar.yml
 
 repos:
   meta-modular-bsp-ota:
     url: "https://github.com/Advantech-EECC/meta-modular-bsp-ota.git"
     branch: "walnascar"
-    path: "layers/meta-eecc-ota"
+    path: "layers/meta-modular-bsp-ota"
     layers:
       meta-ostree-mbsp-nxp:
 
