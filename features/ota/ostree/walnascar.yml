@@ -2,9 +2,17 @@ header:
   version: 14
 
 repos:
+  this:
+    layers:
+      .: "disabled"
+
   meta-updater:
     url: "https://github.com/uptane/meta-updater.git"
     branch: "master"
     path: "layers/meta-updater"
     layers:
       .:
+    patches: 
+      styhead-fixes:
+        repo: this
+        path: patches/features/ota/ostree/0001-Make-layer-compatible-with-yocto-walnascar-release.patch

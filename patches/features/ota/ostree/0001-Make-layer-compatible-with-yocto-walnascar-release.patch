@@ -1,0 +1,138 @@
+From c770f84d6bb73f92f9ce8a908937df5b315e59a6 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Wed, 15 Oct 2025 16:05:47 +0200
+Subject: [PATCH] Make layer compatible with yocto walnascar release
+
+---
+ classes/image_types_ostree.bbclass            |  8 ++++----
+ classes/image_types_ota.bbclass               |  4 ++--
+ conf/layer.conf                               |  2 +-
+ lib/oeqa/selftest/cases/updater_qemux86_64.py | 12 ++++++------
+ recipes-sota/aktualizr/aktualizr_git.bb       |  2 ++
+ 5 files changed, 15 insertions(+), 13 deletions(-)
+
+diff --git a/classes/image_types_ostree.bbclass b/classes/image_types_ostree.bbclass
+index 0b11f23..955a64f 100644
+--- a/classes/image_types_ostree.bbclass
++++ b/classes/image_types_ostree.bbclass
+@@ -3,7 +3,7 @@ inherit features_check
+ 
+ REQUIRED_DISTRO_FEATURES = "usrmerge"
+ 
+-OSTREE_ROOTFS ??= "${WORKDIR}/ostree-rootfs"
++OSTREE_ROOTFS ??= "${UNPACKDIR}/ostree-rootfs"
+ PSEUDO_INCLUDE_PATHS .= ",${OSTREE_ROOTFS}"
+ OSTREE_COMMIT_SUBJECT ??= "Commit-id: ${IMAGE_NAME}"
+ OSTREE_COMMIT_BODY ??= ""
+@@ -157,7 +157,7 @@ IMAGE_CMD:ostreecommit () {
+            --add-metadata-string=version="${OSTREE_COMMIT_VERSION}" \
+            ${EXTRA_OSTREE_COMMIT})
+ 
+-    echo $ostree_target_hash > ${WORKDIR}/ostree_manifest
++    echo $ostree_target_hash > ${UNPACKDIR}/ostree_manifest
+ 
+     if [ ${@ oe.types.boolean('${OSTREE_UPDATE_SUMMARY}')} = True ]; then
+         ostree --repo=${OSTREE_REPO} summary -u
+@@ -206,7 +206,7 @@ IMAGE_CMD:garagesign () {
+                          --home-dir ${GARAGE_SIGN_REPO} \
+                          --credentials ${SOTA_PACKED_CREDENTIALS}
+ 
+-        ostree_target_hash=$(cat ${WORKDIR}/ostree_manifest)
++        ostree_target_hash=$(cat ${UNPACKDIR}/ostree_manifest)
+ 
+         # Use OSTree target hash as version if none was provided by the user
+         target_version=${ostree_target_hash}
+@@ -289,7 +289,7 @@ IMAGE_CMD:garagecheck () {
+         # if credentials are issued by a server that doesn't support offline signing, exit silently
+         unzip -p ${SOTA_PACKED_CREDENTIALS} root.json targets.pub targets.sec tufrepo.url 2>&1 >/dev/null || exit 0
+ 
+-        ostree_target_hash=$(cat ${WORKDIR}/ostree_manifest)
++        ostree_target_hash=$(cat ${UNPACKDIR}/ostree_manifest)
+ 
+         garage-check --ref=${ostree_target_hash} \
+                      --credentials=${SOTA_PACKED_CREDENTIALS} \
+diff --git a/classes/image_types_ota.bbclass b/classes/image_types_ota.bbclass
+index 3993c8c..20beb01 100644
+--- a/classes/image_types_ota.bbclass
++++ b/classes/image_types_ota.bbclass
+@@ -1,4 +1,4 @@
+-OTA_SYSROOT = "${WORKDIR}/ota-sysroot"
++OTA_SYSROOT = "${UNPACKDIR}/ota-sysroot"
+ PSEUDO_INCLUDE_PATHS .= ",${OTA_SYSROOT}"
+ TAR_IMAGE_ROOTFS:task-image-ota = "${OTA_SYSROOT}"
+ IMAGE_TYPEDEP:ota = "ostreecommit"
+@@ -40,7 +40,7 @@ IMAGE_CMD:ota () {
+ 		       "$(echo "${cfg}" | cut -d ":" -f2-)"
+ 	done
+ 
+-	ostree_target_hash=$(cat ${WORKDIR}/ostree_manifest)
++	ostree_target_hash=$(cat ${UNPACKDIR}/ostree_manifest)
+ 
+ 	# Use OSTree hash to avoid any potential race conditions between
+ 	# multiple builds accessing the same ${OSTREE_REPO}.
+diff --git a/conf/layer.conf b/conf/layer.conf
+index ffb6a0a..d5ef1e5 100644
+--- a/conf/layer.conf
++++ b/conf/layer.conf
+@@ -12,7 +12,7 @@ BBFILE_PRIORITY_sota = "7"
+ LAYERDEPENDS_sota = "openembedded-layer"
+ LAYERDEPENDS_sota += "meta-python"
+ LAYERDEPENDS_sota += "filesystems-layer"
+-LAYERSERIES_COMPAT_sota = "whinlatter"
++LAYERSERIES_COMPAT_sota = "walnascar"
+ 
+ SIGGEN_EXCLUDE_SAFE_RECIPE_DEPS += " \
+   aktualizr-device-prov->aktualizr \
+diff --git a/lib/oeqa/selftest/cases/updater_qemux86_64.py b/lib/oeqa/selftest/cases/updater_qemux86_64.py
+index 8500480..4ada44a 100644
+--- a/lib/oeqa/selftest/cases/updater_qemux86_64.py
++++ b/lib/oeqa/selftest/cases/updater_qemux86_64.py
+@@ -54,8 +54,8 @@ class AktualizrToolsTests(OESelftestTestCase):
+         bb_vars = get_bb_vars(['SOTA_PACKED_CREDENTIALS', 'T'], 'aktualizr-native')
+         creds = bb_vars['SOTA_PACKED_CREDENTIALS']
+         temp_dir = bb_vars['T']
+-        bb_vars_prov = get_bb_vars(['WORKDIR', 'libdir'], 'aktualizr-device-prov')
+-        config = bb_vars_prov['WORKDIR'] + '/sysroot-destdir' + bb_vars_prov['libdir'] + '/sota/conf.d/20-sota-device-cred.toml'
++        bb_vars_prov = get_bb_vars(['UNPACKDIR', 'libdir'], 'aktualizr-device-prov')
++        config = bb_vars_prov['UNPACKDIR'] + '/sysroot-destdir' + bb_vars_prov['libdir'] + '/sota/conf.d/20-sota-device-cred.toml'
+ 
+         akt_native_run(self, 'aktualizr-cert-provider -c {creds} -r -l {temp} -g {config}'
+                        .format(creds=creds, temp=temp_dir, config=config))
+@@ -219,8 +219,8 @@ class DeviceCredProvTests(OESelftestTestCase):
+         # Run aktualizr-cert-provider.
+         bb_vars = get_bb_vars(['SOTA_PACKED_CREDENTIALS'], 'aktualizr-native')
+         creds = bb_vars['SOTA_PACKED_CREDENTIALS']
+-        bb_vars_prov = get_bb_vars(['WORKDIR', 'libdir'], 'aktualizr-device-prov')
+-        config = bb_vars_prov['WORKDIR'] + '/sysroot-destdir' + bb_vars_prov['libdir'] + '/sota/conf.d/20-sota-device-cred.toml'
++        bb_vars_prov = get_bb_vars(['UNPACKDIR', 'libdir'], 'aktualizr-device-prov')
++        config = bb_vars_prov['UNPACKDIR'] + '/sysroot-destdir' + bb_vars_prov['libdir'] + '/sota/conf.d/20-sota-device-cred.toml'
+ 
+         print('Provisining at root@localhost:%d' % self.qemu.ssh_port)
+         akt_native_run(self, 'aktualizr-cert-provider -c {creds} -t root@localhost -p {port} -s -u -r -g {config}'
+@@ -283,8 +283,8 @@ class DeviceCredProvHsmTests(OESelftestTestCase):
+         # Run aktualizr-cert-provider.
+         bb_vars = get_bb_vars(['SOTA_PACKED_CREDENTIALS'], 'aktualizr-native')
+         creds = bb_vars['SOTA_PACKED_CREDENTIALS']
+-        bb_vars_prov = get_bb_vars(['WORKDIR', 'libdir'], 'aktualizr-device-prov-hsm')
+-        config = bb_vars_prov['WORKDIR'] + '/sysroot-destdir' + bb_vars_prov['libdir'] + '/sota/conf.d/20-sota-device-cred-hsm.toml'
++        bb_vars_prov = get_bb_vars(['UNPACKDIR', 'libdir'], 'aktualizr-device-prov-hsm')
++        config = bb_vars_prov['UNPACKDIR'] + '/sysroot-destdir' + bb_vars_prov['libdir'] + '/sota/conf.d/20-sota-device-cred-hsm.toml'
+ 
+         akt_native_run(self, 'aktualizr-cert-provider -c {creds} -t root@localhost -p {port} -r -s -u -g {config}'
+                        .format(creds=creds, port=self.qemu.ssh_port, config=config))
+diff --git a/recipes-sota/aktualizr/aktualizr_git.bb b/recipes-sota/aktualizr/aktualizr_git.bb
+index 2bffd70..43322eb 100644
+--- a/recipes-sota/aktualizr/aktualizr_git.bb
++++ b/recipes-sota/aktualizr/aktualizr_git.bb
+@@ -17,6 +17,8 @@ PRIVATE_LIBS:${PN}-ptest = "libaktualizr.so libaktualizr_secondary.so"
+ PV = "1.0+git${SRCPV}"
+ PR = "7"
+ 
++S = "${UNPACKDIR}/git"
++
+ GARAGE_SIGN_PV = "0.7.7"
+ 
+ SRC_URI = " \
+-- 
+2.43.0
+
