@@ -7,7 +7,7 @@ header:
 repos:
   meta-modular-bsp-ota:
     url: "https://github.com/Advantech-EECC/meta-modular-bsp-ota.git"
-    branch: "scarthgap"
+    branch: "walnascar"
     path: "layers/meta-modular-bsp-ota"
     layers:
       meta-swupdate-mbsp-nxp:

@@ -4,10 +4,10 @@ header:
     - features/ota/ostree/scarthgap.yml
 
 repos:
-    meta-modular-bsp-ota:
+  meta-modular-bsp-ota:
     url: "https://github.com/Advantech-EECC/meta-modular-bsp-ota.git"
-    branch: "styhead-next"
-    path: "layers/meta-eecc-ota"
+    branch: "styhead"
+    path: "layers/meta-modular-bsp-ota"
     layers:
       meta-ostree-mbsp-nxp:
 

@@ -17,3 +17,5 @@ local_conf_header:
 
 target:
   - imx-image-core-update-bundle
+  - imx-image-multimedia-update-bundle
+  - imx-image-full-update-bundle

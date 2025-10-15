@@ -1,0 +1,8 @@
+header:
+  version: 14
+
+local_conf_header:
+  swupdate-common: |
+    SWU_PROTOCOL = "http"
+    SWU_HOSTNAME = "192.168.3.166"
+    SWU_PORT     = "8000"

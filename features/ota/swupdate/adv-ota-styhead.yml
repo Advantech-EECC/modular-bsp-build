@@ -1,13 +1,13 @@
 header:
   version: 14
   includes:
-    - features/ota/swupdate/scarthgap.yml
+    - features/ota/swupdate/styhead.yml
     - features/ota/swupdate/common.yml
 
 repos:
   meta-modular-bsp-ota:
     url: "https://github.com/Advantech-EECC/meta-modular-bsp-ota.git"
-    branch: "scarthgap"
+    branch: "styhead"
     path: "layers/meta-modular-bsp-ota"
     layers:
       meta-swupdate-mbsp-nxp:

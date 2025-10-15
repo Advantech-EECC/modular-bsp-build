@@ -8,9 +8,11 @@ repos:
     path: "layers/meta-swupdate"
     layers:
       .:
-  # INFO: demo swupdate layer
-  # meta-swupdate-boards:
-  #   url: "https://github.com/sbabic/meta-swupdate-boards.git"
-  #   path: "layers/meta-swupdate-boards"
-  #   layers:
-  #     .:
+
+  # INFO: swupdate demo layer
+  meta-swupdate-boards:
+    url: "https://github.com/sbabic/meta-swupdate-boards.git"
+    branch: "scarthgap"
+    path: "layers/meta-swupdate-boards"
+    layers:
+      .: "disabled"
