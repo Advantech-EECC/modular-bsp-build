@@ -1,7 +1,7 @@
 header:
   version: 14
   includes:
-    - features/ota/ostree/scarthgap.yml
+    - features/ota/ostree/styhead.yml
 
 repos:
   meta-modular-bsp-ota:

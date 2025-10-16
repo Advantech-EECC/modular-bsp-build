@@ -9,6 +9,7 @@ repos:
   meta-updater:
     url: "https://github.com/uptane/meta-updater.git"
     branch: "master"
+    commit: "bd6031bb6024a49a740e9402022c2889a5f2e4a5"
     path: "layers/meta-updater"
     layers:
       .:
