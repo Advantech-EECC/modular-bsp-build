@@ -1,0 +1,22 @@
+From b9d6a51e6aaaee9713bcf14ecde1669644b4fc75 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Thu, 30 Oct 2025 15:10:26 +0100
+Subject: [PATCH] Add upstream status for a patch
+
+---
+ .../fsl-rc-local/autorun_keyevent_and_ec_uevent.patch           | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/meta-fsl-imx/recipes-fsl/fsl-rc-local/fsl-rc-local/autorun_keyevent_and_ec_uevent.patch b/meta-fsl-imx/recipes-fsl/fsl-rc-local/fsl-rc-local/autorun_keyevent_and_ec_uevent.patch
+index 1f269b7..04fa6d5 100755
+--- a/meta-fsl-imx/recipes-fsl/fsl-rc-local/fsl-rc-local/autorun_keyevent_and_ec_uevent.patch
++++ b/meta-fsl-imx/recipes-fsl/fsl-rc-local/fsl-rc-local/autorun_keyevent_and_ec_uevent.patch
+@@ -1,3 +1,5 @@
++Upstream-Status: Pending
++
+ diff --git a/rc.local.etc b/rc.local.etc
+ index 846c447..caa7984 100755
+ --- a/rc.local.etc
+-- 
+2.43.0
+

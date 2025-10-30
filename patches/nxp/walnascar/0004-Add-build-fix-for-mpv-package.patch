@@ -1,0 +1,64 @@
+From dd43751415acf51827ffe8b9e000b50157f200a9 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Thu, 30 Oct 2025 15:06:16 +0100
+Subject: [PATCH] Add build fix for mpv package
+
+---
+ .../files/0001-Fix-yocto-build-issue.patch    | 34 +++++++++++++++++++
+ .../recipes-multimedia/mplayer/mpv_0.40.0.bb  |  2 ++
+ 2 files changed, 36 insertions(+)
+ create mode 100644 meta-oe/recipes-multimedia/mplayer/files/0001-Fix-yocto-build-issue.patch
+
+diff --git a/meta-oe/recipes-multimedia/mplayer/files/0001-Fix-yocto-build-issue.patch b/meta-oe/recipes-multimedia/mplayer/files/0001-Fix-yocto-build-issue.patch
+new file mode 100644
+index 0000000000..87720d99e7
+--- /dev/null
++++ b/meta-oe/recipes-multimedia/mplayer/files/0001-Fix-yocto-build-issue.patch
+@@ -0,0 +1,34 @@
++From 51ed168085a9d7073ef8c40f87bbf2c989e9d253 Mon Sep 17 00:00:00 2001
++From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
++Date: Thu, 30 Oct 2025 14:55:27 +0100
++Subject: [PATCH] Fix yocto build issue
++
++---
++ video/out/opengl/context_drm_egl.c | 4 ++--
++ 1 file changed, 2 insertions(+), 2 deletions(-)
++
++diff --git a/video/out/opengl/context_drm_egl.c b/video/out/opengl/context_drm_egl.c
++index fc78f13f0e..4a7712175f 100644
++--- a/video/out/opengl/context_drm_egl.c
+++++ b/video/out/opengl/context_drm_egl.c
++@@ -176,7 +176,7 @@ static EGLDisplay egl_get_display(struct gbm_device *gbm_device)
++     if (ret != EGL_NO_DISPLAY)
++         return ret;
++ 
++-    return eglGetDisplay(gbm_device);
+++    return eglGetDisplay((EGLNativeDisplayType)gbm_device);
++ }
++ 
++ static bool init_egl(struct ra_ctx *ctx)
++@@ -206,7 +206,7 @@ static bool init_egl(struct ra_ctx *ctx)
++         p->egl.display, config, p->gbm.surface);
++     if (p->egl.surface == EGL_NO_SURFACE) {
++         p->egl.surface = eglCreateWindowSurface(
++-            p->egl.display, config, p->gbm.surface, NULL);
+++            p->egl.display, config, (EGLNativeWindowType) p->gbm.surface, NULL);
++     }
++     if (p->egl.surface == EGL_NO_SURFACE) {
++         MP_ERR(ctx, "Failed to create EGL surface.\n");
++-- 
++2.43.0
++
+diff --git a/meta-oe/recipes-multimedia/mplayer/mpv_0.40.0.bb b/meta-oe/recipes-multimedia/mplayer/mpv_0.40.0.bb
+index 3d54bbb341..34584f817f 100644
+--- a/meta-oe/recipes-multimedia/mplayer/mpv_0.40.0.bb
++++ b/meta-oe/recipes-multimedia/mplayer/mpv_0.40.0.bb
+@@ -101,3 +101,5 @@ do_configure:append() {
+ 
+ FILES:${PN} += "${datadir}"
+ EXCLUDE_FROM_WORLD = "${@bb.utils.contains("LICENSE_FLAGS_ACCEPTED", "commercial", "0", "1", d)}"
++
++FILES:${PN} += "0001-Fix-yocto-build-issue.patch"
+-- 
+2.43.0
+

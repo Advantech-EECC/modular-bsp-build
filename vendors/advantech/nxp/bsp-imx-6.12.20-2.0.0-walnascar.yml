@@ -1,0 +1,57 @@
+header:
+  version: 14
+  includes:
+    - vendors/nxp/imx-6.12.20-2.0.0-walnascar.yml
+
+distro: fsl-imx-xwayland
+
+repos:
+  this:
+    layers:
+      .: "disabled"
+
+  meta-advantech2:
+    url: https://github.com/ADVANTECH-Corp/meta-advantech2.git
+    branch: "y052"
+    path: "layers/meta-advantech2"
+    layers:
+      meta-fsl-imx:
+      meta-tools:
+    patches:
+      patch-upstream-status:
+        repo: this 
+        path: patches/nxp/walnascar/0006-Add-upstream-status-for-a-patch.patch
+
+  poky:
+    commit: "9b96fdbb0cab02f4a6180e812b02bc9d4c41b1a5"
+
+  meta-security:
+    commit: "784ca4b6584101e971b2d5d76ec7b716ad1301b5"
+
+  meta-imx:
+    patches:
+      imx-gst-dependencies-fix:
+        repo: this
+        path: patches/nxp/walnascar/0003-Add-dependencies-for-imx95.patch
+      onnruntime-installation-fix:
+        repo: this 
+        path: patches/nxp/walnascar/0005-Fix-onnxruntime-installation.patch
+
+  meta-openembedded:
+    commit: "0d2d2d193a1619b6dbebaf335f1ef785478049e3"
+    layers:
+      meta-oe:
+      meta-multimedia:
+      meta-python:
+      meta-gnome:
+      meta-networking:
+      meta-filesystems:
+    patches:
+      imx-gst-dependencies-fix:
+        repo: this
+        path: patches/nxp/walnascar/0004-Add-build-fix-for-mpv-package.patch
+
+target:
+  - imx-image-core
+  - imx-image-multimedia
+  - imx-image-full
