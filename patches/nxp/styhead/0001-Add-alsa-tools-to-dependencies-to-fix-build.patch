@@ -1,0 +1,25 @@
+From e4eeeb8c47991fe80c47d3064fe3b5e61b872bcd Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Thu, 23 Oct 2025 17:01:53 +0200
+Subject: [PATCH] Add alsa-tools to dependencies to fix build
+
+---
+ .../recipes-multimedia/gstreamer/imx-gst1.0-plugin_git.bb       | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/meta-imx-bsp/recipes-multimedia/gstreamer/imx-gst1.0-plugin_git.bb b/meta-imx-bsp/recipes-multimedia/gstreamer/imx-gst1.0-plugin_git.bb
+index d644355bf5..a9b47dbea0 100644
+--- a/meta-imx-bsp/recipes-multimedia/gstreamer/imx-gst1.0-plugin_git.bb
++++ b/meta-imx-bsp/recipes-multimedia/gstreamer/imx-gst1.0-plugin_git.bb
+@@ -18,7 +18,7 @@ DEPENDS = " \
+ DEPENDS:append:mx6-nxp-bsp = " imx-lib"
+ DEPENDS:append:mx7-nxp-bsp = " imx-lib"
+ DEPENDS:append:mx8ulp-nxp-bsp = " imx-lib"
+-DEPENDS:append:mx93-nxp-bsp = " imx-lib"
++DEPENDS:append:mx93-nxp-bsp = " imx-lib alsa-tools"
+ DEPENDS:append:imxvpu = " imx-vpuwrap"
+ DEPENDS:append:imxfbdev:imxgpu = " libdrm"
+ DEPENDS_IMXGPU        = ""
+-- 
+2.43.0
+

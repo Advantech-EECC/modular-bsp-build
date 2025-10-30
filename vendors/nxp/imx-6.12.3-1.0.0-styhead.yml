@@ -8,6 +8,10 @@ header:
     - features/qt/qt6.8.1.yml
 
 repos:
+  this:
+    layers:
+      .: "disabled"
+
   meta-freescale:
     url: "https://github.com/Freescale/meta-freescale.git"
     commit: "8cc3bb0ff75e38becfd0a9eced0b7dc22cb3f86c"
@@ -62,3 +66,7 @@ repos:
       meta-imx-ml:
       meta-imx-sdk:
       meta-imx-v2x:
+    patches: 
+      imx-gst-dependencies-fix:
+        repo: this
+        path: patches/nxp/styhead/0001-Add-alsa-tools-to-dependencies-to-fix-build.patch

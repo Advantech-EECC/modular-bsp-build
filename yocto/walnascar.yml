@@ -58,7 +58,7 @@ repos:
       meta-multimedia:
       meta-networking:
       meta-oe:
-      # meta-perl:
+      meta-perl:
       meta-python:
       # meta-webserver:
 

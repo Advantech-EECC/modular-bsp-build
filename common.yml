@@ -8,6 +8,9 @@ local_conf_header:
     PACKAGE_CLASSES = "package_deb"
     EXTRA_IMAGE_FEATURES += "package-management"
 
+    # Generate tarballs from fetches from revision control
+    BB_GENERATE_MIRROR_TARBALLS = "1"
+
     DISTRO_FEATURES += "usrmerge"
     IMAGE_FEATURES += "empty-root-password allow-empty-password allow-root-login post-install-logging"
 
@@ -17,5 +20,5 @@ local_conf_header:
     INHERIT_DISTRO:remove = "create-spdx"
     TEMPLATECONF = ""
 
-    USER_CLASSES ?= "buildstats"
+    INHERIT += "buildstats buildstats-summary"
     PATCHRESOLVE = "noop"

@@ -1,0 +1,4 @@
+header:
+  version: 14
+  includes:
+    - features/ota/swupdate/adv-ota-walnascar.yml
