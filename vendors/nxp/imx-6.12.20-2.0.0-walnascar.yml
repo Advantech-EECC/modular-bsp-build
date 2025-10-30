@@ -38,9 +38,9 @@ repos:
 
   meta-nxp-connectivity:
     url: "https://github.com/nxp-imx/meta-nxp-connectivity.git"
-    # tag: "refs/tags/rel_imx_6.12.34_2.1.0"
+    # tag: "refs/tags/rel_imx_6.12.20_2.0.0"
     branch: "imx_matter_2025_q1-post"
-    commit: "3409f5dcf55233ed3e285d8c7f2d4be773576da5"
+    commit: "33821a39eb5e75d1b8d1df686178ea388c24d611"
     path: "layers/meta-connectivity"
     layers:
       meta-nxp-matter-baseline:
