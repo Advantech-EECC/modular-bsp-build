@@ -65,8 +65,5 @@ repos:
 bblayers_conf_header:
   walnascar: |
     LCONF_VERSION = "7"
-
-local_conf_header:
-  walnascar: |
     ERROR_QA:remove = "license-exists"
     DISTRO_FEATURES += "ipv6"
