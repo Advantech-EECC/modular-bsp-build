@@ -20,5 +20,5 @@ local_conf_header:
     INHERIT_DISTRO:remove = "create-spdx"
     TEMPLATECONF = ""
 
-    INHERIT += "buildstats buildstats-summary"
+    INHERIT += "buildstats buildstats-summary buildhistory"
     PATCHRESOLVE = "noop"
