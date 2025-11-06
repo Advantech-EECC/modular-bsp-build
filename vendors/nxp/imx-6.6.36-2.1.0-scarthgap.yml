@@ -12,7 +12,6 @@ repos:
   meta-freescale:
     url: "https://github.com/Freescale/meta-freescale.git"
     commit: "0f8091c63dd8805610c09b08409bc58492a3b16f"
-    branch: "scarthgap"
     path: "layers/meta-freescale"
     layers:
       .:
@@ -21,14 +20,12 @@ repos:
     url: "https://github.com/Freescale/meta-freescale-3rdparty.git"
     commit: "6c063450d464eb2f380443c7d9af1b94ce9b9d75"
     path: "layers/meta-freescale-3rdparty"
-    branch: "scarthgap"
     layers:
       .:
 
   meta-freescale-distro:
     url: "https://github.com/Freescale/meta-freescale-distro.git"
     commit: "b9d6a5d9931922558046d230c1f5f4ef6ee72345"
-    branch: "scarthgap"
     path: "layers/meta-freescale-distro"
     layers:
       .:
@@ -59,7 +56,6 @@ repos:
     path: "layers/meta-imx"
     layers:
       meta-imx-bsp:
-      meta-imx-cockpit:
       meta-imx-ml:
       meta-imx-sdk:
       meta-imx-v2x:
