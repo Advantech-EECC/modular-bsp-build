@@ -11,10 +11,11 @@ distro: fsl-imx-xwayland
 # Advantech AOM5521 A1
 machine: imx95aom5521a1
 
-local_conf_header:
-  AOM5521: |
-    IMAGE_INSTALL += "mpv mesa-demos"
-    LICENSE_FLAGS_ACCEPTED += "commercial"
+# FIXME: mpv / mesa-demos conflicting with xwayland 
+# local_conf_header:
+#   AOM5521: |
+#     IMAGE_INSTALL += "mpv mesa-demos"
+#     LICENSE_FLAGS_ACCEPTED += "commercial"
 
 target:
   - imx-image-core
