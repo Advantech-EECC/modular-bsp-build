@@ -1,4 +1,4 @@
-# Modular BSP build configurations
+# Modular BSP build configurations 
 
 KAS tool build configurations for Modular BSP.
 
@@ -8,19 +8,19 @@ KAS tool build configurations for Modular BSP.
 
 Table describes in which combinations yocto releases could be used together with hardware.
 
-| Yocto \ Board | RSB3720 | ROM2620 | ROM5720 | ROM5721 | ROM5722 | ROM2820 |
-| :------------ | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
-| walnascar     |    x    |    x    |    x    |    x    |    x    |    x    |
-| styhead       |    x    |    x    |    x    |    x    |    x    |    x    |
-| scarthgap     |    x    |    x    |    x    |    x    |    x    |    x    |
-| mickledore    |         |         |         |         |         |         |
-| langdale      |         |         |         |         |         |         |
-| kirkstone     |         |         |         |         |         |         |
-| honister      |         |         |         |         |         |         |
-| hardknott     |         |         |         |         |         |         |
-| gatesgarth    |         |         |         |         |         |         |
-| dunfell       |         |         |         |         |         |         |
-|               | stable  | stable  | stable  | stable  | stable  | stable  |
+| Yocto \ Board | RSB3720 | ROM2620 | ROM5720 | ROM5721 | ROM5722 | ROM2820 | AOM5521 |
+| :------------ | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+| walnascar     |    x    |    x    |    x    |    x    |    x    |    x    |         |
+| styhead       |    x    |    x    |    x    |    x    |    x    |    x    |         |
+| scarthgap     |    x    |    x    |    x    |    x    |    x    |    x    |    x    |
+| mickledore    |         |         |         |         |         |         |         |
+| langdale      |         |         |         |         |         |         |         |
+| kirkstone     |         |         |         |         |         |         |         |
+| honister      |         |         |         |         |         |         |         |
+| hardknott     |         |         |         |         |         |         |         |
+| gatesgarth    |         |         |         |         |         |         |         |
+| dunfell       |         |         |         |         |         |         |         |
+|               | stable  | stable  | stable  | stable  | stable  | stable  |         |
 
 # Assemble
 
