@@ -1,0 +1,67 @@
+From ddac0dc31b4eae04bca94c5a821a2fb895757fa8 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Fri, 14 Nov 2025 12:28:59 +0100
+Subject: [PATCH 3/3] Add imx95-aom5521-a1 machine for walnascar
+
+---
+ meta-fsl-imx/conf/machine/imx95aom5521a1.conf | 49 +++++++++++++++++++
+ meta-fsl-imx/conf/machine/imx95aom5521a2.conf |  2 -
+ 2 files changed, 49 insertions(+), 2 deletions(-)
+ create mode 100644 meta-fsl-imx/conf/machine/imx95aom5521a1.conf
+
+diff --git a/meta-fsl-imx/conf/machine/imx95aom5521a1.conf b/meta-fsl-imx/conf/machine/imx95aom5521a1.conf
+new file mode 100644
+index 0000000..64c2d24
+--- /dev/null
++++ b/meta-fsl-imx/conf/machine/imx95aom5521a1.conf
+@@ -0,0 +1,49 @@
++#@TYPE: Machine
++#@NAME: Advantech i.MX 95 AOM-5521 Board
++#@SOC: i.MX95
++#@DESCRIPTION: Machine configuration for Advantech i.MX 95 AOM-5521 Board
++#@MAINTAINER: Advantech RISC SW Team
++
++MACHINEOVERRIDES =. "mx95:"
++
++require conf/machine/include/adv-imx95-evk.inc
++
++IMX_SOC_REV:${MACHINE} = "A0"
++
++MACHINE_FEATURES:append:use-nxp-bsp = " nxp9098-pcie"
++
++KERNEL_DEVICETREE_BASENAME = "imx95-aom5521-a2"
++
++UBOOT_CONFIG_BASENAME = "imx95_aom5521a2"
++
++IMXBOOT_TARGETS_BASENAME = "flash"
++OEI_BOARD  = "${@bb.utils.contains('UBOOT_CONFIG', '8G', 'mx95lp5_aom5521a1_8G', \
++							  'mx95lp5', d)}"
++DDR_TYPE   = "lpddr5"
++
++DDR_FIRMWARE_NAME = " \
++    lpddr5_dmem_v202409.bin \
++    lpddr5_dmem_qb_v202409.bin \
++    lpddr5_imem_v202409.bin \
++    lpddr5_imem_qb_v202409.bin \
++"
++M4_DEFAULT_IMAGE_MX95 = "${@bb.utils.contains('SYSTEM_MANAGER_CONFIG', 'mx95netc', 'imx95-19x19-evk_m7_TCM_netc_share.bin', \
++                                                                                   'imx95-19x19-evk_m7_TCM_power_mode_switch.bin', d)}"
++
++IMAGE_BOOT_FILES:append = " \
++    mcore-demos/imx95-19x19-evk_m7_TCM_flexcan_linux.bin \
++    mcore-demos/imx95-19x19-evk_m7_TCM_low_power_wakeword.bin \
++    mcore-demos/imx95-19x19-evk_m7_TCM_netc_share.bin \
++    mcore-demos/imx95-19x19-evk_m7_TCM_power_mode_switch.bin \
++    mcore-demos/imx95-19x19-evk_m7_TCM_rpmsg_lite_pingpong_rtos_linux_remote.bin \
++    mcore-demos/imx95-19x19-evk_m7_TCM_rpmsg_lite_str_echo_rtos.bin \
++    mcore-demos/imx95-19x19-evk_m7_TCM_sai_low_power_audio.bin \
++    ${@bb.utils.contains('COMBINED_FEATURES', 'xen', 'xen', '', d)} \
++"
++
++# Include device trees
++KERNEL_DEVICETREE += " \
++    freescale/${KERNEL_DEVICETREE_BASENAME}-m2-sdio.dtb \
++    freescale/${KERNEL_DEVICETREE_BASENAME}-lvds0-auo.dtb \
++    freescale/${KERNEL_DEVICETREE_BASENAME}-lvds1-auo.dtb \
++"
+
