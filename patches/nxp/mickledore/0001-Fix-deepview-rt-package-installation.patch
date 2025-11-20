@@ -1,0 +1,26 @@
+From 49e31c04bf393ba63a8c37e5de006e82c90e3846 Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Thu, 20 Nov 2025 16:58:22 +0000
+Subject: [PATCH] Fix deepview-rt package installation
+
+Sheebang path contained path to yocto native python
+---
+ .../deepview-rt/deepview-rt_2.4.46.2-aarch64.bb                 | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/meta-ml/recipes-libraries/deepview-rt/deepview-rt_2.4.46.2-aarch64.bb b/meta-ml/recipes-libraries/deepview-rt/deepview-rt_2.4.46.2-aarch64.bb
+index a901d9a639..85075e6ed5 100644
+--- a/meta-ml/recipes-libraries/deepview-rt/deepview-rt_2.4.46.2-aarch64.bb
++++ b/meta-ml/recipes-libraries/deepview-rt/deepview-rt_2.4.46.2-aarch64.bb
+@@ -37,6 +37,8 @@ do_install () {
+         ${S}/whl/deepview_rt-*.whl
+ 
+     chown -R root:root "${D}"
++
++    sed -i '1s|.*|#!/usr/bin/env python3|' "${D}${PYTHON_SITEPACKAGES_DIR}/bin/deepview-modelclient"
+ }
+ 
+ INHIBIT_PACKAGE_STRIP = "1"
+-- 
+2.43.0
+

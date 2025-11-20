@@ -25,7 +25,7 @@ docker:
     docker build . -t kas:latest
 
 bsp machine yocto: docker
-    @KAS_BUILD_DIR="$PWD/build-bsp-{{yocto}}-{{machine}}" kas-container build --provenance=mode=max adv-bsp-oenxp-{{yocto}}-{{machine}}.yaml -- --runall=fetch
+    @KAS_BUILD_DIR="$PWD/build-bsp-{{yocto}}-{{machine}}" kas-container build --provenance=mode=max adv-bsp-oenxp-{{yocto}}-{{machine}}.yaml
 
 bsp-shell machine yocto: docker
     @KAS_BUILD_DIR="$PWD/build-bsp-{{yocto}}-{{machine}}" kas-container shell adv-bsp-oenxp-{{yocto}}-{{machine}}.yaml
