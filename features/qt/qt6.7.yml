@@ -3,7 +3,7 @@ header:
 
 repos:
   meta-qt6:
-    url: "https://github.com/YoeDistro/meta-qt6.git"
+    url: "https://code.qt.io/yocto/meta-qt6.git"
     branch: "6.7.0"
     commit: "dc13e1bfda4a4757a08c2d6673bc4bac012c4a80"
     path: "layers/meta-qt6"
