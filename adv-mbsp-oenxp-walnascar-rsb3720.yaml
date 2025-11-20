@@ -1,8 +1,8 @@
 header:
   version: 14
   includes:
-    - vendors/advantech/nxp/imx-6.12.20-2.0.0-walnascar.yml
+    - common.yml
     - yocto/walnascar.yml
+    - vendors/advantech/nxp/imx-6.12.34-2.1.0-walnascar.yml
     - machine/nxp/imx8/rsb3720.yml
     - vendors/nxp/common.yml
-    - common.yml
