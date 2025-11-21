@@ -56,8 +56,3 @@ repos:
 local_conf_header:
   acl-bsp: |
     DISTRO_FEATURES:append = " pulseaudio bluetooth"
-
-target:
-  - imx-image-core  
-  - imx-image-multimedia
-  - imx-image-full
