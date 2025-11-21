@@ -50,6 +50,6 @@ RUN /bin/bash -c "echo \"PS1='${debian_chroot:+($debian_chroot)}\[\033[01;31m\]\
 
 USER builder
 
-COPY container-entrypoint /container-entrypoint
+COPY scripts/kas/container-entrypoint /container-entrypoint
 
 ENTRYPOINT ["/container-entrypoint"]
