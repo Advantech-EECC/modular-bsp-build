@@ -34,5 +34,7 @@ repos:
 
 target:
   - imx-image-core  
-  # - imx-image-multimedia
-  # - imx-image-full
+
+artifacts:
+  imx-image-core.wic.zst: tmp/deploy/images/*/imx-image-core-*.wic.zst
+  imx-image-core.wic.bmap: tmp/deploy/images/*/imx-image-core-*.wic.bmap

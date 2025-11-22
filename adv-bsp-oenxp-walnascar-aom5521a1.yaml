@@ -3,7 +3,6 @@ header:
   includes:
     - yocto/walnascar.yml
     - vendors/advantech/nxp/bsp-imx-6.12.20-2.0.0-walnascar.yml
-    - vendors/nxp/common.yml
     - common.yml
 
 distro: fsl-imx-xwayland

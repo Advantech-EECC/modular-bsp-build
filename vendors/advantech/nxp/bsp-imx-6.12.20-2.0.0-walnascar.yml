@@ -36,8 +36,3 @@ repos:
       imx-gst-dependencies-fix:
         repo: this
         path: patches/nxp/walnascar/0004-Add-build-fix-for-mpv-package.patch
-
-target:
-  - imx-image-core
-  - imx-image-multimedia
-  - imx-image-full

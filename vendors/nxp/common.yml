@@ -15,3 +15,16 @@ local_conf_header:
 bblayers_conf_header:
   nxp: |
     BSPDIR := "${@os.path.abspath(os.path.dirname(d.getVar('FILE', True)) + '/../..')}"
+
+target:
+  - imx-image-core  
+  - imx-image-multimedia
+  - imx-image-full
+
+artifacts:
+  imx-image-core.wic.zst: tmp/deploy/images/*/imx-image-core-*.wic.zst
+  imx-image-core.wic.bmap: tmp/deploy/images/*/imx-image-core-*.wic.bmap
+  imx-image-multimedia.wic.zst: tmp/deploy/images/*/imx-image-multimedia-*.wic.zst
+  imx-image-multimedia.wic.bmap: tmp/deploy/images/*/imx-image-multimedia-*.wic.bmap
+  imx-image-full.wic.zst: tmp/deploy/images/*/imx-image-full-*.wic.zst
+  imx-image-full.wic.bmap: tmp/deploy/images/*/imx-image-full-*.wic.bmap

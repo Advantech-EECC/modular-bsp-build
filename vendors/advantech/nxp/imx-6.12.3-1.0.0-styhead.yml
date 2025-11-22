@@ -19,8 +19,3 @@ repos:
     path: "layers/meta-nxp-security-reference-design"
     layers:
       meta-secure-boot: "disabled"
-
-target:
-  - imx-image-core
-  - imx-image-multimedia
-  - imx-image-full

@@ -3,7 +3,6 @@ header:
   includes:
     - yocto/scarthgap.yml
     - vendors/advantech/nxp/bsp-imx-6.6.23-2.0.0-scarthgap.yml
-    - vendors/nxp/common.yml
     - common.yml
 
 # Advantech RSB3720

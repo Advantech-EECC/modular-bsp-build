@@ -3,7 +3,6 @@ header:
   includes:
     - yocto/scarthgap.yml
     - vendors/advantech/nxp/bsp-imx-6.6.36-2.1.0-scarthgap.yml
-    - vendors/nxp/common.yml
     - common.yml
 
 distro: fsl-imx-xwayland

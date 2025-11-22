@@ -1,6 +1,5 @@
 header:
   version: 14
-
   includes:
     - vendors/nxp/imx-6.12.34-2.1.0-walnascar.yml
 
@@ -18,9 +17,3 @@ repos:
     path: "layers/meta-nxp-security-reference-design"
     layers:
       meta-secure-boot: "disabled"
-
-target:
-  - imx-image-core
-  - imx-image-multimedia
-  - imx-image-full
-
