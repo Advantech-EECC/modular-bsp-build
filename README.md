@@ -2,25 +2,73 @@
 
 KAS tool build configurations for Modular BSP.
 
+## Build System Architecture
+
+### Component Overview
+
+The build system follows a layered architecture that ensures reproducibility, isolation, and maintainability:
+
+```
+┌─────────────────────────────────────────┐
+│            Justfile Recipes             │  # User-facing commands
+├─────────────────────────────────────────┤
+│          KAS Configuration Files        │  # Build definitions
+├─────────────────────────────────────────┤
+│         Docker Container Engine         │  # Isolated build environment
+├─────────────────────────────────────────┤
+│           Yocto Project Build           │  # Core build system
+├─────────────────────────────────────────┤
+│        Source Layers & Recipes          │  # BSP components
+└─────────────────────────────────────────┘
+```
+
+### Details
+
+| Layer | Purpose | Key Components |
+|-------|---------|----------------|
+| **Justfile Recipes** | User-friendly command interface | `just bsp`, `just mbsp`, `just ota-mbsp` commands |
+| **KAS Configuration Files** | Build definitions and dependencies | YAML configs for boards, distros, and features |
+| **Docker Container Engine** | Isolated build environment | Consistent toolchains, isolated dependencies |
+| **Yocto Project Build** | Core build system | BitBake, OpenEmbedded, meta-layers |
+| **Source Layers & Recipes** | BSP components | Machine configs, recipes, kernel, applications |
+
 # Hardware support
 
-## NXP
+## NXP Boards Compatibility Matrix
 
-Table describes in which combinations yocto releases could be used together.
+Table describes in which combinations yocto releases could be used together with boards.
 
-| Yocto \ Board | RSB3720 |   RSB3730   | ROM2620 | ROM5720 | ROM5721 | ROM5722 | ROM2820 | AOM5521 A1 | AOM5521 A2 |
-| :------------ | :-----: | :---------: | :-----: | :-----: | :-----: | :-----: | :-----: | :--------: | :--------: |
-| walnascar     |    x    |             |    x    |    x    |    x    |    x    |    x    |            |     x      |
-| styhead       |    x    |             |    x    |    x    |    x    |    x    |    x    |            |            |
-| scarthgap     |    x    |             |    x    |    x    |    x    |    x    |    x    |     x      |            |
-| mickledore    |         |      x      |         |         |         |         |         |            |            |
-| langdale      |         |             |         |         |         |         |         |            |            |
-| kirkstone     |         |             |         |         |         |         |         |            |            |
-| honister      |         |             |         |         |         |         |         |            |            |
-| hardknott     |         |             |         |         |         |         |         |            |            |
-| gatesgarth    |         |             |         |         |         |         |         |            |            |
-| dunfell       |         |             |         |         |         |         |         |            |            |
-|               | stable  | development | stable  | stable  | stable  | stable  | stable  |   stable   |   stable   |
+| Board \ Yocto  | walnascar | styhead | scarthgap | mickledore | langdale | kirkstone | honister | hardknott | gatesgarth | dunfell | Status        |
+| -------------- | :-------: | :-----: | :-------: | :--------: | :------: | :-------: | :------: | :-------: | :--------: | :-----: | ------------- |
+| **RSB3720**    |     ✅     |    ✅    |     ✅     |     ❌      |    ❌     |     ❌     |    ❌     |     ❌     |     ❌      |    ❌    | 🟢 Stable      |
+| **RSB3730**    |     ❌     |    ❌    |     ❌     |     ✅      |    ❌     |     ❌     |    ❌     |     ❌     |     ❌      |    ❌    | 🟡 Development |
+| **ROM2620**    |     ✅     |    ✅    |     ✅     |     ❌      |    ❌     |     ❌     |    ❌     |     ❌     |     ❌      |    ❌    | 🟢 Stable      |
+| **ROM5720**    |     ✅     |    ✅    |     ✅     |     ❌      |    ❌     |     ❌     |    ❌     |     ❌     |     ❌      |    ❌    | 🟢 Stable      |
+| **ROM5721**    |     ✅     |    ✅    |     ✅     |     ❌      |    ❌     |     ❌     |    ❌     |     ❌     |     ❌      |    ❌    | 🟢 Stable      |
+| **ROM5722**    |     ✅     |    ✅    |     ✅     |     ❌      |    ❌     |     ❌     |    ❌     |     ❌     |     ❌      |    ❌    | 🟢 Stable      |
+| **ROM2820**    |     ✅     |    ✅    |     ✅     |     ❌      |    ❌     |     ❌     |    ❌     |     ❌     |     ❌      |    ❌    | 🟢 Stable      |
+| **AOM5521 A1** |     🟡     |    ❌    |     ✅     |     ❌      |    ❌     |     ❌     |    ❌     |     ❌     |     ❌      |    ❌    | 🟢 Stable      |
+| **AOM5521 A2** |     ✅     |    ❌    |     ❌     |     ❌      |    ❌     |     ❌     |    ❌     |     ❌     |     ❌      |    ❌    | 🟢 Stable      |
+
+**Status Legend:**
+- 🟢 **Stable**: Production-ready, fully tested and supported
+- 🟡 **Development**: Under active development, may have limitations
+- 🔴 **EOL**: End of Life, not recommended for new projects
+
+### Alternative Compact View
+
+| Board | Supported Yocto Releases | Status |
+|-------|--------------------------|--------|
+| **RSB3720** | walnascar, styhead, scarthgap | 🟢 Stable |
+| **RSB3730** | mickledore | 🟡 Development |
+| **ROM2620** | walnascar, styhead, scarthgap | 🟢 Stable |
+| **ROM5720** | walnascar, styhead, scarthgap | 🟢 Stable |
+| **ROM5721** | walnascar, styhead, scarthgap | 🟢 Stable |
+| **ROM5722** | walnascar, styhead, scarthgap | 🟢 Stable |
+| **ROM2820** | walnascar, styhead, scarthgap | 🟢 Stable |
+| **AOM5521 A1** | scarthgap | 🟢 Stable |
+| **AOM5521 A1** | walnascar | 🟡 Development |
+| **AOM5521 A2** | walnascar | 🟢 Stable |
 
 # Assemble
 
@@ -93,6 +141,42 @@ SSTATE_DIR=<absolute-path>/cache/sstate/
 ```
 
 in the `Justfile`.
+
+### Overview of shortcuts available in Justfile
+
+```
+Available recipes:
+    help                                           # Print available commands
+
+    [docker]
+    env distro="debian:12"                         # Populate .env file
+    docker-debian distro="debian:12"               # Build official KAS Docker image based on Debian Linux
+    docker-ubuntu distro="ubuntu:20.04" kas="4.7"  # Build KAS Docker image based on Ubuntu Linux
+
+    [yocto]
+    yocto action="build" bsp="mbsp" machine="rsb3720" version="walnascar" docker="ubuntu:22.04" kas="5.0" args="" # Build a Yocto BSP for a specified machine
+    walnascar bsp="mbsp" machine="rsb3720"         # Build Yocto Walnascar BSP for a specified machine
+    styhead bsp="mbsp" machine="rsb3720"           # Build Yocto Styhead BSP for a specified machine
+    scarthgap bsp="mbsp" machine="rsb3720"         # Build Yocto Scathgap BSP for a specified machine
+    mickledore bsp="bsp" machine="rsb3730"         # Build Yocto Mickledore BSP for a specified machine
+    kirkstone bsp="bsp" machine="rsb3720"          # Build Yocto Kirkstone BSP for a specified machine
+
+    [bsp]
+    bsp machine="rsb3720" yocto="scarthgap" docker="ubuntu:22.04" kas="5.0" # Build BSP for a specified machine
+    bsp-shell machine="rsb3720" yocto="scarthgap" docker="ubuntu:22.04" kas="5.0" # Enter a BSP build environment shell for a machine
+
+    [mbsp]
+    mbsp machine="rsb3720" yocto="walnascar"       # Build Modular BSP for a specified machine
+    mbsp-shell machine="rsb3720" yocto="walnascar" # Enter a "Modular BSP" build environment shell for a machine
+
+    [ota]
+    ota-mbsp machine="rsb3720" ota="rauc" yocto="walnascar" # Build Modular BSP with OTA support for a specified machine
+    ota-shell machine="rsb3720" ota="rauc" yocto="walnascar" # Enter a "Modular BSP" build environment shell with OTA support for a machine
+
+    [ros]
+    ros-mbsp machine="rsb3720" ros="humble" yocto="walnascar" # Enter a "Modular BSP" build environment shell for a machine
+    ros-shell machine="rsb3720" ros="humble" yocto="walnascar" # Enter a "Modular BSP" build environment shell with ROS support for a machine
+```
 
 ### Running BSP build
 

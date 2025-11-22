@@ -63,7 +63,7 @@ styhead bsp="mbsp" machine="rsb3720": (docker-ubuntu 'ubuntu:22.04' '5.0')
     @. "{{ dotenv }}" && \
     KAS_BUILD_DIR="$PWD/build-{{bsp}}-styhead-{{machine}}" kas-container build {{kas_build_args}} adv-{{bsp}}-oenxp-styhead-{{machine}}.yaml    
 
-#Build Yocto Scathgap BSP for a specified machine
+#Build Yocto Scarthgap BSP for a specified machine
 [group('yocto')]
 scarthgap bsp="mbsp" machine="rsb3720": (docker-ubuntu 'ubuntu:22.04' '5.0')
     @. "{{ dotenv }}" && \
