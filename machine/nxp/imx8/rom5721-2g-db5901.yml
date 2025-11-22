@@ -1,0 +1,9 @@
+header:
+  version: 14
+
+machine: "rom5721-2g-db5901"
+
+local_conf_header:
+  ostree-rom5721-db5901: |
+
+    SOTA_MACHINE:rom5721-2g-db5901 ?= "rom5721-2g-db5901"
