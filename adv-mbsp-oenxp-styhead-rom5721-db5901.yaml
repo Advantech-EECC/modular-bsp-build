@@ -3,5 +3,5 @@ header:
   includes:
     - yocto/styhead.yml
     - vendors/advantech/nxp/imx-6.12.3-1.0.0-styhead.yml
-    - machine/nxp/imx8/rom5721-db5901.yml
+    - vendors/advantech/nxp/machine/imx8/rom5721-db5901.yml
     - common.yml
