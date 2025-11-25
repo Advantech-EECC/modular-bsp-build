@@ -4,6 +4,7 @@ header:
 repos:
   meta-clang:
     url: "https://github.com/kraj/meta-clang.git"
+    branch: "master"
     path: "layers/meta-clang"
     layers:
       .:

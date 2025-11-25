@@ -5,6 +5,8 @@ defaults:
   repos:
     branch: "styhead"
 
+distro: poky
+
 # https://downloads.yoctoproject.org/releases/yocto/yocto-5.1.4/RELEASENOTES
 repos:
   poky:

@@ -81,6 +81,16 @@ kirkstone bsp="bsp" machine="rsb3720": (docker-ubuntu 'ubuntu:20.04' '4.7')
     @. "{{ dotenv }}" && \
     KAS_BUILD_DIR="$PWD/build-{{bsp}}-kirkstone-{{machine}}" kas-container build {{kas_build_args}} adv-{{bsp}}-oenxp-kirkstone-{{machine}}.yaml    
 
+[group('qemu')]
+qemu arch="arm64" yocto="walnascar" docker="ubuntu:22.04" kas="5.0": (docker-ubuntu docker kas)
+    @. "{{ dotenv }}" && \
+    KAS_BUILD_DIR="$PWD/build-{{yocto}}-qemu{{arch}}" kas-container build yocto/{{yocto}}.yml:compilers/clang/{{yocto}}.yml:yocto/qemu/qemu{{arch}}.yaml    
+
+[group('qemu')]
+qemu-shell arch="arm64" yocto="walnascar" docker="ubuntu:22.04" kas="5.0":(docker-ubuntu docker kas)
+    @. "{{ dotenv }}" && \
+    KAS_BUILD_DIR="$PWD/build-{{yocto}}-qemu{{arch}}" kas-container shell yocto/{{yocto}}.yml:compilers/clang/{{yocto}}.yml:yocto/qemu/qemu{{arch}}.yaml    
+
 #Build BSP for a specified machine
 [group('bsp')]
 bsp machine="rsb3720" yocto="scarthgap" docker="ubuntu:22.04" kas="5.0": (docker-ubuntu docker kas)
