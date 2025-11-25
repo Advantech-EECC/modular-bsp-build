@@ -1,0 +1,4 @@
+header:
+  version: 14
+
+machine: "imx8mq-lpddr4-wevk"
