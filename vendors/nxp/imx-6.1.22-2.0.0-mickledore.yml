@@ -60,3 +60,7 @@ repos:
       deepview-rt-install-patch:
         repo: this
         path: patches/nxp/mickledore/0001-Fix-deepview-rt-package-installation.patch
+
+local_conf_header:
+  common: |
+    DISTRO_FEATURES += "systemd"

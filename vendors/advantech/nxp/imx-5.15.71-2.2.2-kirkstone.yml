@@ -2,7 +2,7 @@ header:
   version: 14
 
   includes:
-    - vendors/nxp/imx-5.15.71-2.2.2-kirkstone.yml
+    - vendors/nxp/imx-5.15.71-2.2.0-kirkstone.yml
 
 repos:
   meta-eecc-nxp:
@@ -19,10 +19,3 @@ repos:
     path: "layers/meta-nxp-security-reference-design"
     layers:
       meta-secure-boot:
-
-target:
-  - imx-image-core
-
-artifacts:
-  imx-image-core.wic.zst: tmp/deploy/images/*/imx-image-core-*.wic.zst
-  imx-image-core.wic.bmap: tmp/deploy/images/*/imx-image-core-*.wic.bmap

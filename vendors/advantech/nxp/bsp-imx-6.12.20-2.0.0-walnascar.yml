@@ -3,8 +3,6 @@ header:
   includes:
     - vendors/nxp/imx-6.12.20-2.0.0-walnascar.yml
 
-distro: fsl-imx-xwayland
-
 repos:
   this:
     layers:

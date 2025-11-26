@@ -4,9 +4,11 @@ header:
     - vendors/nxp/imx-5.15.52-2.1.0-kirkstone.yml
     - features/deep-learning/hailo.yml
 
-distro: fsl-imx-xwayland
-
 repos:
+  this:
+    layers:
+      .: "disabled"
+
   meta-advantech2:
     url: https://github.com/ADVANTECH-Corp/meta-advantech2.git
     branch: "aim34-kirkstone"
@@ -32,9 +34,12 @@ repos:
   meta-openembedded:
     commit: "8f2dc1023482863e2630d1b94052c41ce748b38f"
 
-target:
-  - imx-image-core  
+  meta-imx:
+    patches:
+      vulkan-loader-src-uri-fix:
+        repo: this 
+        path: patches/nxp/kirkstone/0001-Fix-vulkan-loader-recipe.patch
 
-artifacts:
-  imx-image-core.wic.zst: tmp/deploy/images/*/imx-image-core-*.wic.zst
-  imx-image-core.wic.bmap: tmp/deploy/images/*/imx-image-core-*.wic.bmap
+local_conf_header:
+  acl-bsp: |
+    DISTRO_FEATURES:append = " pulseaudio bluetooth"

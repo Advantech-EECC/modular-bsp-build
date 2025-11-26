@@ -3,8 +3,6 @@ header:
   includes:
     - vendors/nxp/imx-6.6.23-2.0.0-scarthgap.yml
 
-distro: fsl-imx-xwayland
-
 repos:
   this:
     layers:
@@ -50,13 +48,3 @@ repos:
 
   meta-virtualization:
     commit: "1a547c0aa0d75c4143cbb66de6e653d51cdc8bda"
-
-target:
-  - imx-image-core
-  - imx-image-multimedia
-
-artifacts:
-  imx-image-core.wic.zst: tmp/deploy/images/*/imx-image-core-*.wic.zst
-  imx-image-core.wic.bmap: tmp/deploy/images/*/imx-image-core-*.wic.bmap
-  imx-image-multimedia.wic.zst: tmp/deploy/images/*/imx-image-multimedia-*.wic.zst
-  imx-image-multimedia.wic.bmap: tmp/deploy/images/*/imx-image-multimedia-*.wic.bmap
