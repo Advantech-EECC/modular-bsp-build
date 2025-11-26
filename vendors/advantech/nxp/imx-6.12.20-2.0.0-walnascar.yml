@@ -1,6 +1,5 @@
 header:
   version: 14
-
   includes:
     - vendors/nxp/imx-6.12.20-2.0.0-walnascar.yml
 

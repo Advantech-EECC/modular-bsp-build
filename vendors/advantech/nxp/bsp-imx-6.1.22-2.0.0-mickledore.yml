@@ -3,8 +3,6 @@ header:
   includes:
     - vendors/nxp/imx-6.1.22-2.0.0-mickledore.yml
 
-distro: fsl-imx-xwayland
-
 repos:
   meta-advantech2:
     url: https://github.com/ADVANTECH-Corp/meta-advantech2.git

@@ -1,6 +1,5 @@
 header:
   version: 14
-
   includes:
     - vendors/nxp/imx-6.12.3-1.0.0-styhead.yml
 
