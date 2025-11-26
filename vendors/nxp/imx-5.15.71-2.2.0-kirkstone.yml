@@ -10,37 +10,37 @@ header:
 repos:
   meta-freescale:
     url: "https://github.com/Freescale/meta-freescale.git"
-    commit: "06e1cf4099caa53da33c10e1884064f73dc184dd"
+    commit: "c82d4634e7aba8bc0de73ce1dfc997b630051571"
     path: "layers/meta-freescale"
     layers:
       .:
 
   meta-freescale-3rdparty:
     url: "https://github.com/Freescale/meta-freescale-3rdparty.git"
-    commit: "6d8213fc5ec192c33f963b8095d1f01af1574eea"
+    commit: "5977197340c7a7db17fe3e02a4e014ad997565ae"
     path: "layers/meta-freescale-3rdparty"
     layers:
       .:
 
   meta-freescale-distro:
     url: "https://github.com/Freescale/meta-freescale-distro.git"
-    commit: "fc15f5003043da23212596be7366ae2547c308ad"
+    commit: "d5bbb487b2816dfc74984a78b67f7361ce404253"
     path: "layers/meta-freescale-distro"
     layers:
       .:
 
   meta-nxp-demo-experience:
     url: "https://github.com/nxp-imx-support/meta-nxp-demo-experience.git"
-    branch: "kirkstone-5.15.52-2.1.0"
-    commit: "c3bd9b4789d87fc259d1fb2c2ffa27b39f1310b5"
+    branch: "kirkstone-5.15.71-2.2.0"
+    commit: "52eaf8bf42f8eda2917a1c8c046003c8c2c8f629"
     path: "layers/meta-nxp-demo-experience"
     layers:
       .:
 
   meta-imx:
     url: "https://github.com/nxp-imx/meta-imx.git"
-    commit: "ec123f9ca2cd870b05066f58c4f7bcf90e61870c"
-    branch: "kirkstone-5.15.52-2.1.0"
+    commit: "9174c61f4dc80b14e0bfdaec9200ed58fb41615f"
+    branch: "kirkstone-5.15.71-2.2.0"
     path: "layers/meta-imx"
     layers:
       meta-bsp:
@@ -48,7 +48,3 @@ repos:
       meta-ml:
       meta-sdk:
       meta-v2x:
-
-target:
-  - imx-image-core
-  - imx-image-multimedia

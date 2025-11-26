@@ -1,0 +1,26 @@
+From b9eaa875b8a5548436517cbb1b8175909a709a7b Mon Sep 17 00:00:00 2001
+From: Mikhail Tsukerman <mikhail.tsukerman@advantech.de>
+Date: Wed, 26 Nov 2025 13:23:08 +0100
+Subject: [PATCH] Fix vulkan-loader recipe
+
+Add nobranch=1 to SRC_URI to fix git fetch error
+---
+ meta-sdk/recipes-graphics/vulkan/vulkan-loader_1.2.182.0.bb | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/meta-sdk/recipes-graphics/vulkan/vulkan-loader_1.2.182.0.bb b/meta-sdk/recipes-graphics/vulkan/vulkan-loader_1.2.182.0.bb
+index e7b382228e..337ad790e2 100644
+--- a/meta-sdk/recipes-graphics/vulkan/vulkan-loader_1.2.182.0.bb
++++ b/meta-sdk/recipes-graphics/vulkan/vulkan-loader_1.2.182.0.bb
+@@ -9,7 +9,7 @@ SECTION = "libs"
+ 
+ LICENSE = "Apache-2.0"
+ LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=7dbefed23242760aa3475ee42801c5ac"
+-SRC_URI = "git://github.com/KhronosGroup/Vulkan-Loader.git;protocol=https;branch=master \
++SRC_URI = "git://github.com/KhronosGroup/Vulkan-Loader.git;protocol=https;nobranch=1 \
+            "
+ SRCREV = "1896143df69d439b0933c1bb485f5a4587bdf2dc"
+ 
+-- 
+2.43.0
+
