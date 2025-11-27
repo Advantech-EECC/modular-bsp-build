@@ -1,0 +1,158 @@
+specification:
+  version: "1.0"
+
+registry:
+  cache:
+    downloads: "/home/mikhail-tsukerman/data/cache/downloads"
+    sstate: "/home/mikhail-tsukerman/data/cache/sstate"
+
+  bsp:
+    - name: poky-qemuarm64-master
+      description: "QEMU ARM64 Master BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "4.0"
+      build:
+        path: build/qemu-arm64-master
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:22.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - yocto/master.yml
+          - compilers/clang/master.yml
+          - yocto/qemu/qemuarm64.yaml     
+
+    - name: adv-bsp-oenxp-kirkstone-rsb3720
+      description: "RSB3720 ACL Kirkstone BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "4.0"
+      build:
+        path: build/adv-oenxp-bsp-rsb3720-kirkstone
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-20.04/kas:4.7"
+            args:
+              - name: "DISTRO_VERSION" 
+                value: "20.04"
+              - name: "KAS_VERSION"
+                value: "4.7"
+        configuration:
+          - adv-bsp-oenxp-kirkstone-rsb3720.yaml
+
+    - name: poky-qemuarm64-kirkstone
+      description: "QEMU ARM64 Kirkstone BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "4.0"
+      build:
+        path: build/qemu-arm64-kirkstone
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-20.04/kas:4.7"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:20.04"
+              - name: "KAS_VERSION"
+                value: "4.7"
+        configuration:
+          - yocto/kirkstone.yml
+          - compilers/clang/kirkstone.yml
+          - yocto/qemu/qemuarm64.yaml     
+
+    - name: poky-qemuarm64-mickledore
+      description: "QEMU ARM64 Mickledore BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "4.2"
+      build:
+        path: build/qemu-arm64-mickledore
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-20.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:20.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - bsp-oe-qemux86-64-mickledore.yml
+
+    - name: poky-qemuarm64-scarthgap
+      description: "QEMU ARM64 Scarthgap BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "5.0"
+      build:
+        path: build/qemu-arm64-scarthgap
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:22.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - yocto/scarthgap.yml
+          - compilers/clang/scarthgap.yml
+          - yocto/qemu/qemuarm64.yaml     
+
+    - name: poky-qemuarm64-styhead
+      description: "QEMU ARM64 Styhead BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "5.1"
+      build:
+        path: build/qemu-arm64-styhead
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:22.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - yocto/styhead.yml
+          - compilers/clang/styhead.yml
+          - yocto/qemu/qemuarm64.yaml     
+
+    - name: poky-qemuarm64-walnascar
+      description: "QEMU ARM64 Walnascar BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "5.2"
+      build:
+        path: build/qemu-arm64-walnascar
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:22.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - yocto/walnascar.yml
+          - compilers/clang/walnascar.yml
+          - yocto/qemu/qemuarm64.yaml     
