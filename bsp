@@ -2,20 +2,35 @@
 """
 Advantech Board Support Package (BSP) Registry Manager
 
-This script provides a command-line interface for managing and building
-Yocto-based BSPs using KAS build system. It supports Docker containers,
-cached builds, and comprehensive configuration management.
+This script provides a comprehensive command-line interface for managing and building
+Yocto-based BSPs using the KAS build system. It supports Docker containers, cached builds,
+and sophisticated configuration management for embedded Linux development.
 
 Key Features:
-- BSP registry management via YAML configuration
-- Docker container building and management
-- KAS build system integration
-- Comprehensive error handling and validation
-- Cache management for faster builds
-- Environment variable configuration
+- BSP registry management via YAML configuration files
+- Docker container building and management for reproducible builds
+- KAS build system integration for Yocto-based builds
+- Comprehensive error handling and configuration validation
+- Advanced cache management for faster incremental builds
+- Environment variable configuration management
 - KAS configuration export functionality
-- Android manifest export functionality
-- BitBake setup export functionality
+
+Architecture:
+- BspManager: Main coordinator for BSP operations
+- KasManager: Handles KAS build system operations  
+- EnvironmentManager: Manages build environment variables
+- PathResolver: Utility for path resolution and validation
+
+Typical Usage:
+  $ python bsp.py list                    # List available BSPs
+  $ python bsp.py build <bsp_name>        # Build a specific BSP
+  $ python bsp.py export <bsp_name>       # Export BSP configuration
+
+Configuration:
+  Uses YAML configuration files (default: bsp-registry.yml) to define:
+  - BSP specifications and dependencies
+  - Build environment settings (Docker, environment variables)
+  - Cache directories and build parameters
 """
 
 import subprocess
@@ -26,8 +41,6 @@ import argparse
 import dacite
 import tempfile
 import shutil
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
 
 import yaml
 from pathlib import Path
@@ -36,8 +49,12 @@ from datetime import datetime
 
 from dataclasses import dataclass, field
 
+# =============================================================================
+# Exception Hierarchy
+# =============================================================================
+
 class ScriptError(Exception):
-    """Base exception for all script-related errors."""
+    """Base exception class for all script-related errors."""
     pass
 
 class ConfigurationError(ScriptError):
@@ -56,86 +73,158 @@ class KasError(ScriptError):
     """Raised when KAS operations fail."""
     pass
 
+# =============================================================================
+# Configuration Data Classes
+# =============================================================================
+
 def empty_list():
     """Factory function for creating empty lists in dataclass fields."""
     return []
 
 @dataclass
 class EnvironmentVariable:
-    """Represents an environment variable name-value pair."""
+    """
+    Represents an environment variable name-value pair.
+    
+    Attributes:
+        name: Environment variable name
+        value: Environment variable value
+    """
     name: str
     value: str
 
 @dataclass
 class DockerArg:
-    """Represents a Docker build argument (name=value pair)."""
+    """
+    Represents a Docker build argument (name=value pair).
+    
+    Attributes:
+        name: Argument name
+        value: Argument value
+    """
     name: str
     value: str
 
 @dataclass
 class Docker:
-    """Docker configuration for build environment."""
-    image: Optional[str]  # Docker image name/tag
-    file: Optional[str]   # Dockerfile path
-    args: List[DockerArg] = field(default_factory=empty_list)  # Build arguments
+    """
+    Docker configuration for build environment.
+    
+    Attributes:
+        image: Docker image name/tag for the build environment
+        file: Path to Dockerfile for building custom images
+        args: List of Docker build arguments (name=value pairs)
+    """
+    image: Optional[str]
+    file: Optional[str]
+    args: List[DockerArg] = field(default_factory=empty_list)
 
 @dataclass
 class BuildEnvironment:
-    """Build environment configuration including Docker settings."""
+    """
+    Build environment configuration including Docker settings.
+    
+    Attributes:
+        docker: Docker configuration for containerized builds
+    """
     docker: Docker
 
 @dataclass
 class BuildSetup:
-    """Complete build setup configuration."""
-    path: str                    # Build directory path
-    environment: BuildEnvironment  # Build environment settings
-    docker: Optional[str]        # Docker runtime to use
-    configuration: List[str]     # KAS configuration files
+    """
+    Complete build setup configuration.
+    
+    Attributes:
+        path: Build directory path for output artifacts
+        environment: Build environment settings (Docker, etc.)
+        docker: Docker runtime to use (docker, podman, etc.)
+        configuration: List of KAS configuration files for the build
+    """
+    path: str
+    environment: BuildEnvironment
+    docker: Optional[str]
+    configuration: List[str]
 
 @dataclass
 class Specification:
-    """Registry specification version."""
+    """
+    Registry specification version.
+    
+    Attributes:
+        version: Specification version string (e.g., '1.0')
+    """
     version: str
 
 @dataclass
 class OperatingSystem:
-    """Operating system configuration for the BSP."""
-    name: str          # OS name (e.g., linux)
-    build_system: str  # Build system (e.g., yocto)
-    version: str       # OS version
+    """
+    Operating system configuration for the BSP.
+    
+    Attributes:
+        name: OS name (e.g., 'linux')
+        build_system: Build system (e.g., 'yocto')
+        version: OS version string
+    """
+    name: str
+    build_system: str
+    version: str
 
 @dataclass
 class BSP:
-    """Board Support Package definition."""
-    name: str           # BSP identifier
-    description: str    # Human-readable description
-    os: OperatingSystem # OS configuration
-    build: BuildSetup   # Build configuration
+    """
+    Board Support Package definition.
+    
+    Attributes:
+        name: Unique BSP identifier
+        description: Human-readable description
+        os: Operating system configuration
+        build: Build configuration and setup
+    """
+    name: str
+    description: str
+    os: OperatingSystem
+    build: BuildSetup
 
 @dataclass
 class Registry:
-    """Main registry containing BSP definitions."""
-    bsp: Optional[List[BSP]] = field(default_factory=empty_list)  # BSP definitions
+    """
+    Main registry containing BSP definitions.
+    
+    Attributes:
+        bsp: List of BSP definitions in the registry
+    """
+    bsp: Optional[List[BSP]] = field(default_factory=empty_list)
 
 @dataclass
 class RegistryRoot:
-    """Root container for the registry configuration."""
-    specification: Specification  # Specification version
-    registry: Registry           # Main registry data
-    environment: Optional[List[EnvironmentVariable]] = field(default_factory=empty_list)  # Environment variables
+    """
+    Root container for the registry configuration.
+    
+    Attributes:
+        specification: Specification version information
+        registry: Main registry data containing BSP definitions
+        environment: Global environment variables for all builds
+    """
+    specification: Specification
+    registry: Registry
+    environment: Optional[List[EnvironmentVariable]] = field(default_factory=empty_list)
+
+# =============================================================================
+# YAML Configuration Parser
+# =============================================================================
 
 def read_yaml_file(filename: Path) -> str:
     """
-    Read a YAML file into a string.
+    Read a YAML file into a string with comprehensive error handling.
     
     Args:
-        filename: Path to the YAML file
+        filename: Path to the YAML file to read
         
     Returns:
-        String containing file contents
+        String containing the complete file contents
         
     Raises:
-        SystemExit: If file cannot be read
+        SystemExit: If file cannot be read due to I/O errors or permissions
     """
     try:
         with open(filename, 'r', encoding='utf-8') as yaml_file:
@@ -146,16 +235,16 @@ def read_yaml_file(filename: Path) -> str:
 
 def parse_yaml_file(yaml_string: str) -> Dict[Any, Any]:
     """
-    Parse YAML string into a python dictionary.
+    Parse YAML string into a Python dictionary with validation.
     
     Args:
-        yaml_string: YAML formatted string
+        yaml_string: YAML formatted string to parse
         
     Returns:
         Dictionary representation of YAML content
         
     Raises:
-        SystemExit: If YAML parsing fails
+        SystemExit: If YAML parsing fails due to malformed content
     """
     try:
         return yaml.safe_load(yaml_string)
@@ -165,51 +254,66 @@ def parse_yaml_file(yaml_string: str) -> Dict[Any, Any]:
 
 def get_registry_from_yaml_file(filename: Path) -> RegistryRoot:
     """
-    Parse YAML file into structured RegistryRoot object.
+    Parse YAML file into structured RegistryRoot object using dacite.
+    
+    This function converts the raw YAML dictionary into strongly-typed
+    dataclasses with comprehensive type checking and validation.
     
     Args:
         filename: Path to registry YAML file
         
     Returns:
-        Structured registry configuration
+        Structured registry configuration as RegistryRoot object
         
     Raises:
-        SystemExit: If configuration is invalid or malformed
+        SystemExit: If configuration is invalid, malformed, or missing required fields
     """
     yaml_string = read_yaml_file(filename)
     yaml_dict = parse_yaml_file(yaml_string)
 
     try:
         # Use dacite to convert dictionary to strongly-typed dataclass
-        cfg = dacite.Config(strict=False)  # Allow unknown fields for forward compatibility
+        # strict=False allows forward compatibility with new fields
+        cfg = dacite.Config(strict=False)
         ast = dacite.from_dict(data_class=RegistryRoot, data=yaml_dict, config=cfg)
         return ast
     except dacite.UnexpectedDataError as e:
-        logging.error(f"Configuration error in {filename}: {e}")
+        logging.error(f"Configuration error in {filename}: Unknown fields found - {e}")
         sys.exit(1)
     except dacite.WrongTypeError as e:
-        logging.error(f"Type error in configuration {filename}: {e}")
+        logging.error(f"Type error in configuration {filename}: Field type mismatch - {e}")
         sys.exit(1)
     except dacite.MissingValueError as e:
-        logging.error(f"Missing value in configuration {filename}: {e}")
+        logging.error(f"Missing value in configuration {filename}: Required field missing - {e}")
         sys.exit(1)
 
-def build_docker(dockerfile_dir: str, dockerfile: str, tag: str, build_args: Optional[List[DockerArg]] = None) -> None:
+# =============================================================================
+# Docker Operations
+# =============================================================================
+
+def build_docker(dockerfile_dir: str, dockerfile: str, tag: str, 
+                 build_args: Optional[List[DockerArg]] = None) -> None:
     """
-    Build Docker image from Dockerfile.
+    Build Docker image from Dockerfile with comprehensive validation.
+    
+    This function handles the complete Docker build process including:
+    - Prerequisite validation (directory and file existence)
+    - Build argument processing
+    - Directory context management
+    - Error handling and logging
     
     Args:
-        dockerfile_dir: Directory containing Dockerfile
-        dockerfile: Dockerfile name
-        tag: Image tag for the built image
-        build_args: List of Docker build arguments
+        dockerfile_dir: Directory containing Dockerfile and build context
+        dockerfile: Dockerfile name (e.g., 'Dockerfile')
+        tag: Image tag for the built image (e.g., 'my-bsp:latest')
+        build_args: List of Docker build arguments for parameterized builds
         
     Raises:
-        SystemExit: If Docker build fails or prerequisites are missing
+        SystemExit: If Docker build fails, prerequisites are missing, or Docker is unavailable
     """
     logging.info(f"Building docker container {tag} using {dockerfile}")
     
-    # Validate prerequisites
+    # Validate prerequisites before attempting build
     if not os.path.isdir(dockerfile_dir):
         logging.error(f"Docker build directory does not exist: {dockerfile_dir}")
         sys.exit(1)
@@ -221,13 +325,13 @@ def build_docker(dockerfile_dir: str, dockerfile: str, tag: str, build_args: Opt
 
     original_dir = os.getcwd()
     try:
-        # Change to Dockerfile directory for context
+        # Change to Dockerfile directory for proper build context
         os.chdir(dockerfile_dir)
         
-        # Build docker command
+        # Build docker command with all required parameters
         cmd = ["docker", "build", "-f", dockerfile, "-t", tag]
         
-        # Add build arguments if provided
+        # Add build arguments if provided (for parameterized Docker builds)
         if build_args:
             for argument in build_args:
                 cmd.extend(["--build-arg", f"{argument.name}={argument.value}"])
@@ -236,7 +340,7 @@ def build_docker(dockerfile_dir: str, dockerfile: str, tag: str, build_args: Opt
         
         logging.info(f"Running: {' '.join(cmd)}")
         
-        # Execute build command
+        # Execute build command with real-time output capture
         process = subprocess.run(cmd, check=True, capture_output=True, text=True)
         logging.info("Docker build completed successfully")
         
@@ -248,52 +352,105 @@ def build_docker(dockerfile_dir: str, dockerfile: str, tag: str, build_args: Opt
         logging.error(f"Unexpected error during Docker build: {e}")
         sys.exit(1)
     finally:
-        # Always return to original directory
+        # Always return to original directory regardless of build outcome
         os.chdir(original_dir)
+
+# =============================================================================
+# Path Resolution Utility
+# =============================================================================
 
 class PathResolver:
     """
     Utility class for path resolution and validation.
     
-    Provides methods to resolve paths with home directory expansion
-    and validate path existence and types.
+    Provides centralized methods for handling path operations with:
+    - Home directory expansion (~/ paths)
+    - Existence and type validation
+    - Directory creation with proper error handling
+    - Consistent path normalization
+    
+    All methods handle path strings with home directory notation and
+    provide consistent behavior across different platforms.
     """
     
     @staticmethod
     def resolve(path_string: str) -> Path:
-        """Resolve path with ~ expansion to Path object."""
+        """
+        Resolve path with ~ expansion to absolute Path object.
+        
+        Args:
+            path_string: Path string that may contain ~ for home directory
+            
+        Returns:
+            Resolved absolute Path object
+        """
         return Path(path_string).expanduser().resolve()
     
     @staticmethod
     def resolve_str(path_string: str) -> str:
-        """Resolve path with ~ expansion to string."""
+        """
+        Resolve path with ~ expansion to absolute string.
+        
+        Args:
+            path_string: Path string that may contain ~ for home directory
+            
+        Returns:
+            Resolved absolute path as string
+        """
         return str(PathResolver.resolve(path_string))
     
     @staticmethod
     def exists(path_string: str) -> bool:
-        """Check if path exists (after resolving ~)."""
+        """
+        Check if path exists after resolving ~ expansion.
+        
+        Args:
+            path_string: Path to check for existence
+            
+        Returns:
+            True if path exists, False otherwise
+        """
         return PathResolver.resolve(path_string).exists()
     
     @staticmethod
     def is_file(path_string: str) -> bool:
-        """Check if path is a file (after resolving ~)."""
+        """
+        Check if path is a file after resolving ~ expansion.
+        
+        Args:
+            path_string: Path to check
+            
+        Returns:
+            True if path exists and is a file, False otherwise
+        """
         return PathResolver.resolve(path_string).is_file()
     
     @staticmethod
     def is_dir(path_string: str) -> bool:
-        """Check if path is a directory (after resolving ~)."""
+        """
+        Check if path is a directory after resolving ~ expansion.
+        
+        Args:
+            path_string: Path to check
+            
+        Returns:
+            True if path exists and is a directory, False otherwise
+        """
         return PathResolver.resolve(path_string).is_dir()
     
     @staticmethod
     def ensure_directory(path_string: str) -> None:
         """
-        Ensure directory exists, create if necessary.
+        Ensure directory exists, create if necessary with parent directories.
+        
+        This method creates the directory and all intermediate directories
+        if they don't exist, similar to 'mkdir -p' command.
         
         Args:
-            path_string: Directory path to ensure
+            path_string: Directory path to ensure existence of
             
         Raises:
-            SystemExit: If directory cannot be created
+            SystemExit: If directory cannot be created due to permissions or I/O errors
         """
         path = PathResolver.resolve(path_string)
         try:
@@ -302,19 +459,30 @@ class PathResolver:
             logging.error(f"Failed to create directory {path}: {e}")
             sys.exit(1)
 
-# Global path resolver instance
+# Global path resolver instance for consistent path handling
 resolver = PathResolver()
+
+# =============================================================================
+# Environment Variable Management
+# =============================================================================
 
 class EnvironmentManager:
     """
-    Manager for environment variable configuration.
+    Manager for environment variable configuration in build environments.
     
-    Handles environment variable setup and validation for build environments.
+    Handles environment variable setup, validation, and management for:
+    - Build cache directories (DL_DIR, SSTATE_DIR)
+    - Git configuration (GITCONFIG_FILE)
+    - Custom build variables
+    - Container-specific environment settings
+    
+    This class ensures consistent environment setup across different
+    build types (native, Docker, kas-container).
     """
     
     def __init__(self, environment_vars: Optional[List[EnvironmentVariable]] = None):
         """
-        Initialize Environment manager.
+        Initialize Environment manager with optional variables.
         
         Args:
             environment_vars: List of environment variables to manage
@@ -323,28 +491,46 @@ class EnvironmentManager:
         self._env_dict = self._build_environment_dict()
         
     def _build_environment_dict(self) -> Dict[str, str]:
-        """Build a dictionary from the environment variable list."""
+        """Build a dictionary from the environment variable list for efficient lookup."""
         env_dict = {}
         for env_var in self.environment_vars:
             env_dict[env_var.name] = env_var.value
         return env_dict
     
     def get_environment_dict(self) -> Dict[str, str]:
-        """Get environment variables as a dictionary."""
+        """
+        Get environment variables as a dictionary.
+        
+        Returns:
+            Copy of the environment variables dictionary
+        """
         return self._env_dict.copy()
     
     def get_value(self, key: str, default: Optional[str] = None) -> Optional[str]:
-        """Get the value of an environment variable by key."""
+        """
+        Get the value of an environment variable by key.
+        
+        Args:
+            key: Environment variable name to lookup
+            default: Default value to return if key not found
+            
+        Returns:
+            Environment variable value or default if not found
+        """
         return self._env_dict.get(key, default)
     
     def validate_environment(self) -> bool:
         """
         Validate that all environment variable paths exist.
         
+        This method checks common path variables (DL_DIR, SSTATE_DIR, GITCONFIG_FILE)
+        to ensure they point to valid locations. Warnings are issued for missing
+        paths but execution continues as paths might be created during build.
+        
         Returns:
-            True if all paths are valid, False otherwise
+            True if validation completes (warnings may still be issued)
         """
-        # Check common path variables
+        # Check common path variables that should exist
         path_variables = ['DL_DIR', 'SSTATE_DIR', 'GITCONFIG_FILE']
         
         for var_name in path_variables:
@@ -352,7 +538,7 @@ class EnvironmentManager:
                 path_value = self._env_dict[var_name]
                 if not resolver.exists(path_value):
                     logging.warning(f"Environment variable {var_name} path does not exist: {path_value}")
-                    # Don't exit here, just warn - paths might be created later
+                    # Don't exit here - paths might be created during build process
         
         logging.info(f"Environment configuration validated with {len(self._env_dict)} variables")
         return True
@@ -361,152 +547,27 @@ class EnvironmentManager:
         """
         Set up environment variables for build processes.
         
+        Merges the configured environment variables with a base environment,
+        with configured variables taking precedence over existing ones.
+        
         Args:
-            base_env: Base environment dictionary
+            base_env: Base environment dictionary (typically os.environ.copy())
             
         Returns:
-            Updated environment with configured variables
+            Updated environment with all configured variables applied
         """
         env = base_env.copy()
         
-        # Add all configured environment variables
+        # Add all configured environment variables (overwrite existing)
         for env_var in self.environment_vars:
             env[env_var.name] = env_var.value
             logging.debug(f"Set {env_var.name}={env_var.value}")
             
         return env
 
-class AndroidManifestGenerator:
-    """
-    Generator for Android-style manifest files.
-    
-    Creates XML manifest files similar to Android repo manifest format
-    that can be used with repo tool or similar systems.
-    """
-    
-    @staticmethod
-    def generate_manifest(bsp_name: str, bsp_description: str, 
-                         kas_config: Dict[str, Any], 
-                         layers_info: Dict[str, Any]) -> str:
-        """
-        Generate Android-style manifest XML.
-        
-        Args:
-            bsp_name: Name of the BSP
-            bsp_description: Description of the BSP
-            kas_config: Parsed KAS configuration
-            layers_info: Information about layers and repositories
-            
-        Returns:
-            XML string representing the manifest
-        """
-        # Create root element
-        manifest = ET.Element("manifest")
-        
-        # Add metadata
-        metadata = ET.SubElement(manifest, "metadata")
-        ET.SubElement(metadata, "bsp-name").text = bsp_name
-        ET.SubElement(metadata, "description").text = bsp_description
-        ET.SubElement(metadata, "generated").text = datetime.now().isoformat()
-        ET.SubElement(metadata, "generator").text = "Advantech BSP Registry"
-        
-        # Add default settings
-        default = ET.SubElement(manifest, "default")
-        default.set("revision", "master")
-        default.set("sync-j", "4")
-        
-        # Add remote definitions
-        remotes = ET.SubElement(manifest, "remotes")
-        
-        # Common remotes used in Yocto projects
-        common_remotes = {
-            "yocto": "https://git.yoctoproject.org",
-            "openembedded": "http://git.openembedded.org",
-            "github": "https://github.com",
-            "gitlab": "https://gitlab.com",
-            "advantech": "https://github.com/advantech"
-        }
-        
-        for remote_name, remote_url in common_remotes.items():
-            remote = ET.SubElement(remotes, "remote")
-            remote.set("name", remote_name)
-            remote.set("fetch", remote_url)
-        
-        # Add projects based on KAS configuration
-        projects = ET.SubElement(manifest, "project")
-        
-        # Extract layer information from KAS config
-        if 'repos' in kas_config:
-            for repo_name, repo_config in kas_config['repos'].items():
-                project = ET.SubElement(projects, "project")
-                project.set("name", repo_name)
-                
-                # Set path (usually the repo name)
-                project.set("path", f"layers/{repo_name}")
-                
-                # Set remote and revision if available
-                if 'url' in repo_config:
-                    url = repo_config['url']
-                    # Determine remote based on URL pattern
-                    if 'yoctoproject.org' in url:
-                        project.set("remote", "yocto")
-                    elif 'openembedded.org' in url:
-                        project.set("remote", "openembedded")
-                    elif 'github.com' in url:
-                        project.set("remote", "github")
-                    elif 'gitlab.com' in url:
-                        project.set("remote", "gitlab")
-                    else:
-                        # Create a custom remote for this URL
-                        remote_name = f"remote_{repo_name}"
-                        remote = ET.SubElement(remotes, "remote")
-                        remote.set("name", remote_name)
-                        # Extract base URL
-                        base_url = '/'.join(url.split('/')[:3])
-                        remote.set("fetch", base_url)
-                        project.set("remote", remote_name)
-                
-                if 'refspec' in repo_config:
-                    project.set("revision", repo_config['refspec'])
-                else:
-                    project.set("revision", "master")
-        
-        # Add BSP-specific projects
-        bsp_project = ET.SubElement(projects, "project")
-        bsp_project.set("name", f"advantech/{bsp_name}")
-        bsp_project.set("path", f"bsp/{bsp_name}")
-        bsp_project.set("remote", "advantech")
-        bsp_project.set("revision", "master")
-        
-        # Convert to pretty XML string
-        rough_string = ET.tostring(manifest, 'utf-8')
-        reparsed = minidom.parseString(rough_string)
-        return reparsed.toprettyxml(indent="  ")
-    
-    @staticmethod
-    def extract_layer_info(kas_config_yaml: str) -> Dict[str, Any]:
-        """
-        Extract layer and repository information from KAS configuration.
-        
-        Args:
-            kas_config_yaml: KAS configuration as YAML string
-            
-        Returns:
-            Dictionary containing layer information
-        """
-        try:
-            config = yaml.safe_load(kas_config_yaml)
-            layers_info = {
-                'repos': config.get('repos', {}),
-                'layers': config.get('layers', []),
-                'machine': config.get('machine', ''),
-                'distro': config.get('distro', ''),
-                'target': config.get('target', '')
-            }
-            return layers_info
-        except yaml.YAMLError as e:
-            logging.warning(f"Failed to parse KAS config for layer info: {e}")
-            return {}
+# =============================================================================
+# KAS Build System Manager
+# =============================================================================
 
 class KasManager:
     """
@@ -514,6 +575,8 @@ class KasManager:
     
     This class handles KAS configuration validation, build execution,
     and environment management with comprehensive error handling.
+    It supports both native KAS installations and containerized builds
+    using kas-container.
     """
     
     def __init__(self, kas_files: List[str], build_dir: str = "build", use_container: bool = False,
@@ -524,18 +587,18 @@ class KasManager:
         Initialize KAS manager with configuration.
         
         Args:
-            kas_files: List of KAS configuration files
-            build_dir: Build output directory
-            use_container: Use kas-container instead of native kas
-            download_dir: Downloads cache directory
-            sstate_dir: Shared state cache directory
-            container_engine: Docker or podman
-            container_image: Custom container image
+            kas_files: List of KAS configuration files (YAML) for the build
+            build_dir: Build output directory for Yocto artifacts
+            use_container: Use kas-container instead of native kas installation
+            download_dir: Downloads cache directory for Yocto sources
+            sstate_dir: Shared state cache directory for build acceleration
+            container_engine: Container runtime (docker, podman)
+            container_image: Custom container image for kas-container
             search_paths: Additional paths to search for configuration files
             env_manager: Environment configuration manager
             
         Raises:
-            SystemExit: If initialization fails
+            SystemExit: If initialization fails due to invalid parameters
         """
         if not isinstance(kas_files, list) or not kas_files:
             logging.error("kas_files must be a non-empty list of file paths")
@@ -561,9 +624,9 @@ class KasManager:
         ])
 
         self.original_cwd = Path.cwd()
-        self._yaml_cache = {}  # Cache for parsed YAML files
+        self._yaml_cache = {}  # Cache for parsed YAML files to avoid re-parsing
 
-        # Ensure build directory exists
+        # Ensure build directory exists before starting any operations
         resolver.ensure_directory(str(self.build_dir))
 
     def _get_kas_command(self) -> List[str]:
@@ -577,8 +640,11 @@ class KasManager:
         """
         Prepare environment variables for KAS execution.
         
+        Sets up cache directories and container-specific environment
+        variables required for KAS operation.
+        
         Returns:
-            Environment dictionary with KAS-specific variables
+            Environment dictionary with KAS-specific variables configured
         """
         env = os.environ.copy()
 
@@ -613,7 +679,7 @@ class KasManager:
         """
         Resolve KAS file path to absolute path.
         
-        Searches in multiple locations:
+        Searches in multiple locations in order:
         - Absolute path
         - Relative to current directory
         - Relative to build directory
@@ -695,7 +761,7 @@ class KasManager:
             Parsed YAML content as dictionary
             
         Raises:
-            SystemExit: If file cannot be parsed
+            SystemExit: If file cannot be parsed due to YAML syntax errors
         """
         resolved_path = self._resolve_kas_file(file_path)
         if resolved_path in self._yaml_cache:
@@ -716,23 +782,23 @@ class KasManager:
         
         KAS configuration files can include other files through:
         - Top-level 'includes' key
-        - 'header' -> 'includes' nested key
+        - 'header' -> 'includes' nested key (less common)
         
         Args:
             yaml_content: Parsed YAML content
             
         Returns:
-            List of include file paths
+            List of include file paths found in the configuration
         """
         includes = []
 
-        # Check top-level includes
+        # Check top-level includes (most common)
         if 'includes' in yaml_content:
             include_list = yaml_content['includes']
             if isinstance(include_list, list):
                 includes.extend(include_list)
 
-        # Check header includes (less common)
+        # Check header includes (less common, older format)
         if 'header' in yaml_content and 'includes' in yaml_content['header']:
             header_includes = yaml_content['header']['includes']
             if isinstance(header_includes, list):
@@ -752,7 +818,7 @@ class KasManager:
             Absolute path to include file
             
         Raises:
-            SystemExit: If include file cannot be found
+            SystemExit: If include file cannot be found in any search location
         """
         # Absolute paths are used as-is
         if include_file.startswith('/'):
@@ -777,16 +843,17 @@ class KasManager:
         """
         Recursively find all included files from main KAS files.
         
-        Performs depth-first search to build complete dependency tree.
+        Performs depth-first search to build complete dependency tree
+        and ensure proper inclusion order.
         
         Args:
             main_files: List of main KAS configuration files
             
         Returns:
-            Flat list of all files in dependency order
+            Flat list of all files in dependency order (includes first)
             
         Raises:
-            SystemExit: If any included file is missing
+            SystemExit: If any included file is missing or circular dependency detected
         """
         all_files = []
         processed_files = set()
@@ -811,7 +878,7 @@ class KasManager:
             yaml_content = self._parse_yaml_file(file_path)
             includes = self._find_includes_in_yaml(yaml_content)
             
-            # Process includes first (depth-first)
+            # Process includes first (depth-first for proper dependency resolution)
             for include in includes:
                 include_path = self._resolve_include_path(include, file_path)
                 process_file(include_path)
@@ -827,7 +894,7 @@ class KasManager:
 
     def validate_kas_files(self, check_includes: bool = True) -> bool:
         """
-        Validate that all KAS configuration files exist.
+        Validate that all KAS configuration files exist and are accessible.
         
         Args:
             check_includes: Whether to recursively validate include files
@@ -836,7 +903,7 @@ class KasManager:
             True if validation succeeds
             
         Raises:
-            SystemExit: If any file is missing
+            SystemExit: If any file is missing or inaccessible
         """
         try:
             # Check main files
@@ -901,7 +968,7 @@ class KasManager:
             Completed process information
             
         Raises:
-            SystemExit: If command fails or is interrupted
+            SystemExit: If command fails or is interrupted by user
         """
         cmd = self._get_kas_command() + args
         env = self._get_environment_with_container_vars()
@@ -910,7 +977,7 @@ class KasManager:
         logging.info(f"Build directory: {self.build_dir}")
         logging.info(f"Using container: {self.use_container}")
 
-        # Log important environment variables
+        # Log important environment variables for debugging
         important_vars = ['DL_DIR', 'SSTATE_DIR', 'GITCONFIG_FILE']
         for var in important_vars:
             if var in env:
@@ -918,7 +985,7 @@ class KasManager:
 
         try:
             if show_output:
-                # Show live output to console
+                # Show live output to console for build progress
                 result = subprocess.run(
                     cmd,
                     check=True,
@@ -926,7 +993,7 @@ class KasManager:
                     env=env
                 )
             else:
-                # Capture output for programmatic use
+                # Capture output for programmatic use (export, validation)
                 result = subprocess.run(
                     cmd,
                     check=True,
@@ -950,10 +1017,13 @@ class KasManager:
         """
         Build the Yocto project using KAS.
         
+        This is the main build method that orchestrates the complete
+        Yocto build process through KAS.
+        
         Args:
-            target: Specific build target
-            task: Specific build task
-            show_output: Whether to show build output
+            target: Specific build target (recipe or image)
+            task: Specific build task (compile, configure, etc.)
+            show_output: Whether to show build output in real-time
             
         Raises:
             SystemExit: If build fails or prerequisites are not met
@@ -1000,7 +1070,7 @@ class KasManager:
             show_output: Whether to show command output
             
         Raises:
-            SystemExit: If shell session fails
+            SystemExit: If shell session fails to start
         """
         if not self.validate_kas_files(check_includes=True):
             sys.exit(1)
@@ -1065,6 +1135,9 @@ class KasManager:
     def dump_config(self, show_output: bool = True) -> Optional[str]:
         """
         Dump expanded KAS configuration for verification.
+        
+        This method shows the fully resolved KAS configuration after
+        processing all includes and variable expansions.
         
         Args:
             show_output: Whether to show output or return it
@@ -1152,12 +1225,17 @@ class KasManager:
             logging.error(f"Failed to export KAS configuration: {e}")
             sys.exit(1)
 
+# =============================================================================
+# Main BSP Management Class
+# =============================================================================
+
 class BspManager:
     """
     Main BSP management class for BSP registry management.
     
     This class coordinates the overall BSP management flow including
-    configuration loading, BSP management, and build execution.
+    configuration loading, BSP discovery, build execution, and
+    configuration export operations.
     """
     
     def __init__(self, config_path: str = "bsp-registry.yml"):
@@ -1200,7 +1278,7 @@ class BspManager:
             sys.exit(1)
 
     def initialize(self) -> None:
-        """Initialize BSP manager components."""
+        """Initialize BSP manager components and validate configuration."""
         logging.info("Initializing BSP manager...")
         self.load_configuration()
         
@@ -1314,6 +1392,9 @@ class BspManager:
         """
         Build a specific BSP including Docker image and Yocto build.
         
+        This is the main build method that orchestrates the complete
+        BSP build process from Docker image creation to Yocto build.
+        
         Args:
             bsp_name: Name of the BSP to build
             
@@ -1349,19 +1430,18 @@ class BspManager:
         
         logging.info(f"BSP {bsp_name} built successfully!")
 
-    def export_bsp_config(self, bsp_name: str, output_file: Optional[str] = None, output_format: str = "kas") -> None:
+    def export_bsp_config(self, bsp_name: str, output_file: Optional[str] = None) -> None:
         """
-        Export BSP configuration in various formats.
+        Export BSP configuration in KAS format.
         
         Args:
             bsp_name: Name of the BSP to export
             output_file: Optional file path to save the configuration
-            output_format: Format to export (kas, android-manifest)
             
         Raises:
             SystemExit: If export fails
         """
-        logging.info(f"Exporting {output_format.upper()} configuration for BSP: {bsp_name}")
+        logging.info(f"Exporting KAS configuration for BSP: {bsp_name}")
         
         # Retrieve BSP configuration
         bsp = self.get_bsp_by_name(bsp_name)
@@ -1388,84 +1468,34 @@ class BspManager:
                 env_manager=self.env_manager
             )
             
-            if output_format.lower() == "kas":
-                # Export KAS configuration
-                config_yaml = kas_mgr.export_kas_config(output_file)
-                
-                # If no output file specified, print to stdout
-                if not output_file:
-                    print("\n" + "="*60)
-                    print(f"KAS Configuration for BSP: {bsp_name}")
-                    print("="*60)
-                    print(config_yaml)
-                    print("="*60)
-                    
-            elif output_format.lower() == "android-manifest":
-                # Export Android manifest format
-                self._export_android_manifest(bsp, kas_mgr, output_file)
-                
-            else:
-                logging.error(f"Unsupported export format: {output_format}. Supported formats: kas, android-manifest")
-                sys.exit(1)
+            # Export KAS configuration
+            config_yaml = kas_mgr.export_kas_config(output_file)
             
-        logging.info(f"BSP {bsp_name} configuration exported successfully in {output_format} format!")
-
-    def _export_android_manifest(self, bsp: BSP, kas_mgr: KasManager, output_file: Optional[str] = None) -> None:
-        """
-        Export BSP configuration as Android manifest XML.
-        
-        Args:
-            bsp: BSP configuration object
-            kas_mgr: KAS manager instance
-            output_file: Optional file path to save the manifest
-            
-        Raises:
-            SystemExit: If export fails
-        """
-        try:
-            # Get KAS configuration for layer information
-            kas_config_yaml = kas_mgr.export_kas_config()
-            kas_config = yaml.safe_load(kas_config_yaml) if kas_config_yaml else {}
-            
-            # Extract layer information
-            layers_info = AndroidManifestGenerator.extract_layer_info(kas_config_yaml)
-            
-            # Generate Android manifest
-            manifest_xml = AndroidManifestGenerator.generate_manifest(
-                bsp_name=bsp.name,
-                bsp_description=bsp.description,
-                kas_config=kas_config,
-                layers_info=layers_info
-            )
-            
-            # Save to file or print to stdout
-            if output_file:
-                output_path = Path(output_file)
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                
-                with open(output_path, 'w', encoding='utf-8') as f:
-                    f.write(manifest_xml)
-                
-                logging.info(f"Android manifest exported to: {output_path}")
-            else:
+            # If no output file specified, print to stdout
+            if not output_file:
                 print("\n" + "="*60)
-                print(f"Android Manifest for BSP: {bsp.name}")
+                print(f"KAS Configuration for BSP: {bsp_name}")
                 print("="*60)
-                print(manifest_xml)
+                print(config_yaml)
                 print("="*60)
-                
-        except Exception as e:
-            logging.error(f"Failed to export Android manifest: {e}")
-            sys.exit(1)
+                    
+        logging.info(f"BSP {bsp_name} configuration exported successfully!")
 
     def cleanup(self) -> None:
         """Cleanup resources and perform any necessary finalization."""
         logging.debug("Cleaning up resources...")
         # Add cleanup logic here if needed (e.g., temp files, connections)
 
+# =============================================================================
+# Main Entry Point
+# =============================================================================
+
 def main() -> int:
     """
     Main entry point for the BSP registry manager.
+    
+    Parses command line arguments, initializes the BSP manager,
+    and executes the requested command.
     
     Returns:
         Exit code (0 for success, non-zero for errors)
@@ -1503,13 +1533,6 @@ def main() -> int:
             help='Name of the BSP'
         )
         export_parser.add_argument(
-            '--format',
-            type=str,
-            default='kas',
-            choices=['kas', 'android-manifest'],
-            help='Export format (default: kas)'
-        )
-        export_parser.add_argument(
             '--output', '-o',
             type=str,
             help='Output file path (default: stdout)'
@@ -1540,8 +1563,7 @@ def main() -> int:
         elif args.command == 'export':
             bsp_mgr.export_bsp_config(
                 bsp_name=args.bsp_name,
-                output_file=args.output,
-                output_format=args.format
+                output_file=args.output
             )
         else:
             # For unimplemented commands, validate BSP exists and show message
