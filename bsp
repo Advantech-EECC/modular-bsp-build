@@ -12,13 +12,13 @@ Key Features:
 - KAS build system integration for Yocto-based builds
 - Comprehensive error handling and configuration validation
 - Advanced cache management for faster incremental builds
-- Environment variable configuration management
+- Environment variable configuration management with expansion
 - KAS configuration export functionality
 
 Architecture:
 - BspManager: Main coordinator for BSP operations
 - KasManager: Handles KAS build system operations  
-- EnvironmentManager: Manages build environment variables
+- EnvironmentManager: Manages build environment variables with expansion
 - PathResolver: Utility for path resolution and validation
 
 Typical Usage:
@@ -31,6 +31,7 @@ Configuration:
   - BSP specifications and dependencies
   - Build environment settings (Docker, environment variables)
   - Cache directories and build parameters
+  - Environment variables with expansion support (e.g., $ENV{HOME})
 """
 
 import subprocess
@@ -41,6 +42,7 @@ import argparse
 import dacite
 import tempfile
 import shutil
+import re
 
 import yaml
 from pathlib import Path
@@ -88,7 +90,7 @@ class EnvironmentVariable:
     
     Attributes:
         name: Environment variable name
-        value: Environment variable value
+        value: Environment variable value (supports $ENV{VAR} expansion)
     """
     name: str
     value: str
@@ -203,7 +205,7 @@ class RegistryRoot:
     Attributes:
         specification: Specification version information
         registry: Main registry data containing BSP definitions
-        environment: Global environment variables for all builds
+        environment: Global environment variables for all builds (supports expansion)
     """
     specification: Specification
     registry: Registry
@@ -463,7 +465,7 @@ class PathResolver:
 resolver = PathResolver()
 
 # =============================================================================
-# Environment Variable Management
+# Environment Variable Management with Expansion
 # =============================================================================
 
 class EnvironmentManager:
@@ -476,9 +478,15 @@ class EnvironmentManager:
     - Custom build variables
     - Container-specific environment settings
     
+    Supports environment variable expansion in the form of $ENV{VAR_NAME}
+    for referencing system environment variables in configuration.
+    
     This class ensures consistent environment setup across different
     build types (native, Docker, kas-container).
     """
+    
+    # Regular expression pattern to match $ENV{VAR_NAME} style variables
+    ENV_VAR_PATTERN = re.compile(r'\$ENV\{([^}]+)\}')
     
     def __init__(self, environment_vars: Optional[List[EnvironmentVariable]] = None):
         """
@@ -490,19 +498,68 @@ class EnvironmentManager:
         self.environment_vars = environment_vars or []
         self._env_dict = self._build_environment_dict()
         
+    def _expand_environment_variables(self, value: str) -> str:
+        """
+        Expand $ENV{VAR_NAME} patterns in string values.
+        
+        This method replaces all occurrences of $ENV{VAR_NAME} with the
+        actual value of the environment variable VAR_NAME from the system.
+        
+        Examples:
+          "$ENV{HOME}/.gitconfig" -> "/home/username/.gitconfig"
+          "$ENV{HOME}/data/cache" -> "/home/username/data/cache"
+        
+        Args:
+            value: String value that may contain $ENV{VAR} patterns
+            
+        Returns:
+            String with all $ENV{VAR} patterns expanded to their actual values
+            
+        Raises:
+            ConfigurationError: If a referenced environment variable is not set
+        """
+        def replace_env_var(match):
+            var_name = match.group(1)
+            if var_name in os.environ:
+                return os.environ[var_name]
+            else:
+                logging.warning(f"Environment variable '{var_name}' is not set, "
+                               f"using empty string for expansion in: {value}")
+                return ""
+        
+        # Replace all $ENV{VAR} patterns with actual environment variable values
+        expanded_value = self.ENV_VAR_PATTERN.sub(replace_env_var, value)
+        
+        # Also expand any standard environment variables (for backward compatibility)
+        expanded_value = os.path.expandvars(expanded_value)
+        
+        return expanded_value
+        
     def _build_environment_dict(self) -> Dict[str, str]:
-        """Build a dictionary from the environment variable list for efficient lookup."""
+        """
+        Build a dictionary from the environment variable list with expansion.
+        
+        This method processes each environment variable value and expands
+        any $ENV{VAR} patterns to their actual system environment values.
+        
+        Returns:
+            Dictionary of environment variables with expanded values
+        """
         env_dict = {}
         for env_var in self.environment_vars:
-            env_dict[env_var.name] = env_var.value
+            # Expand environment variables in the value
+            expanded_value = self._expand_environment_variables(env_var.value)
+            env_dict[env_var.name] = expanded_value
+            logging.debug(f"Environment variable {env_var.name} expanded: "
+                         f"'{env_var.value}' -> '{expanded_value}'")
         return env_dict
     
     def get_environment_dict(self) -> Dict[str, str]:
         """
-        Get environment variables as a dictionary.
+        Get environment variables as a dictionary with expanded values.
         
         Returns:
-            Copy of the environment variables dictionary
+            Copy of the environment variables dictionary with all expansions applied
         """
         return self._env_dict.copy()
     
@@ -515,17 +572,18 @@ class EnvironmentManager:
             default: Default value to return if key not found
             
         Returns:
-            Environment variable value or default if not found
+            Environment variable value (expanded) or default if not found
         """
         return self._env_dict.get(key, default)
     
     def validate_environment(self) -> bool:
         """
-        Validate that all environment variable paths exist.
+        Validate that all environment variable paths exist after expansion.
         
         This method checks common path variables (DL_DIR, SSTATE_DIR, GITCONFIG_FILE)
-        to ensure they point to valid locations. Warnings are issued for missing
-        paths but execution continues as paths might be created during build.
+        to ensure they point to valid locations after environment variable expansion.
+        Warnings are issued for missing paths but execution continues as paths 
+        might be created during build.
         
         Returns:
             True if validation completes (warnings may still be issued)
@@ -549,19 +607,21 @@ class EnvironmentManager:
         
         Merges the configured environment variables with a base environment,
         with configured variables taking precedence over existing ones.
+        All environment variable values are expanded before being set.
         
         Args:
             base_env: Base environment dictionary (typically os.environ.copy())
             
         Returns:
-            Updated environment with all configured variables applied
+            Updated environment with all configured variables applied and expanded
         """
         env = base_env.copy()
         
         # Add all configured environment variables (overwrite existing)
         for env_var in self.environment_vars:
-            env[env_var.name] = env_var.value
-            logging.debug(f"Set {env_var.name}={env_var.value}")
+            expanded_value = self._expand_environment_variables(env_var.value)
+            env[env_var.name] = expanded_value
+            logging.debug(f"Set {env_var.name}={expanded_value}")
             
         return env
 

@@ -3,11 +3,11 @@ specification:
 
 environment:
   - name: "GITCONFIG_FILE"
-    value: "/home/mikhail-tsukerman/.gitconfig"
+    value: "$ENV{HOME}/.gitconfig"
   - name: "DL_DIR"
-    value: "/home/mikhail-tsukerman/data/cache/downloads"
+    value: "$ENV{HOME}/data/cache/downloads"
   - name: "SSTATE_DIR"
-    value: "/home/mikhail-tsukerman/data/cache/sstate"
+    value: "$ENV{HOME}/data/cache/sstate"
 
 registry:
   bsp:
@@ -71,6 +71,27 @@ registry:
         configuration:
           - adv-mbsp-oenxp-walnascar-rsb3720.yaml
           - features/ota/rauc/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rsb3720
+      description: "Advantech EIoT Yocto Walnascar RAUC RSB3720"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "5.2"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rsb3720-walnascar
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:22.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rsb3720.yaml
+          - features/ota/swupdate/adv-ota-walnascar.yml
 
     - name: poky-qemuarm64-master
       description: "QEMU ARM64 Master BSP"
