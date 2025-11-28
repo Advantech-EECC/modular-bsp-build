@@ -14,6 +14,7 @@ Key Features:
 - Cache management for faster builds
 - Environment variable configuration
 - KAS configuration export functionality
+- Android manifest export functionality
 """
 
 import subprocess
@@ -24,10 +25,13 @@ import argparse
 import dacite
 import tempfile
 import shutil
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
 import yaml
 from pathlib import Path
 from typing import List, Optional, Dict, Any
+from datetime import datetime
 
 from dataclasses import dataclass, field
 
@@ -370,6 +374,138 @@ class EnvironmentManager:
             logging.debug(f"Set {env_var.name}={env_var.value}")
             
         return env
+
+class AndroidManifestGenerator:
+    """
+    Generator for Android-style manifest files.
+    
+    Creates XML manifest files similar to Android repo manifest format
+    that can be used with repo tool or similar systems.
+    """
+    
+    @staticmethod
+    def generate_manifest(bsp_name: str, bsp_description: str, 
+                         kas_config: Dict[str, Any], 
+                         layers_info: Dict[str, Any]) -> str:
+        """
+        Generate Android-style manifest XML.
+        
+        Args:
+            bsp_name: Name of the BSP
+            bsp_description: Description of the BSP
+            kas_config: Parsed KAS configuration
+            layers_info: Information about layers and repositories
+            
+        Returns:
+            XML string representing the manifest
+        """
+        # Create root element
+        manifest = ET.Element("manifest")
+        
+        # Add metadata
+        metadata = ET.SubElement(manifest, "metadata")
+        ET.SubElement(metadata, "bsp-name").text = bsp_name
+        ET.SubElement(metadata, "description").text = bsp_description
+        ET.SubElement(metadata, "generated").text = datetime.now().isoformat()
+        ET.SubElement(metadata, "generator").text = "Advantech BSP Registry"
+        
+        # Add default settings
+        default = ET.SubElement(manifest, "default")
+        default.set("revision", "master")
+        default.set("sync-j", "4")
+        
+        # Add remote definitions
+        remotes = ET.SubElement(manifest, "remotes")
+        
+        # Common remotes used in Yocto projects
+        common_remotes = {
+            "yocto": "https://git.yoctoproject.org",
+            "openembedded": "http://git.openembedded.org",
+            "github": "https://github.com",
+            "gitlab": "https://gitlab.com",
+            "advantech": "https://github.com/advantech"
+        }
+        
+        for remote_name, remote_url in common_remotes.items():
+            remote = ET.SubElement(remotes, "remote")
+            remote.set("name", remote_name)
+            remote.set("fetch", remote_url)
+        
+        # Add projects based on KAS configuration
+        projects = ET.SubElement(manifest, "project")
+        
+        # Extract layer information from KAS config
+        if 'repos' in kas_config:
+            for repo_name, repo_config in kas_config['repos'].items():
+                project = ET.SubElement(projects, "project")
+                project.set("name", repo_name)
+                
+                # Set path (usually the repo name)
+                project.set("path", f"layers/{repo_name}")
+                
+                # Set remote and revision if available
+                if 'url' in repo_config:
+                    url = repo_config['url']
+                    # Determine remote based on URL pattern
+                    if 'yoctoproject.org' in url:
+                        project.set("remote", "yocto")
+                    elif 'openembedded.org' in url:
+                        project.set("remote", "openembedded")
+                    elif 'github.com' in url:
+                        project.set("remote", "github")
+                    elif 'gitlab.com' in url:
+                        project.set("remote", "gitlab")
+                    else:
+                        # Create a custom remote for this URL
+                        remote_name = f"remote_{repo_name}"
+                        remote = ET.SubElement(remotes, "remote")
+                        remote.set("name", remote_name)
+                        # Extract base URL
+                        base_url = '/'.join(url.split('/')[:3])
+                        remote.set("fetch", base_url)
+                        project.set("remote", remote_name)
+                
+                if 'refspec' in repo_config:
+                    project.set("revision", repo_config['refspec'])
+                else:
+                    project.set("revision", "master")
+        
+        # Add BSP-specific projects
+        bsp_project = ET.SubElement(projects, "project")
+        bsp_project.set("name", f"advantech/{bsp_name}")
+        bsp_project.set("path", f"bsp/{bsp_name}")
+        bsp_project.set("remote", "advantech")
+        bsp_project.set("revision", "master")
+        
+        # Convert to pretty XML string
+        rough_string = ET.tostring(manifest, 'utf-8')
+        reparsed = minidom.parseString(rough_string)
+        return reparsed.toprettyxml(indent="  ")
+    
+    @staticmethod
+    def extract_layer_info(kas_config_yaml: str) -> Dict[str, Any]:
+        """
+        Extract layer and repository information from KAS configuration.
+        
+        Args:
+            kas_config_yaml: KAS configuration as YAML string
+            
+        Returns:
+            Dictionary containing layer information
+        """
+        try:
+            config = yaml.safe_load(kas_config_yaml)
+            layers_info = {
+                'repos': config.get('repos', {}),
+                'layers': config.get('layers', []),
+                'machine': config.get('machine', ''),
+                'distro': config.get('distro', ''),
+                'target': config.get('target', '')
+            }
+            return layers_info
+        except yaml.YAMLError as e:
+            logging.warning(f"Failed to parse KAS config for layer info: {e}")
+            return {}
 
 class KasManager:
     """
@@ -1214,12 +1350,12 @@ class Application:
 
     def export_bsp_config(self, bsp_name: str, output_file: Optional[str] = None, output_format: str = "kas") -> None:
         """
-        Export BSP configuration as KAS YAML.
+        Export BSP configuration in various formats.
         
         Args:
             bsp_name: Name of the BSP to export
             output_file: Optional file path to save the configuration
-            output_format: Format to export (currently only "kas" supported)
+            output_format: Format to export (kas, android-manifest)
             
         Raises:
             SystemExit: If export fails
@@ -1231,10 +1367,6 @@ class Application:
         
         logging.info(f"Exporting configuration for {bsp.name} - {bsp.description}")
         
-        if output_format.lower() != "kas":
-            logging.error(f"Unsupported export format: {output_format}. Only 'kas' is currently supported.")
-            sys.exit(1)
-            
         # Get cache directories from environment manager
         downloads = None
         sstate = None
@@ -1255,18 +1387,75 @@ class Application:
                 env_manager=self.env_manager
             )
             
-            # Export the KAS configuration
-            config_yaml = kas_mgr.export_kas_config(output_file)
+            if output_format.lower() == "kas":
+                # Export KAS configuration
+                config_yaml = kas_mgr.export_kas_config(output_file)
+                
+                # If no output file specified, print to stdout
+                if not output_file:
+                    print("\n" + "="*60)
+                    print(f"KAS Configuration for BSP: {bsp_name}")
+                    print("="*60)
+                    print(config_yaml)
+                    print("="*60)
+                    
+            elif output_format.lower() == "android-manifest":
+                # Export Android manifest format
+                self._export_android_manifest(bsp, kas_mgr, output_file)
+                
+            else:
+                logging.error(f"Unsupported export format: {output_format}. Supported formats: kas, android-manifest")
+                sys.exit(1)
             
-            # If no output file specified, print to stdout
-            if not output_file:
+        logging.info(f"BSP {bsp_name} configuration exported successfully in {output_format} format!")
+
+    def _export_android_manifest(self, bsp: BSP, kas_mgr: KasManager, output_file: Optional[str] = None) -> None:
+        """
+        Export BSP configuration as Android manifest XML.
+        
+        Args:
+            bsp: BSP configuration object
+            kas_mgr: KAS manager instance
+            output_file: Optional file path to save the manifest
+            
+        Raises:
+            SystemExit: If export fails
+        """
+        try:
+            # Get KAS configuration for layer information
+            kas_config_yaml = kas_mgr.export_kas_config()
+            kas_config = yaml.safe_load(kas_config_yaml) if kas_config_yaml else {}
+            
+            # Extract layer information
+            layers_info = AndroidManifestGenerator.extract_layer_info(kas_config_yaml)
+            
+            # Generate Android manifest
+            manifest_xml = AndroidManifestGenerator.generate_manifest(
+                bsp_name=bsp.name,
+                bsp_description=bsp.description,
+                kas_config=kas_config,
+                layers_info=layers_info
+            )
+            
+            # Save to file or print to stdout
+            if output_file:
+                output_path = Path(output_file)
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(manifest_xml)
+                
+                logging.info(f"Android manifest exported to: {output_path}")
+            else:
                 print("\n" + "="*60)
-                print(f"KAS Configuration for BSP: {bsp_name}")
+                print(f"Android Manifest for BSP: {bsp.name}")
                 print("="*60)
-                print(config_yaml)
+                print(manifest_xml)
                 print("="*60)
-            
-        logging.info(f"BSP {bsp_name} configuration exported successfully!")
+                
+        except Exception as e:
+            logging.error(f"Failed to export Android manifest: {e}")
+            sys.exit(1)
 
     def cleanup(self) -> None:
         """Cleanup resources and perform any necessary finalization."""
@@ -1316,7 +1505,7 @@ def main() -> int:
             '--format',
             type=str,
             default='kas',
-            choices=['kas'],
+            choices=['kas', 'android-manifest'],
             help='Export format (default: kas)'
         )
         export_parser.add_argument(
