@@ -1,12 +1,77 @@
 specification:
   version: "1.0"
 
-registry:
-  cache:
-    downloads: "/home/mikhail-tsukerman/data/cache/downloads"
-    sstate: "/home/mikhail-tsukerman/data/cache/sstate"
+environment:
+  - name: "GITCONFIG_FILE"
+    value: "/home/mikhail-tsukerman/.gitconfig"
+  - name: "DL_DIR"
+    value: "/home/mikhail-tsukerman/data/cache/downloads"
+  - name: "SSTATE_DIR"
+    value: "/home/mikhail-tsukerman/data/cache/sstate"
 
+registry:
   bsp:
+    - name: adv-bsp-oenxp-kirkstone-rsb3720
+      description: "RSB3720 ACL Kirkstone BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "4.0"
+      build:
+        path: build/adv-oenxp-bsp-rsb3720-kirkstone
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-20.04/kas:4.7"
+            args:
+              - name: "DISTRO" 
+                value: "20.04"
+              - name: "KAS_VERSION"
+                value: "4.7"
+        configuration:
+          - adv-bsp-oenxp-kirkstone-rsb3720.yaml
+
+    - name: adv-mbsp-oenxp-walnascar-rsb3720
+      description: "Advantech EIoT Yocto Walnascar RSB3720"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "5.2"
+      build:
+        path: build/adv-mbsp-oenxp-rsb3720-walnascar
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:22.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rsb3720.yaml
+
+    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720
+      description: "Advantech EIoT Yocto Walnascar RAUC RSB3720"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "5.2"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rsb3720-walnascar
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:22.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rsb3720.yaml
+          - features/ota/rauc/adv-ota-walnascar.yml
+
     - name: poky-qemuarm64-master
       description: "QEMU ARM64 Master BSP"
       os:
@@ -29,26 +94,6 @@ registry:
           - compilers/clang/master.yml
           - yocto/qemu/qemuarm64.yaml     
 
-    - name: adv-bsp-oenxp-kirkstone-rsb3720
-      description: "RSB3720 ACL Kirkstone BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "4.0"
-      build:
-        path: build/adv-oenxp-bsp-rsb3720-kirkstone
-        environment:
-          docker:
-            file: Dockerfile.ubuntu
-            image: "advantech/bsp-registry/ubuntu-20.04/kas:4.7"
-            args:
-              - name: "DISTRO_VERSION" 
-                value: "20.04"
-              - name: "KAS_VERSION"
-                value: "4.7"
-        configuration:
-          - adv-bsp-oenxp-kirkstone-rsb3720.yaml
-
     - name: poky-qemuarm64-kirkstone
       description: "QEMU ARM64 Kirkstone BSP"
       os:
@@ -70,6 +115,26 @@ registry:
           - yocto/kirkstone.yml
           - compilers/clang/kirkstone.yml
           - yocto/qemu/qemuarm64.yaml     
+
+    - name: poky-qemuarm64-nanbield
+      description: "QEMU ARM64 Nanbield BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "4.1"
+      build:
+        path: build/qemu-arm64-nanbield
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-20.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:20.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - bsp-oe-qemux86-64-nanbield.yml
 
     - name: poky-qemuarm64-mickledore
       description: "QEMU ARM64 Mickledore BSP"
@@ -155,4 +220,26 @@ registry:
         configuration:
           - yocto/walnascar.yml
           - compilers/clang/walnascar.yml
+          - yocto/qemu/qemuarm64.yaml     
+
+    - name: poky-qemuarm64-whinlatter
+      description: "QEMU ARM64 Whinlatter BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "5.2"
+      build:
+        path: build/qemu-arm64-walnascar
+        environment:
+          docker:
+            file: Dockerfile.ubuntu
+            image: "advantech/bsp-registry/ubuntu-24.04/kas:5.0"
+            args:
+              - name: "DISTRO" 
+                value: "ubuntu:24.04"
+              - name: "KAS_VERSION"
+                value: "5.0"
+        configuration:
+          - yocto/whinlatter.yml
+          - compilers/clang/whinlatter.yml
           - yocto/qemu/qemuarm64.yaml     

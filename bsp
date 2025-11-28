@@ -12,6 +12,7 @@ Key Features:
 - KAS build system integration
 - Comprehensive error handling and validation
 - Cache management for faster builds
+- Environment variable configuration
 """
 
 import subprocess
@@ -50,6 +51,12 @@ class KasError(ScriptError):
 def empty_list():
     """Factory function for creating empty lists in dataclass fields."""
     return []
+
+@dataclass
+class EnvironmentVariable:
+    """Represents an environment variable name-value pair."""
+    name: str
+    value: str
 
 @dataclass
 class DockerArg:
@@ -98,23 +105,16 @@ class BSP:
     build: BuildSetup   # Build configuration
 
 @dataclass
-class BuildCache:
-    """Cache configuration for build artifacts."""
-    sstate: str      # Shared state cache directory
-    downloads: str   # Downloads cache directory
-
-@dataclass
 class Registry:
-    """Main registry containing cache settings and BSP definitions."""
-    cache: BuildCache              # Cache configuration
-    includes: Optional[List[Path]] = field(default_factory=empty_list)  # Additional includes
-    bsp: Optional[List[BSP]] = field(default_factory=empty_list)        # BSP definitions
+    """Main registry containing BSP definitions."""
+    bsp: Optional[List[BSP]] = field(default_factory=empty_list)  # BSP definitions
 
 @dataclass
 class RegistryRoot:
     """Root container for the registry configuration."""
     specification: Specification  # Specification version
     registry: Registry           # Main registry data
+    environment: Optional[List[EnvironmentVariable]] = field(default_factory=empty_list)  # Environment variables
 
 def read_yaml_file(filename: Path) -> str:
     """
@@ -297,6 +297,77 @@ class PathResolver:
 # Global path resolver instance
 resolver = PathResolver()
 
+class EnvironmentManager:
+    """
+    Manager for environment variable configuration.
+    
+    Handles environment variable setup and validation for build environments.
+    """
+    
+    def __init__(self, environment_vars: Optional[List[EnvironmentVariable]] = None):
+        """
+        Initialize Environment manager.
+        
+        Args:
+            environment_vars: List of environment variables to manage
+        """
+        self.environment_vars = environment_vars or []
+        self._env_dict = self._build_environment_dict()
+        
+    def _build_environment_dict(self) -> Dict[str, str]:
+        """Build a dictionary from the environment variable list."""
+        env_dict = {}
+        for env_var in self.environment_vars:
+            env_dict[env_var.name] = env_var.value
+        return env_dict
+    
+    def get_environment_dict(self) -> Dict[str, str]:
+        """Get environment variables as a dictionary."""
+        return self._env_dict.copy()
+    
+    def get_value(self, key: str, default: Optional[str] = None) -> Optional[str]:
+        """Get the value of an environment variable by key."""
+        return self._env_dict.get(key, default)
+    
+    def validate_environment(self) -> bool:
+        """
+        Validate that all environment variable paths exist.
+        
+        Returns:
+            True if all paths are valid, False otherwise
+        """
+        # Check common path variables
+        path_variables = ['DL_DIR', 'SSTATE_DIR', 'GITCONFIG_FILE']
+        
+        for var_name in path_variables:
+            if var_name in self._env_dict:
+                path_value = self._env_dict[var_name]
+                if not resolver.exists(path_value):
+                    logging.warning(f"Environment variable {var_name} path does not exist: {path_value}")
+                    # Don't exit here, just warn - paths might be created later
+        
+        logging.info(f"Environment configuration validated with {len(self._env_dict)} variables")
+        return True
+        
+    def setup_environment(self, base_env: Dict[str, str]) -> Dict[str, str]:
+        """
+        Set up environment variables for build processes.
+        
+        Args:
+            base_env: Base environment dictionary
+            
+        Returns:
+            Updated environment with configured variables
+        """
+        env = base_env.copy()
+        
+        # Add all configured environment variables
+        for env_var in self.environment_vars:
+            env[env_var.name] = env_var.value
+            logging.debug(f"Set {env_var.name}={env_var.value}")
+            
+        return env
+
 class KasManager:
     """
     Manager for KAS (KAS is Yet Another Build System for Yocto) operations.
@@ -308,7 +379,7 @@ class KasManager:
     def __init__(self, kas_files: List[str], build_dir: str = "build", use_container: bool = False,
                  download_dir: str = None, sstate_dir: str = None,
                  container_engine: str = None, container_image: str = None,
-                 search_paths: List[str] = None):
+                 search_paths: List[str] = None, env_manager: EnvironmentManager = None):
         """
         Initialize KAS manager with configuration.
         
@@ -321,6 +392,7 @@ class KasManager:
             container_engine: Docker or podman
             container_image: Custom container image
             search_paths: Additional paths to search for configuration files
+            env_manager: Environment configuration manager
             
         Raises:
             SystemExit: If initialization fails
@@ -337,6 +409,7 @@ class KasManager:
         self.search_paths = search_paths or []
         self.download_dir = download_dir
         self.sstate_dir = sstate_dir
+        self.env_manager = env_manager or EnvironmentManager()
 
         # Add common search paths for configuration files
         self.search_paths.extend([
@@ -369,11 +442,20 @@ class KasManager:
         """
         env = os.environ.copy()
 
-        # Set cache directories if provided
+        # Set cache directories if provided (override environment manager if specified)
         if self.download_dir:
             env['DL_DIR'] = self.download_dir
+        elif not env.get('DL_DIR'):  # Only set from env_manager if not already set
+            dl_dir = self.env_manager.get_value('DL_DIR')
+            if dl_dir:
+                env['DL_DIR'] = dl_dir
+                
         if self.sstate_dir:
             env["SSTATE_DIR"] = self.sstate_dir
+        elif not env.get('SSTATE_DIR'):  # Only set from env_manager if not already set
+            sstate_dir = self.env_manager.get_value('SSTATE_DIR')
+            if sstate_dir:
+                env['SSTATE_DIR'] = sstate_dir
 
         # Set container-specific environment variables
         if self.use_container:
@@ -381,6 +463,9 @@ class KasManager:
                 env['KAS_CONTAINER_ENGINE'] = self.container_engine
             if self.container_image:
                 env['KAS_CONTAINER_IMAGE'] = self.container_image
+
+        # Apply environment manager configuration (overrides any previous settings)
+        env = self.env_manager.setup_environment(env)
 
         return env
 
@@ -685,6 +770,12 @@ class KasManager:
         logging.info(f"Build directory: {self.build_dir}")
         logging.info(f"Using container: {self.use_container}")
 
+        # Log important environment variables
+        important_vars = ['DL_DIR', 'SSTATE_DIR', 'GITCONFIG_FILE']
+        for var in important_vars:
+            if var in env:
+                logging.info(f"Using {var}: {env[var]}")
+
         try:
             if show_output:
                 # Show live output to console
@@ -727,7 +818,12 @@ class KasManager:
         Raises:
             SystemExit: If build fails or prerequisites are not met
         """
-        # Validate configuration files first
+        # Validate environment configuration first
+        if not self.env_manager.validate_environment():
+            logging.error("Environment configuration validation failed")
+            sys.exit(1)
+
+        # Validate configuration files
         if not self.validate_kas_files(check_includes=True):
             logging.error("Cannot build due to missing files")
             sys.exit(1)
@@ -880,6 +976,7 @@ class Application:
         self.config_path = Path(config_path)
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = None  # Will hold parsed registry configuration
+        self.env_manager = None  # Environment configuration manager
 
     def load_configuration(self) -> None:
         """
@@ -897,6 +994,11 @@ class Application:
             self.model = get_registry_from_yaml_file(self.config_path)
             logging.info(f"Configuration loaded successfully from {self.config_path}")
 
+            # Initialize Environment manager if configuration exists
+            if self.model.environment:
+                self.env_manager = EnvironmentManager(self.model.environment)
+                logging.info(f"Environment configuration initialized with {len(self.model.environment)} variables")
+
         except SystemExit:
             raise
         except Exception as e:
@@ -907,6 +1009,13 @@ class Application:
         """Initialize application components."""
         logging.info("Initializing application...")
         self.load_configuration()
+        
+        # Validate environment configuration if present
+        if self.env_manager:
+            if not self.env_manager.validate_environment():
+                logging.error("Environment configuration validation failed")
+                sys.exit(1)
+                
         logging.info("Application initialized successfully")
 
     def list_bsp(self) -> None:
@@ -961,33 +1070,41 @@ class Application:
         logging.info(f"Preparing build directory: {build_path}")
         resolver.ensure_directory(build_path)
 
-    def build_bsp_with_kas(self, configuration: List[str], downloads: str, sstate: str, 
-                          build_path: str, docker_image: str) -> None:
+    def build_bsp_with_kas(self, configuration: List[str], build_path: str, docker_image: str) -> None:
         """
         Execute KAS build for a BSP.
         
         Args:
             configuration: List of KAS configuration files
-            downloads: Downloads cache directory
-            sstate: Shared state cache directory
             build_path: Build output directory
             docker_image: Docker image to use for build
             
         Raises:
             SystemExit: If build fails
         """
-        # Ensure cache directories exist
-        resolver.ensure_directory(downloads)
-        resolver.ensure_directory(sstate)
+        # Get cache directories from environment manager
+        downloads = None
+        sstate = None
+        
+        if self.env_manager:
+            downloads = self.env_manager.get_value('DL_DIR')
+            sstate = self.env_manager.get_value('SSTATE_DIR')
 
-        # Initialize KAS manager
+        # Ensure cache directories exist if specified
+        if downloads:
+            resolver.ensure_directory(downloads)
+        if sstate:
+            resolver.ensure_directory(sstate)
+
+        # Initialize KAS manager with environment configuration
         kas_mgr = KasManager(
             configuration, 
             build_path, 
             download_dir=downloads, 
             sstate_dir=sstate, 
             use_container=True, 
-            container_image=docker_image
+            container_image=docker_image,
+            env_manager=self.env_manager  # Pass environment manager to KAS
         )
 
         # Dump configuration for verification (debugging)
@@ -1033,8 +1150,6 @@ class Application:
         self.build_bsp_with_kas(
             configuration=bsp.build.configuration,
             build_path=bsp.build.path,
-            downloads=self.model.registry.cache.downloads,
-            sstate=self.model.registry.cache.sstate,
             docker_image=bsp.build.environment.docker.image
         )
         
