@@ -15,6 +15,7 @@ Key Features:
 - Environment variable configuration
 - KAS configuration export functionality
 - Android manifest export functionality
+- BitBake setup export functionality
 """
 
 import subprocess
@@ -1151,17 +1152,17 @@ class KasManager:
             logging.error(f"Failed to export KAS configuration: {e}")
             sys.exit(1)
 
-class Application:
+class BspManager:
     """
-    Main application class for BSP registry management.
+    Main BSP management class for BSP registry management.
     
-    This class coordinates the overall application flow including
+    This class coordinates the overall BSP management flow including
     configuration loading, BSP management, and build execution.
     """
     
     def __init__(self, config_path: str = "bsp-registry.yml"):
         """
-        Initialize application.
+        Initialize BSP manager.
         
         Args:
             config_path: Path to BSP registry configuration file
@@ -1173,7 +1174,7 @@ class Application:
 
     def load_configuration(self) -> None:
         """
-        Load and parse application configuration from YAML file.
+        Load and parse BSP configuration from YAML file.
         
         Raises:
             SystemExit: If configuration file is missing or invalid
@@ -1199,8 +1200,8 @@ class Application:
             sys.exit(1)
 
     def initialize(self) -> None:
-        """Initialize application components."""
-        logging.info("Initializing application...")
+        """Initialize BSP manager components."""
+        logging.info("Initializing BSP manager...")
         self.load_configuration()
         
         # Validate environment configuration if present
@@ -1209,7 +1210,7 @@ class Application:
                 logging.error("Environment configuration validation failed")
                 sys.exit(1)
                 
-        logging.info("Application initialized successfully")
+        logging.info("BSP manager initialized successfully")
 
     def list_bsp(self) -> None:
         """
@@ -1527,17 +1528,17 @@ def main() -> int:
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
 
-        # Initialize and run application
-        app = Application(args.registry)
-        app.initialize()
+        # Initialize and run BSP manager
+        bsp_mgr = BspManager(args.registry)
+        bsp_mgr.initialize()
 
         # Execute requested command
         if args.command == 'build':
-            app.build_bsp(args.bsp_name)
+            bsp_mgr.build_bsp(args.bsp_name)
         elif args.command == 'list':
-            app.list_bsp()
+            bsp_mgr.list_bsp()
         elif args.command == 'export':
-            app.export_bsp_config(
+            bsp_mgr.export_bsp_config(
                 bsp_name=args.bsp_name,
                 output_file=args.output,
                 output_format=args.format
@@ -1546,15 +1547,15 @@ def main() -> int:
             # For unimplemented commands, validate BSP exists and show message
             logging.warning(f"Command {args.command} not fully implemented yet")
             if hasattr(args, 'bsp_name'):
-                app.get_bsp_by_name(args.bsp_name)
+                bsp_mgr.get_bsp_by_name(args.bsp_name)
                 logging.info(f"Command {args.command} would proceed with BSP {args.bsp_name}")
 
-        app.cleanup()
+        bsp_mgr.cleanup()
         logging.info("Command completed successfully")
         return 0
 
     except KeyboardInterrupt:
-        logging.info("Application interrupted by user")
+        logging.info("BSP manager interrupted by user")
         return 130  # Standard exit code for SIGINT
     except SystemExit as e:
         # Re-raise system exit with proper code
