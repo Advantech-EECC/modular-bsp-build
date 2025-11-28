@@ -10,6 +10,7 @@ Key Features:
 - BSP registry management via YAML configuration files
 - Docker container building and management for reproducible builds
 - KAS build system integration for Yocto-based builds
+- Interactive shell access to build environments
 - Comprehensive error handling and configuration validation
 - Advanced cache management for faster incremental builds
 - Environment variable configuration management with expansion
@@ -22,9 +23,10 @@ Architecture:
 - PathResolver: Utility for path resolution and validation
 
 Typical Usage:
-  $ python bsp.py list                    # List available BSPs
-  $ python bsp.py build <bsp_name>        # Build a specific BSP
-  $ python bsp.py export <bsp_name>       # Export BSP configuration
+  $ python bsp list                    # List available BSPs
+  $ python bsp build <bsp_name>        # Build a specific BSP
+  $ python bsp shell <bsp_name>        # Enter interactive shell for BSP
+  $ python bsp export <bsp_name>       # Export BSP configuration
 
 Configuration:
   Uses YAML configuration files (default: bsp-registry.yml) to define:
@@ -1125,8 +1127,11 @@ class KasManager:
         """
         Start KAS shell session or execute command in build environment.
         
+        This method launches an interactive shell session within the
+        build environment, allowing users to run commands manually.
+        
         Args:
-            command: Optional command to execute in shell
+            command: Optional command to execute in shell (if not provided, starts interactive shell)
             show_output: Whether to show command output
             
         Raises:
@@ -1144,6 +1149,10 @@ class KasManager:
 
         if command:
             args.extend(["--command", command])
+            logging.info(f"Executing command in KAS shell: {command}")
+        else:
+            logging.info("Starting interactive KAS shell session...")
+            logging.info("Type 'exit' to leave the shell when done.")
 
         try:
             self._run_kas_command(args, show_output)
@@ -1294,8 +1303,8 @@ class BspManager:
     Main BSP management class for BSP registry management.
     
     This class coordinates the overall BSP management flow including
-    configuration loading, BSP discovery, build execution, and
-    configuration export operations.
+    configuration loading, BSP discovery, build execution, shell access,
+    and configuration export operations.
     """
     
     def __init__(self, config_path: str = "bsp-registry.yml"):
@@ -1402,17 +1411,15 @@ class BspManager:
         logging.info(f"Preparing build directory: {build_path}")
         resolver.ensure_directory(build_path)
 
-    def build_bsp_with_kas(self, configuration: List[str], build_path: str, docker_image: str) -> None:
+    def _get_kas_manager_for_bsp(self, bsp: BSP) -> KasManager:
         """
-        Execute KAS build for a BSP.
+        Create and configure a KAS manager for the specified BSP.
         
         Args:
-            configuration: List of KAS configuration files
-            build_path: Build output directory
-            docker_image: Docker image to use for build
+            bsp: BSP configuration object
             
-        Raises:
-            SystemExit: If build fails
+        Returns:
+            Configured KasManager instance
         """
         # Get cache directories from environment manager
         downloads = None
@@ -1430,23 +1437,16 @@ class BspManager:
 
         # Initialize KAS manager with environment configuration
         kas_mgr = KasManager(
-            configuration, 
-            build_path, 
+            bsp.build.configuration, 
+            bsp.build.path, 
             download_dir=downloads, 
             sstate_dir=sstate, 
             use_container=True, 
-            container_image=docker_image,
-            env_manager=self.env_manager  # Pass environment manager to KAS
+            container_image=bsp.build.environment.docker.image,
+            env_manager=self.env_manager
         )
 
-        # Dump configuration for verification (debugging)
-        config_output = kas_mgr.dump_config(show_output=False)
-        if config_output:
-            logging.debug("Configuration dump:")
-            logging.debug(config_output)
-
-        # Execute build
-        kas_mgr.build_project()
+        return kas_mgr
 
     def build_bsp(self, bsp_name: str) -> None:
         """
@@ -1481,14 +1481,72 @@ class BspManager:
         # Prepare build directory
         self.prepare_build_directory(bsp.build.path)
         
-        # Execute KAS build
-        self.build_bsp_with_kas(
-            configuration=bsp.build.configuration,
-            build_path=bsp.build.path,
-            docker_image=bsp.build.environment.docker.image
-        )
+        # Get KAS manager and execute build
+        kas_mgr = self._get_kas_manager_for_bsp(bsp)
+        
+        # Dump configuration for verification (debugging)
+        config_output = kas_mgr.dump_config(show_output=False)
+        if config_output:
+            logging.debug("Configuration dump:")
+            logging.debug(config_output)
+
+        # Execute build
+        kas_mgr.build_project()
         
         logging.info(f"BSP {bsp_name} built successfully!")
+
+    def shell_into_bsp(self, bsp_name: str, command: str = None) -> None:
+        """
+        Enter interactive shell session for the specified BSP.
+        
+        This method launches an interactive shell within the Docker
+        container environment for the BSP, allowing manual execution
+        of build commands, BitBake operations, and debugging.
+        
+        Args:
+            bsp_name: Name of the BSP to enter shell for
+            command: Optional command to execute in the shell (if not provided, starts interactive shell)
+            
+        Raises:
+            SystemExit: If shell session cannot be started
+        """
+        logging.info(f"Entering shell for BSP: {bsp_name}")
+        
+        # Retrieve BSP configuration
+        bsp = self.get_bsp_by_name(bsp_name)
+        
+        logging.info(f"Starting shell session for {bsp.name} - {bsp.description}")
+        
+        # Build Docker image if configured (same as build process)
+        if (bsp.build.environment.docker.file and 
+            bsp.build.environment.docker.image):
+            logging.info("Building Docker image for shell environment...")
+            build_docker(
+                ".", 
+                bsp.build.environment.docker.file, 
+                bsp.build.environment.docker.image, 
+                bsp.build.environment.docker.args
+            )
+        
+        # Prepare build directory
+        self.prepare_build_directory(bsp.build.path)
+        
+        # Get KAS manager and start shell session
+        kas_mgr = self._get_kas_manager_for_bsp(bsp)
+        
+        # Start interactive shell session
+        logging.info("Starting KAS shell session...")
+        if command:
+            logging.info(f"Executing command: {command}")
+        else:
+            logging.info("Interactive shell started. Available commands:")
+            logging.info("  - bitbake <recipe>    : Build a specific recipe")
+            logging.info("  - devtool <command>   : Use devtool for development workflows")
+            logging.info("  - oe-init-build-env   : Initialize build environment")
+            logging.info("  - exit                : Exit the shell session")
+            logging.info("Use 'Ctrl+D' or type 'exit' to leave the shell.")
+        
+        kas_mgr.shell_session(command=command)
 
     def export_bsp_config(self, bsp_name: str, output_file: Optional[str] = None) -> None:
         """
@@ -1598,9 +1656,19 @@ def main() -> int:
             help='Output file path (default: stdout)'
         )
 
-        # Shell command (stub implementation)            
-        shell_parser = subparsers.add_parser('shell', help='Enter bitbake shell for BSP')
-        shell_parser.add_argument('bsp_name', type=str, help='Name of the BSP')
+        # Shell command - fully implemented
+        shell_parser = subparsers.add_parser('shell', help='Enter interactive shell for BSP')
+        shell_parser.add_argument(
+            'bsp_name', 
+            type=str, 
+            help='Name of the BSP'
+        )
+        shell_parser.add_argument(
+            '--command', '-c',
+            type=str,
+            dest='shell_command',  # Use different dest to avoid conflict
+            help='Command to execute in shell (optional, if not provided starts interactive shell)'
+        )
 
         args = parser.parse_args()
 
@@ -1625,12 +1693,18 @@ def main() -> int:
                 bsp_name=args.bsp_name,
                 output_file=args.output
             )
+        elif args.command == 'shell':
+            # Use getattr to safely access the shell_command attribute
+            shell_command = getattr(args, 'shell_command', None)
+            bsp_mgr.shell_into_bsp(
+                bsp_name=args.bsp_name,
+                command=shell_command
+            )
         else:
-            # For unimplemented commands, validate BSP exists and show message
-            logging.warning(f"Command {args.command} not fully implemented yet")
-            if hasattr(args, 'bsp_name'):
-                bsp_mgr.get_bsp_by_name(args.bsp_name)
-                logging.info(f"Command {args.command} would proceed with BSP {args.bsp_name}")
+            # This should not happen since subparsers are required=True
+            logging.error(f"Unknown command: {args.command}")
+            parser.print_help()
+            return 1
 
         bsp_mgr.cleanup()
         logging.info("Command completed successfully")
@@ -1645,7 +1719,7 @@ def main() -> int:
     except Exception as e:
         logging.error(f"Fatal error: {e}")
         return 1
-
+    
 if __name__ == "__main__":
     # Execute main function and exit with proper code
     sys.exit(main())
