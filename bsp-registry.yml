@@ -134,7 +134,9 @@ registry:
               - name: "KAS_VERSION"
                 value: "5.0"
         configuration:
-          - bsp-oe-qemux86-64-nanbield.yml
+          - yocto/nanbield.yml
+          - compilers/clang/nanbield.yml
+          - yocto/qemu/qemuarm64.yaml     
 
     - name: poky-qemuarm64-mickledore
       description: "QEMU ARM64 Mickledore BSP"
@@ -154,7 +156,9 @@ registry:
               - name: "KAS_VERSION"
                 value: "5.0"
         configuration:
-          - bsp-oe-qemux86-64-mickledore.yml
+          - yocto/mickledore.yml
+          - compilers/clang/mickledore.yml
+          - yocto/qemu/qemuarm64.yaml     
 
     - name: poky-qemuarm64-scarthgap
       description: "QEMU ARM64 Scarthgap BSP"
