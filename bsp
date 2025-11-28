@@ -54,6 +54,47 @@ from datetime import datetime
 from dataclasses import dataclass, field
 
 # =============================================================================
+# Logging Colors
+# =============================================================================
+
+try:
+    import colorama
+    from colorama import Fore, Back, Style
+    colorama.init()  # Initialize colorama for Windows support
+    COLORAMA_AVAILABLE = True
+except ImportError:
+    COLORAMA_AVAILABLE = False
+
+class ColoramaFormatter(logging.Formatter):
+    """Colored formatter using colorama for cross-platform compatibility."""
+    
+    if COLORAMA_AVAILABLE:
+        COLOR_MAP = {
+            logging.DEBUG: Fore.CYAN,
+            logging.INFO: Fore.GREEN,
+            logging.WARNING: Fore.YELLOW,
+            logging.ERROR: Fore.RED,
+            logging.CRITICAL: Fore.RED + Style.BRIGHT
+        }
+    else:
+        # Fallback to ANSI codes if colorama not available
+        COLOR_MAP = {
+            logging.DEBUG: '\033[36m',
+            logging.INFO: '\033[32m',
+            logging.WARNING: '\033[33m',
+            logging.ERROR: '\033[31m',
+            logging.CRITICAL: '\033[1;31m'
+        }
+    
+    RESET = Style.RESET_ALL if COLORAMA_AVAILABLE else '\033[0m'
+    
+    def format(self, record):
+        color = self.COLOR_MAP.get(record.levelno, '')
+        record.levelname = f"{color}{record.levelname}{self.RESET}"
+        record.msg = f"{color}{record.msg}{self.RESET}"
+        return super().format(record)
+    
+# =============================================================================
 # Exception Hierarchy
 # =============================================================================
 
@@ -1623,7 +1664,8 @@ def main() -> int:
         parser = argparse.ArgumentParser(description="Advantech Board Support Package Registry")
         parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
         parser.add_argument('--registry', '-r', default='bsp-registry.yml', help='BSP Registry file')
-
+        parser.add_argument('--no-color', action='store_true', help='Disable colored output')
+        
         # Create subparsers for different commands
         subparsers = parser.add_subparsers(dest='command', help='Command to execute', required=True)
 
@@ -1674,10 +1716,20 @@ def main() -> int:
 
         # Setup logging based on verbosity
         log_level = logging.DEBUG if args.verbose else logging.INFO
-        logging.basicConfig(
-            level=log_level,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
+
+        # Setup logging colors
+        if args.no_color or not COLORAMA_AVAILABLE:
+            logging.basicConfig(
+                level=log_level,
+                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            )
+        else:
+            logging.basicConfig(level=log_level)
+            logger = logging.getLogger()
+            handler = logger.handlers[0]
+            handler.setFormatter(ColoramaFormatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            ))
 
         # Initialize and run BSP manager
         bsp_mgr = BspManager(args.registry)
