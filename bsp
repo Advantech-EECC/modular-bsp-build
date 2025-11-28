@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+"""
+Advantech Board Support Package (BSP) Registry Manager
+
+This script provides a command-line interface for managing and building
+Yocto-based BSPs using KAS build system. It supports Docker containers,
+cached builds, and comprehensive configuration management.
+
+Key Features:
+- BSP registry management via YAML configuration
+- Docker container building and management
+- KAS build system integration
+- Comprehensive error handling and validation
+- Cache management for faster builds
+"""
 
 import subprocess
 import os
@@ -14,88 +28,106 @@ from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
 
 class ScriptError(Exception):
-    """Base exception for script errors."""
+    """Base exception for all script-related errors."""
     pass
 
 class ConfigurationError(ScriptError):
-    """Configuration related errors."""
+    """Raised when there are issues with configuration files or settings."""
     pass
 
 class BuildError(ScriptError):
-    """Build related errors."""
+    """Raised when build processes fail."""
     pass
 
 class DockerError(ScriptError):
-    """Docker related errors."""
+    """Raised when Docker operations fail."""
     pass
 
 class KasError(ScriptError):
-    """KAS related errors."""
+    """Raised when KAS operations fail."""
     pass
 
-# shortcut to reduce code duplication for default_factory
 def empty_list():
+    """Factory function for creating empty lists in dataclass fields."""
     return []
 
 @dataclass
 class DockerArg:
+    """Represents a Docker build argument (name=value pair)."""
     name: str
     value: str
 
 @dataclass
 class Docker:
-    image: Optional[str]
-    file: Optional[str]
-    args: List[DockerArg] = field(default_factory=empty_list)
+    """Docker configuration for build environment."""
+    image: Optional[str]  # Docker image name/tag
+    file: Optional[str]   # Dockerfile path
+    args: List[DockerArg] = field(default_factory=empty_list)  # Build arguments
 
 @dataclass
 class BuildEnvironment:
+    """Build environment configuration including Docker settings."""
     docker: Docker
 
 @dataclass
 class BuildSetup:
-    path: str
-    environment: BuildEnvironment
-    docker: Optional[str]
-    configuration: List[str]
+    """Complete build setup configuration."""
+    path: str                    # Build directory path
+    environment: BuildEnvironment  # Build environment settings
+    docker: Optional[str]        # Docker runtime to use
+    configuration: List[str]     # KAS configuration files
 
 @dataclass
 class Specification:
+    """Registry specification version."""
     version: str
 
 @dataclass
 class OperatingSystem:
-    name: str
-    build_system: str
-    version: str
+    """Operating system configuration for the BSP."""
+    name: str          # OS name (e.g., linux)
+    build_system: str  # Build system (e.g., yocto)
+    version: str       # OS version
 
 @dataclass
 class BSP:
-    name: str
-    description: str
-    os: OperatingSystem
-    build: BuildSetup
+    """Board Support Package definition."""
+    name: str           # BSP identifier
+    description: str    # Human-readable description
+    os: OperatingSystem # OS configuration
+    build: BuildSetup   # Build configuration
 
 @dataclass
 class BuildCache:
-    sstate: str
-    downloads: str
+    """Cache configuration for build artifacts."""
+    sstate: str      # Shared state cache directory
+    downloads: str   # Downloads cache directory
 
 @dataclass
 class Registry:
-    cache: BuildCache
-    includes: Optional[List[Path]] = field(default_factory=empty_list)
-    bsp: Optional[List[BSP]] = field(default_factory=empty_list)
+    """Main registry containing cache settings and BSP definitions."""
+    cache: BuildCache              # Cache configuration
+    includes: Optional[List[Path]] = field(default_factory=empty_list)  # Additional includes
+    bsp: Optional[List[BSP]] = field(default_factory=empty_list)        # BSP definitions
 
 @dataclass
 class RegistryRoot:
-    specification: Specification
-    registry: Registry
+    """Root container for the registry configuration."""
+    specification: Specification  # Specification version
+    registry: Registry           # Main registry data
 
 def read_yaml_file(filename: Path) -> str:
     """
     Read a YAML file into a string.
-    Exits on error.
+    
+    Args:
+        filename: Path to the YAML file
+        
+    Returns:
+        String containing file contents
+        
+    Raises:
+        SystemExit: If file cannot be read
     """
     try:
         with open(filename, 'r', encoding='utf-8') as yaml_file:
@@ -107,7 +139,15 @@ def read_yaml_file(filename: Path) -> str:
 def parse_yaml_file(yaml_string: str) -> Dict[Any, Any]:
     """
     Parse YAML string into a python dictionary.
-    Exits on error.
+    
+    Args:
+        yaml_string: YAML formatted string
+        
+    Returns:
+        Dictionary representation of YAML content
+        
+    Raises:
+        SystemExit: If YAML parsing fails
     """
     try:
         return yaml.safe_load(yaml_string)
@@ -117,14 +157,23 @@ def parse_yaml_file(yaml_string: str) -> Dict[Any, Any]:
 
 def get_registry_from_yaml_file(filename: Path) -> RegistryRoot:
     """
-    Reads a YAML file and returns AST.
-    Exits on error.
+    Parse YAML file into structured RegistryRoot object.
+    
+    Args:
+        filename: Path to registry YAML file
+        
+    Returns:
+        Structured registry configuration
+        
+    Raises:
+        SystemExit: If configuration is invalid or malformed
     """
     yaml_string = read_yaml_file(filename)
     yaml_dict = parse_yaml_file(yaml_string)
 
     try:
-        cfg = dacite.Config(strict=False)
+        # Use dacite to convert dictionary to strongly-typed dataclass
+        cfg = dacite.Config(strict=False)  # Allow unknown fields for forward compatibility
         ast = dacite.from_dict(data_class=RegistryRoot, data=yaml_dict, config=cfg)
         return ast
     except dacite.UnexpectedDataError as e:
@@ -139,11 +188,20 @@ def get_registry_from_yaml_file(filename: Path) -> RegistryRoot:
 
 def build_docker(dockerfile_dir: str, dockerfile: str, tag: str, build_args: Optional[List[DockerArg]] = None) -> None:
     """
-    Build Docker image using subprocess.
-    Exits on error.
+    Build Docker image from Dockerfile.
+    
+    Args:
+        dockerfile_dir: Directory containing Dockerfile
+        dockerfile: Dockerfile name
+        tag: Image tag for the built image
+        build_args: List of Docker build arguments
+        
+    Raises:
+        SystemExit: If Docker build fails or prerequisites are missing
     """
     logging.info(f"Building docker container {tag} using {dockerfile}")
     
+    # Validate prerequisites
     if not os.path.isdir(dockerfile_dir):
         logging.error(f"Docker build directory does not exist: {dockerfile_dir}")
         sys.exit(1)
@@ -155,18 +213,22 @@ def build_docker(dockerfile_dir: str, dockerfile: str, tag: str, build_args: Opt
 
     original_dir = os.getcwd()
     try:
+        # Change to Dockerfile directory for context
         os.chdir(dockerfile_dir)
         
+        # Build docker command
         cmd = ["docker", "build", "-f", dockerfile, "-t", tag]
         
+        # Add build arguments if provided
         if build_args:
             for argument in build_args:
                 cmd.extend(["--build-arg", f"{argument.name}={argument.value}"])
 
-        cmd.extend(["."])
+        cmd.extend(["."])  # Build context is current directory
         
         logging.info(f"Running: {' '.join(cmd)}")
         
+        # Execute build command
         process = subprocess.run(cmd, check=True, capture_output=True, text=True)
         logging.info("Docker build completed successfully")
         
@@ -178,19 +240,25 @@ def build_docker(dockerfile_dir: str, dockerfile: str, tag: str, build_args: Opt
         logging.error(f"Unexpected error during Docker build: {e}")
         sys.exit(1)
     finally:
+        # Always return to original directory
         os.chdir(original_dir)
 
 class PathResolver:
-    """Utility class for path resolution and validation."""
+    """
+    Utility class for path resolution and validation.
+    
+    Provides methods to resolve paths with home directory expansion
+    and validate path existence and types.
+    """
     
     @staticmethod
     def resolve(path_string: str) -> Path:
-        """Resolve path with ~ to Path object."""
+        """Resolve path with ~ expansion to Path object."""
         return Path(path_string).expanduser().resolve()
     
     @staticmethod
     def resolve_str(path_string: str) -> str:
-        """Resolve path with ~ to string."""
+        """Resolve path with ~ expansion to string."""
         return str(PathResolver.resolve(path_string))
     
     @staticmethod
@@ -210,7 +278,15 @@ class PathResolver:
     
     @staticmethod
     def ensure_directory(path_string: str) -> None:
-        """Ensure directory exists, create if not. Exit on error."""
+        """
+        Ensure directory exists, create if necessary.
+        
+        Args:
+            path_string: Directory path to ensure
+            
+        Raises:
+            SystemExit: If directory cannot be created
+        """
         path = PathResolver.resolve(path_string)
         try:
             path.mkdir(parents=True, exist_ok=True)
@@ -218,12 +294,15 @@ class PathResolver:
             logging.error(f"Failed to create directory {path}: {e}")
             sys.exit(1)
 
+# Global path resolver instance
 resolver = PathResolver()
 
 class KasManager:
     """
-    Manager for KAS build operations with comprehensive error handling.
-    Exits on critical errors.
+    Manager for KAS (KAS is Yet Another Build System for Yocto) operations.
+    
+    This class handles KAS configuration validation, build execution,
+    and environment management with comprehensive error handling.
     """
     
     def __init__(self, kas_files: List[str], build_dir: str = "build", use_container: bool = False,
@@ -231,8 +310,20 @@ class KasManager:
                  container_engine: str = None, container_image: str = None,
                  search_paths: List[str] = None):
         """
-        Initialize KAS manager with list of configuration files.
-        Exits on invalid input.
+        Initialize KAS manager with configuration.
+        
+        Args:
+            kas_files: List of KAS configuration files
+            build_dir: Build output directory
+            use_container: Use kas-container instead of native kas
+            download_dir: Downloads cache directory
+            sstate_dir: Shared state cache directory
+            container_engine: Docker or podman
+            container_image: Custom container image
+            search_paths: Additional paths to search for configuration files
+            
+        Raises:
+            SystemExit: If initialization fails
         """
         if not isinstance(kas_files, list) or not kas_files:
             logging.error("kas_files must be a non-empty list of file paths")
@@ -247,17 +338,17 @@ class KasManager:
         self.download_dir = download_dir
         self.sstate_dir = sstate_dir
 
-        # Add common search paths
+        # Add common search paths for configuration files
         self.search_paths.extend([
-            str(Path.cwd()),
-            str(self.build_dir),
-            str(Path(__file__).parent),
-            "/repo",
-            "/repo/examples",
+            str(Path.cwd()),              # Current working directory
+            str(self.build_dir),          # Build directory
+            str(Path(__file__).parent),   # Script directory
+            "/repo",                      # Common container path
+            "/repo/examples",             # Examples in container
         ])
 
         self.original_cwd = Path.cwd()
-        self._yaml_cache = {}
+        self._yaml_cache = {}  # Cache for parsed YAML files
 
         # Ensure build directory exists
         resolver.ensure_directory(str(self.build_dir))
@@ -270,14 +361,21 @@ class KasManager:
             return ["kas"]
 
     def _get_environment_with_container_vars(self) -> dict:
-        """Get environment variables with container settings."""
+        """
+        Prepare environment variables for KAS execution.
+        
+        Returns:
+            Environment dictionary with KAS-specific variables
+        """
         env = os.environ.copy()
 
+        # Set cache directories if provided
         if self.download_dir:
             env['DL_DIR'] = self.download_dir
         if self.sstate_dir:
             env["SSTATE_DIR"] = self.sstate_dir
 
+        # Set container-specific environment variables
         if self.use_container:
             if self.container_engine:
                 env['KAS_CONTAINER_ENGINE'] = self.container_engine
@@ -288,11 +386,27 @@ class KasManager:
 
     def _resolve_kas_file(self, kas_file: str) -> str:
         """
-        Resolve a KAS file path to absolute path.
-        Exits if file cannot be found.
+        Resolve KAS file path to absolute path.
+        
+        Searches in multiple locations:
+        - Absolute path
+        - Relative to current directory
+        - Relative to build directory
+        - Script directory
+        - Custom search paths
+        
+        Args:
+            kas_file: KAS file path to resolve
+            
+        Returns:
+            Absolute path to KAS file
+            
+        Raises:
+            SystemExit: If file cannot be found in any search location
         """
         path = Path(kas_file)
 
+        # Check absolute path
         if path.is_absolute() and path.exists():
             return str(path.resolve())
 
@@ -300,12 +414,12 @@ class KasManager:
         if path.exists():
             return str(path.resolve())
 
-        # Check if file exists relative to build directory
+        # Check relative to build directory
         build_dir_path = self.build_dir / path
         if build_dir_path.exists():
             return str(build_dir_path.resolve())
 
-        # Check if file exists relative to script directory
+        # Check relative to script directory
         script_dir_path = Path(__file__).parent / path
         if script_dir_path.exists():
             return str(script_dir_path.resolve())
@@ -317,18 +431,22 @@ class KasManager:
             if candidate_path.exists():
                 return str(candidate_path.resolve())
 
+        # File not found in any location
         logging.error(f"KAS file not found: {kas_file}")
         logging.error(f"Searched in: {', '.join(self.search_paths)}")
         sys.exit(1)
 
     def _find_file_in_search_paths(self, filename: str) -> Optional[str]:
-        """Find a file in the search paths."""
+        """Find a file in the configured search paths."""
+        # Check absolute path
         if Path(filename).is_absolute() and Path(filename).exists():
             return str(Path(filename).resolve())
 
+        # Check relative to current directory
         if Path(filename).exists():
             return str(Path(filename).resolve())
 
+        # Check all search paths
         for search_path in self.search_paths:
             candidate = Path(search_path) / filename
             if candidate.exists():
@@ -342,7 +460,18 @@ class KasManager:
         return ":".join(resolved_files)
 
     def _parse_yaml_file(self, file_path: str) -> Dict[str, Any]:
-        """Parse a YAML file with caching. Exit on error."""
+        """
+        Parse YAML file with caching.
+        
+        Args:
+            file_path: Path to YAML file
+            
+        Returns:
+            Parsed YAML content as dictionary
+            
+        Raises:
+            SystemExit: If file cannot be parsed
+        """
         resolved_path = self._resolve_kas_file(file_path)
         if resolved_path in self._yaml_cache:
             return self._yaml_cache[resolved_path]
@@ -357,14 +486,28 @@ class KasManager:
             sys.exit(1)
 
     def _find_includes_in_yaml(self, yaml_content: Dict[str, Any]) -> List[str]:
-        """Extract include files from YAML content."""
+        """
+        Extract include files from YAML content.
+        
+        KAS configuration files can include other files through:
+        - Top-level 'includes' key
+        - 'header' -> 'includes' nested key
+        
+        Args:
+            yaml_content: Parsed YAML content
+            
+        Returns:
+            List of include file paths
+        """
         includes = []
 
+        # Check top-level includes
         if 'includes' in yaml_content:
             include_list = yaml_content['includes']
             if isinstance(include_list, list):
                 includes.extend(include_list)
 
+        # Check header includes (less common)
         if 'header' in yaml_content and 'includes' in yaml_content['header']:
             header_includes = yaml_content['header']['includes']
             if isinstance(header_includes, list):
@@ -373,32 +516,58 @@ class KasManager:
         return includes
 
     def _resolve_include_path(self, include_file: str, parent_file: str) -> str:
-        """Resolve an include file path relative to its parent file."""
+        """
+        Resolve include file path relative to its parent file.
+        
+        Args:
+            include_file: Include file path (may be relative)
+            parent_file: Parent file path for relative resolution
+            
+        Returns:
+            Absolute path to include file
+            
+        Raises:
+            SystemExit: If include file cannot be found
+        """
+        # Absolute paths are used as-is
         if include_file.startswith('/'):
             return include_file
 
+        # First try relative to parent file directory
         parent_dir = Path(parent_file).parent
         relative_path = parent_dir / include_file
         if relative_path.exists():
             return str(relative_path.resolve())
 
+        # Search in all configured paths
         found_path = self._find_file_in_search_paths(include_file)
         if found_path:
             return found_path
 
+        # Include file not found
         logging.error(f"Include file not found: {include_file} (referenced from {parent_file})")
         sys.exit(1)
 
     def _get_all_included_files(self, main_files: List[str]) -> List[str]:
         """
-        Recursively find all included files from the main KAS files.
-        Returns a flat list of all files in dependency order.
-        Exits on missing files.
+        Recursively find all included files from main KAS files.
+        
+        Performs depth-first search to build complete dependency tree.
+        
+        Args:
+            main_files: List of main KAS configuration files
+            
+        Returns:
+            Flat list of all files in dependency order
+            
+        Raises:
+            SystemExit: If any included file is missing
         """
         all_files = []
         processed_files = set()
 
         def process_file(file_path: str):
+            """Recursive function to process files and their includes."""
             if file_path in processed_files:
                 return
 
@@ -408,32 +577,48 @@ class KasManager:
 
             processed_files.add(resolved_path)
 
+            # Verify file exists
             if not Path(resolved_path).exists():
                 logging.error(f"File not found: {file_path} (resolved to: {resolved_path})")
                 sys.exit(1)
 
+            # Parse file and find includes
             yaml_content = self._parse_yaml_file(file_path)
             includes = self._find_includes_in_yaml(yaml_content)
             
+            # Process includes first (depth-first)
             for include in includes:
                 include_path = self._resolve_include_path(include, file_path)
                 process_file(include_path)
 
+            # Add current file after its includes
             all_files.append(file_path)
 
+        # Process all main files
         for main_file in main_files:
             process_file(main_file)
 
         return all_files
 
     def validate_kas_files(self, check_includes: bool = True) -> bool:
-        """Validate that all KAS configuration files exist, including includes."""
+        """
+        Validate that all KAS configuration files exist.
+        
+        Args:
+            check_includes: Whether to recursively validate include files
+            
+        Returns:
+            True if validation succeeds
+            
+        Raises:
+            SystemExit: If any file is missing
+        """
         try:
             # Check main files
             for kas_file in self.kas_files:
-                self._resolve_kas_file(kas_file)  # This will exit if file not found
+                self._resolve_kas_file(kas_file)  # Will exit if file not found
 
-            # Check include files if requested
+            # Recursively check include files if requested
             if check_includes:
                 self._get_all_included_files(self.kas_files)
                 logging.info("All KAS files validated successfully")
@@ -448,12 +633,18 @@ class KasManager:
             sys.exit(1)
 
     def check_kas_available(self) -> bool:
-        """Check if kas or kas-container is installed and available."""
+        """
+        Check if KAS or kas-container is installed and available.
+        
+        Returns:
+            True if KAS is available, False otherwise
+        """
         kas_cmd = self._get_kas_command()
         env = self._get_environment_with_container_vars()
         
         try:
             if self.use_container:
+                # For container version, check if help command works
                 test_cmd = kas_cmd + ["--help"]
                 result = subprocess.run(
                     test_cmd,
@@ -465,6 +656,7 @@ class KasManager:
                 )
                 return result.returncode == 0 or len(result.stdout) > 0 or len(result.stderr) > 0
             else:
+                # For native version, check version command
                 test_cmd = kas_cmd + ["--version"]
                 result = subprocess.run(test_cmd, check=True, capture_output=True, timeout=30, env=env)
                 return True
@@ -473,7 +665,19 @@ class KasManager:
             return False
 
     def _run_kas_command(self, args: List[str], show_output: bool = True) -> subprocess.CompletedProcess:
-        """Internal method to run KAS commands with proper output handling."""
+        """
+        Execute KAS command with proper environment and error handling.
+        
+        Args:
+            args: Command arguments to pass to KAS
+            show_output: Whether to show live output or capture it
+            
+        Returns:
+            Completed process information
+            
+        Raises:
+            SystemExit: If command fails or is interrupted
+        """
         cmd = self._get_kas_command() + args
         env = self._get_environment_with_container_vars()
 
@@ -483,6 +687,7 @@ class KasManager:
 
         try:
             if show_output:
+                # Show live output to console
                 result = subprocess.run(
                     cmd,
                     check=True,
@@ -490,6 +695,7 @@ class KasManager:
                     env=env
                 )
             else:
+                # Capture output for programmatic use
                 result = subprocess.run(
                     cmd,
                     check=True,
@@ -510,15 +716,28 @@ class KasManager:
             sys.exit(1)
 
     def build_project(self, target: str = None, task: str = None, show_output: bool = True) -> None:
-        """Build the Yocto project with multiple KAS files. Exit on error."""
+        """
+        Build the Yocto project using KAS.
+        
+        Args:
+            target: Specific build target
+            task: Specific build task
+            show_output: Whether to show build output
+            
+        Raises:
+            SystemExit: If build fails or prerequisites are not met
+        """
+        # Validate configuration files first
         if not self.validate_kas_files(check_includes=True):
             logging.error("Cannot build due to missing files")
             sys.exit(1)
 
+        # Check KAS availability
         if not self.check_kas_available():
             logging.error("KAS is not available. Please install with: pip install kas")
             sys.exit(1)
 
+        # Build KAS command arguments
         kas_files_str = self._get_kas_files_string()
         args = ["build", kas_files_str]
 
@@ -537,7 +756,16 @@ class KasManager:
             sys.exit(1)
 
     def shell_session(self, command: str = None, show_output: bool = True) -> None:
-        """Start kas shell or run specific command with multiple KAS files. Exit on error."""
+        """
+        Start KAS shell session or execute command in build environment.
+        
+        Args:
+            command: Optional command to execute in shell
+            show_output: Whether to show command output
+            
+        Raises:
+            SystemExit: If shell session fails
+        """
         if not self.validate_kas_files(check_includes=True):
             sys.exit(1)
 
@@ -560,7 +788,17 @@ class KasManager:
             sys.exit(1)
 
     def run_bitbake_command(self, recipe: str, bitbake_args: List[str] = None, show_output: bool = True) -> None:
-        """Run a specific BitBake command with live output. Exit on error."""
+        """
+        Run BitBake command through KAS shell.
+        
+        Args:
+            recipe: BitBake recipe to build
+            bitbake_args: Additional BitBake arguments
+            show_output: Whether to show command output
+            
+        Raises:
+            SystemExit: If BitBake command fails
+        """
         if not self.validate_kas_files(check_includes=True):
             sys.exit(1)
 
@@ -568,10 +806,12 @@ class KasManager:
             logging.error("KAS is not available")
             sys.exit(1)
 
+        # Build BitBake command
         bitbake_cmd = ["bitbake", recipe]
         if bitbake_args:
             bitbake_cmd.extend(bitbake_args)
 
+        # Execute through KAS shell
         kas_files_str = self._get_kas_files_string()
         args = ["shell", kas_files_str, "--command", " ".join(bitbake_cmd)]
 
@@ -587,7 +827,18 @@ class KasManager:
             sys.exit(1)
 
     def dump_config(self, show_output: bool = True) -> Optional[str]:
-        """Dump the expanded configuration from multiple files. Exit on error."""
+        """
+        Dump expanded KAS configuration for verification.
+        
+        Args:
+            show_output: Whether to show output or return it
+            
+        Returns:
+            Configuration string if show_output=False, None otherwise
+            
+        Raises:
+            SystemExit: If config dump fails
+        """
         if not self.validate_kas_files(check_includes=True):
             sys.exit(1)
 
@@ -612,20 +863,37 @@ class KasManager:
             sys.exit(1)
 
 class Application:
-    """Main application class with comprehensive error handling."""
-
+    """
+    Main application class for BSP registry management.
+    
+    This class coordinates the overall application flow including
+    configuration loading, BSP management, and build execution.
+    """
+    
     def __init__(self, config_path: str = "bsp-registry.yml"):
+        """
+        Initialize application.
+        
+        Args:
+            config_path: Path to BSP registry configuration file
+        """
         self.config_path = Path(config_path)
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.model = None
+        self.model = None  # Will hold parsed registry configuration
 
     def load_configuration(self) -> None:
-        """Load application configuration. Exit on error."""
+        """
+        Load and parse application configuration from YAML file.
+        
+        Raises:
+            SystemExit: If configuration file is missing or invalid
+        """
         try:
             if not self.config_path.exists():
                 logging.error(f"Config file not found: {self.config_path}")
                 sys.exit(1)
 
+            # Parse YAML configuration into structured model
             self.model = get_registry_from_yaml_file(self.config_path)
             logging.info(f"Configuration loaded successfully from {self.config_path}")
 
@@ -636,13 +904,18 @@ class Application:
             sys.exit(1)
 
     def initialize(self) -> None:
-        """Initialize application components. Exit on error."""
+        """Initialize application components."""
         logging.info("Initializing application...")
         self.load_configuration()
         logging.info("Application initialized successfully")
 
     def list_bsp(self) -> None:
-        """List available BSPs. Exit on error."""
+        """
+        List all available BSPs in the registry.
+        
+        Raises:
+            SystemExit: If no BSPs are found in registry
+        """
         if not self.model or not self.model.registry.bsp:
             logging.error("No BSPs found in registry")
             sys.exit(1)
@@ -652,11 +925,23 @@ class Application:
             print(f"- {bsp.name}: {bsp.description}")
 
     def get_bsp_by_name(self, bsp_name: str) -> BSP:
-        """Get BSP by name. Exit if not found."""
+        """
+        Retrieve BSP configuration by name.
+        
+        Args:
+            bsp_name: Name of the BSP to retrieve
+            
+        Returns:
+            BSP configuration object
+            
+        Raises:
+            SystemExit: If BSP with given name is not found
+        """
         for bsp in self.model.registry.bsp:
             if bsp.name == bsp_name:
                 return bsp
         
+        # BSP not found - show error with available options
         logging.error(f"BSP not found: {bsp_name}")
         logging.info("Available BSPs:")
         for bsp in self.model.registry.bsp:
@@ -664,17 +949,38 @@ class Application:
         sys.exit(1)
 
     def prepare_build_directory(self, build_path: str) -> None:
-        """Prepare build directory. Exit on error."""
+        """
+        Prepare build directory, creating it if necessary.
+        
+        Args:
+            build_path: Path to build directory
+            
+        Raises:
+            SystemExit: If directory cannot be created
+        """
         logging.info(f"Preparing build directory: {build_path}")
         resolver.ensure_directory(build_path)
 
     def build_bsp_with_kas(self, configuration: List[str], downloads: str, sstate: str, 
                           build_path: str, docker_image: str) -> None:
-        """Build BSP using KAS. Exit on error."""
+        """
+        Execute KAS build for a BSP.
+        
+        Args:
+            configuration: List of KAS configuration files
+            downloads: Downloads cache directory
+            sstate: Shared state cache directory
+            build_path: Build output directory
+            docker_image: Docker image to use for build
+            
+        Raises:
+            SystemExit: If build fails
+        """
         # Ensure cache directories exist
         resolver.ensure_directory(downloads)
         resolver.ensure_directory(sstate)
 
+        # Initialize KAS manager
         kas_mgr = KasManager(
             configuration, 
             build_path, 
@@ -684,24 +990,33 @@ class Application:
             container_image=docker_image
         )
 
-        # Dump configuration for verification
+        # Dump configuration for verification (debugging)
         config_output = kas_mgr.dump_config(show_output=False)
         if config_output:
             logging.debug("Configuration dump:")
             logging.debug(config_output)
 
-        # Build the project
+        # Execute build
         kas_mgr.build_project()
 
     def build_bsp(self, bsp_name: str) -> None:
-        """Build a specific BSP. Exit on any error."""
+        """
+        Build a specific BSP including Docker image and Yocto build.
+        
+        Args:
+            bsp_name: Name of the BSP to build
+            
+        Raises:
+            SystemExit: If any step of the build process fails
+        """
         logging.info(f"Building BSP: {bsp_name}")
         
+        # Retrieve BSP configuration
         bsp = self.get_bsp_by_name(bsp_name)
         
         logging.info(f"Building {bsp.name} - {bsp.description}")
         
-        # Build Docker image if specified
+        # Build Docker image if configured
         if (bsp.build.environment.docker.file and 
             bsp.build.environment.docker.image):
             build_docker(
@@ -714,7 +1029,7 @@ class Application:
         # Prepare build directory
         self.prepare_build_directory(bsp.build.path)
         
-        # Build with KAS
+        # Execute KAS build
         self.build_bsp_with_kas(
             configuration=bsp.build.configuration,
             build_path=bsp.build.path,
@@ -726,18 +1041,24 @@ class Application:
         logging.info(f"BSP {bsp_name} built successfully!")
 
     def cleanup(self) -> None:
-        """Cleanup resources."""
+        """Cleanup resources and perform any necessary finalization."""
         logging.debug("Cleaning up resources...")
-        # Add cleanup logic here if needed
+        # Add cleanup logic here if needed (e.g., temp files, connections)
 
 def main() -> int:
-    """Main entry point with comprehensive error handling."""
+    """
+    Main entry point for the BSP registry manager.
+    
+    Returns:
+        Exit code (0 for success, non-zero for errors)
+    """
     try:
-        # Parse arguments
+        # Parse command line arguments
         parser = argparse.ArgumentParser(description="Advantech Board Support Package Registry")
         parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
         parser.add_argument('--registry', '-r', default='bsp-registry.yml', help='BSP Registry file')
 
+        # Create subparsers for different commands
         subparsers = parser.add_subparsers(dest='command', help='Command to execute', required=True)
 
         # Build command
@@ -756,36 +1077,36 @@ def main() -> int:
         # List command
         list_parser = subparsers.add_parser('list', help='List available BSPs')
 
-        # Export command (stub)
+        # Export command (stub implementation)
         export_parser = subparsers.add_parser('export', help='Export BSP configuration')
         export_parser.add_argument('bsp_name', type=str, help='Name of the BSP')
         export_parser.add_argument('--format', type=str, help='Export to format (KAS, Repo)')
 
-        # Shell command (stub)            
+        # Shell command (stub implementation)            
         shell_parser = subparsers.add_parser('shell', help='Enter bitbake shell for BSP')
         shell_parser.add_argument('bsp_name', type=str, help='Name of the BSP')
 
         args = parser.parse_args()
 
-        # Setup logging
+        # Setup logging based on verbosity
         log_level = logging.DEBUG if args.verbose else logging.INFO
         logging.basicConfig(
             level=log_level,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
 
-        # Initialize application
+        # Initialize and run application
         app = Application(args.registry)
         app.initialize()
 
-        # Execute command
+        # Execute requested command
         if args.command == 'build':
             app.build_bsp(args.bsp_name)
         elif args.command == 'list':
             app.list_bsp()
         else:
+            # For unimplemented commands, validate BSP exists and show message
             logging.warning(f"Command {args.command} not fully implemented yet")
-            # For unimplemented commands, just show we found the BSP
             if hasattr(args, 'bsp_name'):
                 app.get_bsp_by_name(args.bsp_name)
                 logging.info(f"Command {args.command} would proceed with BSP {args.bsp_name}")
@@ -796,12 +1117,14 @@ def main() -> int:
 
     except KeyboardInterrupt:
         logging.info("Application interrupted by user")
-        return 130
+        return 130  # Standard exit code for SIGINT
     except SystemExit as e:
+        # Re-raise system exit with proper code
         return e.code if isinstance(e.code, int) else 1
     except Exception as e:
         logging.error(f"Fatal error: {e}")
         return 1
 
 if __name__ == "__main__":
+    # Execute main function and exit with proper code
     sys.exit(main())
