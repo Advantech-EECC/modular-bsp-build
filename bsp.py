@@ -23,10 +23,10 @@ Architecture:
 - PathResolver: Utility for path resolution and validation
 
 Typical Usage:
-  $ python bsp list                    # List available BSPs
-  $ python bsp build <bsp_name>        # Build a specific BSP
-  $ python bsp shell <bsp_name>        # Enter interactive shell for BSP
-  $ python bsp export <bsp_name>       # Export BSP configuration
+  $ python bsp.py list                    # List available BSPs
+  $ python bsp.py build <bsp_name>        # Build a specific BSP
+  $ python bsp.py shell <bsp_name>        # Enter interactive shell for BSP
+  $ python bsp.py export <bsp_name>       # Export BSP configuration
 
 Configuration:
   Uses YAML configuration files (default: bsp-registry.yml) to define:
@@ -34,6 +34,7 @@ Configuration:
   - Build environment settings (Docker, environment variables)
   - Cache directories and build parameters
   - Environment variables with expansion support (e.g., $ENV{HOME})
+  - Container definitions for different build environments
 """
 
 import subprocess
@@ -48,7 +49,7 @@ import re
 
 import yaml
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
 
 from dataclasses import dataclass, field
@@ -126,6 +127,10 @@ def empty_list():
     """Factory function for creating empty lists in dataclass fields."""
     return []
 
+def empty_dict():
+    """Factory function for creating empty dictionaries in dataclass fields."""
+    return {}
+
 @dataclass
 class EnvironmentVariable:
     """
@@ -165,14 +170,28 @@ class Docker:
     args: List[DockerArg] = field(default_factory=empty_list)
 
 @dataclass
+class ContainerDefinition:
+    """
+    Container definition with name and Docker configuration.
+    
+    Attributes:
+        name: Container name/identifier (e.g., 'ubuntu-20.04')
+        docker: Docker configuration for this container
+    """
+    name: str
+    docker: Docker
+
+@dataclass
 class BuildEnvironment:
     """
     Build environment configuration including Docker settings.
     
     Attributes:
-        docker: Docker configuration for containerized builds
+        container: Name of the container to use (references containers in registry)
+        docker: Direct Docker configuration (alternative to container reference)
     """
-    docker: Docker
+    container: Optional[str] = None
+    docker: Optional[Docker] = None
 
 @dataclass
 class BuildSetup:
@@ -181,7 +200,7 @@ class BuildSetup:
     
     Attributes:
         path: Build directory path for output artifacts
-        environment: Build environment settings (Docker, etc.)
+        environment: Build environment settings (Docker, container reference)
         docker: Docker runtime to use (docker, podman, etc.)
         configuration: List of KAS configuration files for the build
     """
@@ -248,14 +267,16 @@ class RegistryRoot:
     Attributes:
         specification: Specification version information
         registry: Main registry data containing BSP definitions
+        containers: Dictionary of container definitions keyed by name
         environment: Global environment variables for all builds (supports expansion)
     """
     specification: Specification
     registry: Registry
+    containers: Optional[Dict[str, Docker]] = field(default_factory=empty_dict)
     environment: Optional[List[EnvironmentVariable]] = field(default_factory=empty_list)
 
 # =============================================================================
-# YAML Configuration Parser
+# YAML Configuration Parser with Container Support
 # =============================================================================
 
 def read_yaml_file(filename: Path) -> str:
@@ -297,6 +318,48 @@ def parse_yaml_file(yaml_string: str) -> Dict[Any, Any]:
         logging.error(f"Failed to parse YAML: {e}")
         sys.exit(1)
 
+def convert_containers_list_to_dict(containers_list: List[Dict[str, Any]]) -> Dict[str, Docker]:
+    """
+    Convert containers list format to dictionary format for dacite.
+    
+    The YAML format uses a list of dictionaries where each dictionary has one key
+    (the container name). This function converts it to a dictionary keyed by container name.
+    
+    Example input:
+        [
+            {"ubuntu-20.04": {"file": "...", "image": "...", "args": [...]}},
+            {"ubuntu-22.04": {"file": "...", "image": "...", "args": [...]}}
+        ]
+    
+    Example output:
+        {
+            "ubuntu-20.04": {"file": "...", "image": "...", "args": [...]},
+            "ubuntu-22.04": {"file": "...", "image": "...", "args": [...]}
+        }
+    
+    Args:
+        containers_list: List of container definitions in YAML format
+        
+    Returns:
+        Dictionary mapping container names to Docker configurations
+    """
+    containers_dict = {}
+    
+    for container_item in containers_list:
+        for container_name, container_config in container_item.items():
+            if isinstance(container_config, dict):
+                # Convert to Docker dataclass
+                containers_dict[container_name] = Docker(
+                    image=container_config.get('image'),
+                    file=container_config.get('file'),
+                    args=[DockerArg(name=arg['name'], value=arg['value']) 
+                          for arg in container_config.get('args', [])]
+                )
+            else:
+                logging.warning(f"Invalid container configuration for {container_name}, skipping")
+    
+    return containers_dict
+
 def get_registry_from_yaml_file(filename: Path) -> RegistryRoot:
     """
     Parse YAML file into structured RegistryRoot object using dacite.
@@ -315,6 +378,11 @@ def get_registry_from_yaml_file(filename: Path) -> RegistryRoot:
     """
     yaml_string = read_yaml_file(filename)
     yaml_dict = parse_yaml_file(yaml_string)
+
+    # Pre-process containers list to dictionary format if needed
+    if 'containers' in yaml_dict and isinstance(yaml_dict['containers'], list):
+        logging.debug("Converting containers list to dictionary format")
+        yaml_dict['containers'] = convert_containers_list_to_dict(yaml_dict['containers'])
 
     try:
         # Use dacite to convert dictionary to strongly-typed dataclass
@@ -1336,7 +1404,7 @@ class KasManager:
             sys.exit(1)
 
 # =============================================================================
-# Main BSP Management Class
+# Main BSP Management Class with Container Support
 # =============================================================================
 
 class BspManager:
@@ -1345,7 +1413,7 @@ class BspManager:
     
     This class coordinates the overall BSP management flow including
     configuration loading, BSP discovery, build execution, shell access,
-    and configuration export operations.
+    and configuration export operations with container support.
     """
     
     def __init__(self, config_path: str = "bsp-registry.yml"):
@@ -1359,6 +1427,7 @@ class BspManager:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = None  # Will hold parsed registry configuration
         self.env_manager = None  # Environment configuration manager
+        self.containers = {}  # Dictionary of container configurations
 
     def load_configuration(self) -> None:
         """
@@ -1375,6 +1444,11 @@ class BspManager:
             # Parse YAML configuration into structured model
             self.model = get_registry_from_yaml_file(self.config_path)
             logging.info(f"Configuration loaded successfully from {self.config_path}")
+
+            # Store containers from model
+            if self.model.containers:
+                self.containers = self.model.containers
+                logging.info(f"Loaded {len(self.containers)} container definitions")
 
             # Initialize Environment manager if configuration exists
             if self.model.environment:
@@ -1415,6 +1489,25 @@ class BspManager:
         for bsp in self.model.registry.bsp:
             print(f"- {bsp.name}: {bsp.description}")
 
+    def list_containers(self) -> None:
+        """
+        List all available containers in the registry.
+        
+        Raises:
+            SystemExit: If no containers are found in registry
+        """
+        if not self.containers:
+            logging.info("No container definitions found in registry")
+            return
+
+        logging.info("Available Containers:")
+        for container_name, container_config in self.containers.items():
+            print(f"- {container_name}:")
+            print(f"    Image: {container_config.image}")
+            print(f"    File: {container_config.file}")
+            if container_config.args:
+                print(f"    Args: {', '.join([f'{arg.name}={arg.value}' for arg in container_config.args])}")
+
     def get_bsp_by_name(self, bsp_name: str) -> BSP:
         """
         Retrieve BSP configuration by name.
@@ -1439,6 +1532,48 @@ class BspManager:
             logging.info(f"  - {bsp.name}")
         sys.exit(1)
 
+    def get_container_config_for_bsp(self, bsp: BSP) -> Docker:
+        """
+        Get the Docker configuration for a BSP, resolving container references.
+        
+        This method supports both direct Docker configuration and container references.
+        Priority: container reference > direct Docker configuration.
+        
+        Args:
+            bsp: BSP configuration object
+            
+        Returns:
+            Docker configuration for the BSP
+            
+        Raises:
+            SystemExit: If container reference cannot be resolved or configuration is missing
+        """
+        build_env = bsp.build.environment
+        
+        # First check for container reference
+        if build_env.container:
+            container_name = build_env.container
+            if container_name in self.containers:
+                logging.info(f"Using container reference: {container_name}")
+                return self.containers[container_name]
+            else:
+                logging.error(f"Container '{container_name}' not found in registry containers")
+                logging.info("Available containers:")
+                for name in self.containers.keys():
+                    logging.info(f"  - {name}")
+                sys.exit(1)
+        
+        # Fall back to direct Docker configuration
+        elif build_env.docker:
+            logging.info("Using direct Docker configuration")
+            return build_env.docker
+        
+        # No container configuration found
+        else:
+            logging.error(f"No container configuration found for BSP {bsp.name}")
+            logging.info("Either specify 'container' to reference a registry container or provide 'docker' configuration")
+            sys.exit(1)
+
     def prepare_build_directory(self, build_path: str) -> None:
         """
         Prepare build directory, creating it if necessary.
@@ -1462,6 +1597,9 @@ class BspManager:
         Returns:
             Configured KasManager instance
         """
+        # Get container configuration
+        container_config = self.get_container_config_for_bsp(bsp)
+        
         # Get cache directories from environment manager
         downloads = None
         sstate = None
@@ -1483,7 +1621,7 @@ class BspManager:
             download_dir=downloads, 
             sstate_dir=sstate, 
             use_container=True, 
-            container_image=bsp.build.environment.docker.image,
+            container_image=container_config.image,
             env_manager=self.env_manager
         )
 
@@ -1509,14 +1647,16 @@ class BspManager:
         
         logging.info(f"Building {bsp.name} - {bsp.description}")
         
+        # Get container configuration
+        container_config = self.get_container_config_for_bsp(bsp)
+        
         # Build Docker image if configured
-        if (bsp.build.environment.docker.file and 
-            bsp.build.environment.docker.image):
+        if container_config.file and container_config.image:
             build_docker(
                 ".", 
-                bsp.build.environment.docker.file, 
-                bsp.build.environment.docker.image, 
-                bsp.build.environment.docker.args
+                container_config.file, 
+                container_config.image, 
+                container_config.args
             )
         
         # Prepare build directory
@@ -1558,15 +1698,17 @@ class BspManager:
         
         logging.info(f"Starting shell session for {bsp.name} - {bsp.description}")
         
+        # Get container configuration
+        container_config = self.get_container_config_for_bsp(bsp)
+        
         # Build Docker image if configured (same as build process)
-        if (bsp.build.environment.docker.file and 
-            bsp.build.environment.docker.image):
+        if container_config.file and container_config.image:
             logging.info("Building Docker image for shell environment...")
             build_docker(
                 ".", 
-                bsp.build.environment.docker.file, 
-                bsp.build.environment.docker.image, 
-                bsp.build.environment.docker.args
+                container_config.file, 
+                container_config.image, 
+                container_config.args
             )
         
         # Prepare build directory
@@ -1646,7 +1788,7 @@ class BspManager:
         # Add cleanup logic here if needed (e.g., temp files, connections)
 
 # =============================================================================
-# Main Entry Point
+# Main Entry Point with Enhanced Commands
 # =============================================================================
 
 def main() -> int:
@@ -1685,6 +1827,9 @@ def main() -> int:
         # List command
         list_parser = subparsers.add_parser('list', help='List available BSPs')
 
+        # List containers command
+        containers_parser = subparsers.add_parser('containers', help='List available containers')
+
         # Export command
         export_parser = subparsers.add_parser('export', help='Export BSP configuration')
         export_parser.add_argument(
@@ -1698,7 +1843,7 @@ def main() -> int:
             help='Output file path (default: stdout)'
         )
 
-        # Shell command - fully implemented
+        # Shell command
         shell_parser = subparsers.add_parser('shell', help='Enter interactive shell for BSP')
         shell_parser.add_argument(
             'bsp_name', 
@@ -1708,7 +1853,7 @@ def main() -> int:
         shell_parser.add_argument(
             '--command', '-c',
             type=str,
-            dest='shell_command',  # Use different dest to avoid conflict
+            dest='shell_command',
             help='Command to execute in shell (optional, if not provided starts interactive shell)'
         )
 
@@ -1740,6 +1885,8 @@ def main() -> int:
             bsp_mgr.build_bsp(args.bsp_name)
         elif args.command == 'list':
             bsp_mgr.list_bsp()
+        elif args.command == 'containers':
+            bsp_mgr.list_containers()
         elif args.command == 'export':
             bsp_mgr.export_bsp_config(
                 bsp_name=args.bsp_name,
