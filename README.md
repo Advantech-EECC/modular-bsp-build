@@ -1,6 +1,6 @@
 # Advantech BSP configurations registry
 
-A Board Support Package (`BSP`) build configuration registry defines environment variables, build systems and configurations to build a BSP images. It ensures that the BSP can be consistently built and customized, providing a structured way to manage hardware features, initialization routines, and software components required for embedded systems.  This registry allows reproducible builds across different environments and makes it easier to tailor BSPs for unique hardware platforms while maintaining compatibility with the broader OS stack.  
+A Board Support Package (`BSP`) build configuration registry defines environment variables, build systems and configurations to build a BSP images. It ensures that the BSP can be consistently built and customized, providing a structured way to manage hardware features, initialization routines, and software components required for embedded systems.  This registry allows reproducible builds across different environments and makes it easier to tailor BSPs for unique hardware platforms while maintaining compatibility with the broader OS stack.
 
 # Table of Contents
 
@@ -13,6 +13,13 @@ A Board Support Package (`BSP`) build configuration registry defines environment
   - [NXP Boards Compatibility Matrix](#nxp-boards-compatibility-matrix)
     - [Alternative View](#alternative-view)
       - [Yocto releases](#yocto-releases)
+- [BSP Registry Manager](#bsp-registry-manager)
+  - [Overview](#overview)
+  - [Installation](#installation)
+  - [Basic Usage](#basic-usage)
+  - [Container Management](#container-management)
+  - [Configuration File Structure](#configuration-file-structure)
+  - [Command Reference](#command-reference)
 - [HowTo Assemble BSPs](#howto-assemble-bsps)
   - [Host System dependencies](#host-system-dependencies)
     - [Setup Python virtual environment](#setup-python-virtual-environment)
@@ -47,6 +54,8 @@ The build system follows a layered architecture that ensures reproducibility, is
 
 ```bash
 ┌─────────────────────────────────────────┐
+│         BSP Registry Manager            │  # BSP management and container orchestration
+├─────────────────────────────────────────┤
 │            Justfile Recipes             │  # User-facing commands
 ├─────────────────────────────────────────┤
 │          KAS Configuration Files        │  # Build definitions
@@ -63,11 +72,14 @@ The build system follows a layered architecture that ensures reproducibility, is
 
 | Layer | Purpose | Key Components |
 |-------|---------|----------------|
+| **BSP Registry Manager** | BSP management and container orchestration | `bsp.py` script, YAML configuration, container definitions |
 | **Justfile Recipes** | User-friendly command interface | `just bsp`, `just mbsp`, `just ota-mbsp` commands |
 | **KAS Configuration Files** | Build definitions and dependencies | YAML configs for boards, distros, and features |
 | **Docker Container Engine** | Isolated build environment | Consistent toolchains, isolated dependencies |
 | **Yocto Project Build** | Core build system | BitBake, OpenEmbedded, meta-layers |
 | **Source Layers & Recipes** | BSP components | Machine configs, recipes, kernel, applications |
+
+---
 
 # Supported Hardware
 
@@ -125,6 +137,140 @@ This list below covers the most recent and commonly referenced Yocto releases:
 * [Kirkstone (Yocto 4.0 LTS)](https://docs.yoctoproject.org/kirkstone/releases.html)  
 
 The full overview of Yocto releases can be found here https://www.yoctoproject.org/development/releases/
+
+---
+
+# BSP Registry Manager
+
+The BSP Registry Manager (`bsp.py`) is a comprehensive Python script that provides a command-line interface for managing and building Yocto-based BSPs using the KAS build system. It features Docker container management, cached builds, and sophisticated configuration management for embedded Linux development.
+
+## Overview
+
+The BSP Registry Manager supports:
+
+- **BSP registry management** via YAML configuration files
+- **Docker container building and management** for reproducible builds
+- **KAS build system integration** for Yocto-based builds
+- **Interactive shell access** to build environments
+- **Comprehensive error handling** and configuration validation
+- **Advanced cache management** for faster incremental builds
+- **Environment variable configuration management** with expansion support
+- **KAS configuration export** functionality
+
+## Installation
+
+The BSP Registry Manager requires Python 3.7+ and can be installed using the provided requirements:
+
+```bash
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+## Basic Usage
+
+```bash
+# List available BSPs in the registry
+python bsp.py list
+
+# Build a specific BSP
+python bsp.py build <bsp_name>
+
+# Enter interactive shell for a BSP
+python bsp.py shell <bsp_name>
+
+# Export BSP configuration
+python bsp.py export <bsp_name>
+
+# List available container definitions
+python bsp.py containers
+```
+
+## Container Management
+
+The BSP Registry Manager supports container definitions that can be shared across multiple BSPs:
+
+```bash
+# List all available containers
+python bsp.py containers
+
+# Example output:
+# Available Containers:
+# - ubuntu-20.04:
+#     Image: advantech/bsp-registry/ubuntu-20.04/kas:4.7
+#     File: Dockerfile.ubuntu
+#     Args: DISTRO=ubuntu:20.04, KAS_VERSION=4.7
+# - ubuntu-22.04:
+#     Image: advantech/bsp-registry/ubuntu-22.04/kas:5.0
+#     File: Dockerfile.ubuntu
+#     Args: DISTRO=ubuntu:22.04, KAS_VERSION=5.0
+```
+
+## Configuration File Structure
+
+The BSP registry uses a YAML configuration file (default: `bsp-registry.yml`) with the following structure:
+
+```yaml
+specification:
+  version: '1.0'
+
+# Global environment variables (supports $ENV{VAR} expansion)
+environment:
+  - name: "DL_DIR"
+    value: "$ENV{HOME}/yocto-cache/downloads"
+  - name: "SSTATE_DIR"
+    value: "$ENV{HOME}/yocto-cache/sstate-cache"
+
+# Container definitions (reusable across BSPs)
+containers:
+  - ubuntu-20.04:
+      file: Dockerfile.ubuntu
+      image: "advantech/bsp-registry/ubuntu-20.04/kas:4.7"
+      args:
+        - name: "DISTRO"
+          value: "ubuntu:20.04"
+        - name: "KAS_VERSION"
+          value: "4.7"
+  - ubuntu-22.04:
+      file: Dockerfile.ubuntu
+      image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+      args:
+        - name: "DISTRO"
+          value: "ubuntu:22.04"
+        - name: "KAS_VERSION"
+          value: "5.0"
+
+# BSP definitions
+registry:
+  bsp:
+    - name: "imx8mpevk"
+      description: "i.MX8MP EVK Board"
+      os:
+        name: "linux"
+        build_system: "yocto"
+        version: "scarthgap"
+      build:
+        path: "build/imx8mpevk"
+        environment:
+          container: "ubuntu-22.04"  # Reference to container definition
+        docker: "docker"
+        configuration:
+          - "conf/imx8mpevk.yml"
+          - "conf/scarthgap.yml"
+```
+
+## Command Reference
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `list` | List all available BSPs | `python bsp.py list` |
+| `build <bsp_name>` | Build a specific BSP | `python bsp.py build imx8mpevk` |
+| `shell <bsp_name>` | Enter interactive shell | `python bsp.py shell imx8mpevk` |
+| `export <bsp_name>` | Export KAS configuration | `python bsp.py export imx8mpevk` |
+| `containers` | List available containers | `python bsp.py containers` |
 
 ---
 
@@ -363,6 +509,8 @@ or in a `docker` container using following command:
 kas-container shell adv-mbsp-oenxp-walnascar-rsb3720.yaml
 ```
 
+---
+
 # Advanced Topics
 
 This chapter provides overview of advanced topics working with KAS build configurations.
@@ -447,7 +595,10 @@ LAYERSERIES_COMPAT_custom = "scarthgap"
 LAYERDEPENDS_custom = "eecc-nxp"
 ```
 
+---
+
 # Links
 
 * [KAS Container](https://kas.readthedocs.io/en/latest/userguide/kas-container.html)
 * [KAS](https://kas.readthedocs.io/en/latest/intro.html)
+* [BSP Registry Manager Documentation](#bsp-registry-manager)
