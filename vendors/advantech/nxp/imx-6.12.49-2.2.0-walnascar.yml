@@ -1,7 +1,7 @@
 header:
   version: 14
   includes:
-    - vendors/nxp/imx-6.12.34-2.1.0-walnascar.yml
+    - vendors/nxp/imx-6.12.49-2.2.0-walnascar.yml
 
 repos:
   meta-eecc-nxp:
@@ -12,7 +12,7 @@ repos:
 
   meta-nxp-security-reference-design:
     url: "https://github.com/Advantech-EECC/meta-nxp-security-reference-design.git"
-    branch: "walnascar-6.12.34-2.1.0-adv"
+    branch: "walnascar-6.12.49-2.2.0-adv"
     path: "layers/meta-nxp-security-reference-design"
     layers:
       meta-secure-boot: "disabled"
