@@ -1,9 +1,9 @@
 header:
   version: 14
   includes:
+    - common.yml
     - yocto/mickledore.yml
     - vendors/advantech/nxp/bsp-imx-6.1.22-2.0.0-mickledore.yml
-    - common.yml
 
 # TODO: add proper docker container for yocto mickledore (4.2)
 # Advantech RSB3730

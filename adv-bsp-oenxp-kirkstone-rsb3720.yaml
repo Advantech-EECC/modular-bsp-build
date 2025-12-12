@@ -1,10 +1,10 @@
 header:
   version: 14
   includes:
+    - common.yml
     - yocto/kirkstone.yml
     - features/deep-learning/hailo.yml
     - vendors/advantech/nxp/bsp-imx-5.15.52-2.1.0-kirkstone.yml
-    - common.yml
 
 # TODO: add proper docker container for yocto kirkstone (4.0)
 # Advantech RSB3720
