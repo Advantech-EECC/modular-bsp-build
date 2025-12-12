@@ -1,9 +1,9 @@
 header:
   version: 14
   includes:
+    - common.yml
     - yocto/walnascar.yml
     - vendors/advantech/nxp/bsp-imx-6.12.20-2.0.0-walnascar.yml
-    - common.yml
 
 distro: fsl-imx-xwayland
 

@@ -1,9 +1,9 @@
 header:
   version: 14
   includes:
+    - common.yml
     - yocto/scarthgap.yml
     - vendors/advantech/nxp/bsp-imx-6.6.36-2.1.0-scarthgap.yml
-    - common.yml
 
 distro: fsl-imx-xwayland
 
