@@ -42,6 +42,19 @@ registry:
         configuration:
           - adv-bsp-oenxp-mickledore-rsb3730.yaml
 
+    - name: adv-bsp-oenxp-mickledore-rsb3730-4g
+      description: "RSB3730 A2 4G ACL Mickledore BSP"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "4.1"
+      build:
+        path: build/adv-oenxp-bsp-rsb3730-4g-mickledore
+        environment:
+          container: "ubuntu-20.04"
+        configuration:
+          - adv-bsp-oenxp-mickledore-rsb3730-4g.yaml
+
     - name: adv-bsp-oenxp-kirkstone-rsb3720
       description: "RSB3720 ACL Kirkstone BSP"
       os:
