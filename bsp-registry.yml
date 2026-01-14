@@ -81,6 +81,32 @@ registry:
         configuration:
           - adv-mbsp-oenxp-walnascar-rsb3720.yaml
 
+    - name: adv-mbsp-oenxp-styhead-rsb3720
+      description: "Advantech EIoT Yocto Styhead RSB3720"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "5.1"
+      build:
+        path: build/adv-mbsp-oenxp-rsb3720-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rsb3720.yaml
+
+    - name: adv-mbsp-oenxp-scarthgap-rsb3720
+      description: "Advantech EIoT Yocto Scarthgap RSB3720"
+      os:
+        name: Linux
+        build_system: yocto
+        version: "5.0"
+      build:
+        path: build/adv-mbsp-oenxp-rsb3720-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rsb3720.yaml
+
     - name: adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720
       description: "Advantech EIoT Yocto Walnascar RAUC RSB3720"
       os:
