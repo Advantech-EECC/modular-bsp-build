@@ -44,13 +44,11 @@ import logging
 import argparse
 import dacite
 import tempfile
-import shutil
 import re
 
 import yaml
 from pathlib import Path
-from typing import List, Optional, Dict, Any, Union
-from datetime import datetime
+from typing import List, Optional, Dict, Any
 
 from dataclasses import dataclass, field
 
@@ -60,7 +58,7 @@ from dataclasses import dataclass, field
 
 try:
     import colorama
-    from colorama import Fore, Back, Style
+    from colorama import Fore, Style
     colorama.init()  # Initialize colorama for Windows support
     COLORAMA_AVAILABLE = True
 except ImportError:
@@ -454,7 +452,7 @@ def build_docker(dockerfile_dir: str, dockerfile: str, tag: str,
         logging.info(f"Running: {' '.join(cmd)}")
         
         # Execute build command with real-time output capture
-        process = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
         logging.info("Docker build completed successfully")
         
     except subprocess.CalledProcessError as e:
@@ -1121,7 +1119,7 @@ class KasManager:
             else:
                 # For native version, check version command
                 test_cmd = kas_cmd + ["--version"]
-                result = subprocess.run(test_cmd, check=True, capture_output=True, timeout=30, env=env)
+                subprocess.run(test_cmd, check=True, capture_output=True, timeout=30, env=env)
                 return True
         except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired) as e:
             logging.error(f"KAS command not available: {e}")
@@ -1825,10 +1823,10 @@ def main() -> int:
         )
 
         # List command
-        list_parser = subparsers.add_parser('list', help='List available BSPs')
+        subparsers.add_parser('list', help='List available BSPs')
 
         # List containers command
-        containers_parser = subparsers.add_parser('containers', help='List available containers')
+        subparsers.add_parser('containers', help='List available containers')
 
         # Export command
         export_parser = subparsers.add_parser('export', help='Export BSP configuration')
