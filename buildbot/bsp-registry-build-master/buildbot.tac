@@ -3,7 +3,7 @@ import os
 from twisted.application import service
 from buildbot.master import BuildMaster
 
-basedir = '/home/mikhail-tsukerman/work/modular-bsp-build/buildbot/bsp-registry-build-master'
+basedir = os.environ.get('BUILDBOT_BASEDIR', '.')
 rotateLength = 10000000
 maxRotatedFiles = 10
 configfile = 'master.cfg'
