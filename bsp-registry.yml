@@ -53,7 +53,193 @@ registry:
           - adv-bsp-oenxp-mickledore-rsb3730-4g.yaml
 
     # =====================================
-    # Advantech RSB3720 BSPs
+    # Advantech ROM2620 ED91 BSPs
+    # =====================================
+
+    - name: adv-mbsp-oenxp-scarthgap-rom2620-ed91
+      description: "ROM2620 ED91 Scarthgap BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom2620-ed91-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom2620-ed91.yaml
+
+    - name: adv-bsp-oenxp-styhead-rom2620-ed91
+      description: "ROM2620 ED91 Styhead BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom2620-ed91-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom2620-ed91.yaml
+
+    - name: adv-bsp-oenxp-walnascar-rom2620-ed91
+      description: "ROM2620 ED91 Walnascar BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom2620-ed91-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom2620-ed91.yaml
+
+    # =====================================
+    # Advantech ROM2820 ED93 BSPs
+    # =====================================
+
+    - name: adv-mbsp-oenxp-scarthgap-rom2820-ed93
+      description: "ROM2820 ED93 Scarthgap BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom2820-ed93-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom2820-ed93.yaml
+
+    - name: adv-mbsp-oenxp-styhead-rom2820-ed93
+      description: "ROM2820 ED93 Styhead BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom2820-ed93-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom2820-ed93.yaml
+
+    - name: adv-mbsp-oenxp-walnascar-rom2820-ed93
+      description: "ROM2820 ED93 Walnascar BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom2820-ed93-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom2820-ed93.yaml
+          
+    # =====================================
+    # Advantech ROM5720-DB5901 BSPs
+    # =====================================
+
+    - name: adv-mbsp-oenxp-scarthgap-rom5720-db5901
+      description: "ROM5720-DB5901 Scarthgap BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5720-db5901-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5720-db5901.yaml
+    
+    - name: adv-mbsp-oenxp-styhead-rom5720-db5901
+      description: "ROM5720-DB5901 Styhead BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5720-db5901-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5720-db5901.yaml
+    
+    - name: adv-mbsp-oenxp-walnascar-rom5720-db5901
+      description: "ROM5720-DB5901 Walnascar BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5720-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5720-db5901.yaml
+
+    # =====================================
+    # Advantech ROM5721-1G-DB5901 BSPs
+    # =====================================
+
+    - name: adv-mbsp-oenxp-scarthgap-rom5721-1g-db5901
+      description: "ROM5721-1G-DB5901 Scarthgap BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5721-1g-db5901-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5721-1g-db5901.yaml
+    
+    - name: adv-mbsp-oenxp-styhead-rom5721-1g-db5901
+      description: "ROM5721-1G-DB5901 Styhead BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5721-1g-db5901-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5721-1g-db5901.yaml
+    
+    - name: adv-mbsp-oenxp-walnascar-rom5721-1g-db5901
+      description: "ROM5721-1G-DB5901 Walnascar BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5721-1g-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5721-1g-db5901.yaml
+
+    # =====================================
+    # Advantech ROM5721-2G-DB5901 BSPs
+    # =====================================
+
+    - name: adv-mbsp-oenxp-scarthgap-rom5721-2g-db5901
+      description: "ROM5721-2G-DB5901 Scarthgap BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5721-2g-db5901-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5721-2g-db5901.yaml
+    
+    - name: adv-mbsp-oenxp-styhead-rom5721-2g-db5901
+      description: "ROM5721-2G-DB5901 Styhead BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5721-2g-db5901-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5721-2g-db5901.yaml
+    
+    - name: adv-mbsp-oenxp-walnascar-rom5721-2g-db5901
+      description: "ROM5721-2G-DB5901 Walnascar BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5721-2g-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5721-2g-db5901.yaml
+
+    # =====================================
+    # Advantech ROM5722-DB2510 BSPs
+    # =====================================
+
+    - name: adv-mbsp-oenxp-scarthgap-rom5722-db2510
+      description: "ROM5722-DB2510 Scarthgap BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5722-db2510-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5722-db2510.yaml
+    
+    - name: adv-mbsp-oenxp-styhead-rom5722-db2510
+      description: "ROM5722-DB2510 Styhead BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5722-db2510-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5722-db2510.yaml
+    
+    - name: adv-mbsp-oenxp-walnascar-rom5722-db2510
+      description: "ROM5722-DB2510 Walnascar BSP"
+      build:
+        path: build/adv-oenxp-mbsp-rom5722-db2510-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5722-db2510.yaml
+          
+    # =====================================
+    # Advantech RSB3720 ACL BSPs
     # =====================================
 
     - name: adv-bsp-oenxp-kirkstone-rsb3720
@@ -64,6 +250,10 @@ registry:
           container: "ubuntu-20.04"
         configuration:
           - adv-bsp-oenxp-kirkstone-rsb3720.yaml
+
+    # =====================================
+    # Advantech RSB3720 Modular BSPs
+    # =====================================
 
     - name: adv-mbsp-oenxp-walnascar-rsb3720
       description: "Advantech EIoT Yocto Walnascar RSB3720"
