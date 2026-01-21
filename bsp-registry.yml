@@ -29,12 +29,13 @@ containers:
 
 registry:
   bsp:
+
+    # =====================================
+    # Advantech RSB3730 BSPs
+    # =====================================
+
     - name: adv-bsp-oenxp-mickledore-rsb3730
       description: "RSB3730 A2 ACL Mickledore BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "4.1"
       build:
         path: build/adv-oenxp-bsp-rsb3730-mickledore
         environment:
@@ -44,10 +45,6 @@ registry:
 
     - name: adv-bsp-oenxp-mickledore-rsb3730-4g
       description: "RSB3730 A2 4G ACL Mickledore BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "4.1"
       build:
         path: build/adv-oenxp-bsp-rsb3730-4g-mickledore
         environment:
@@ -55,12 +52,12 @@ registry:
         configuration:
           - adv-bsp-oenxp-mickledore-rsb3730-4g.yaml
 
+    # =====================================
+    # Advantech RSB3720 BSPs
+    # =====================================
+
     - name: adv-bsp-oenxp-kirkstone-rsb3720
       description: "RSB3720 ACL Kirkstone BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "4.0"
       build:
         path: build/adv-oenxp-bsp-rsb3720-kirkstone
         environment:
@@ -70,10 +67,6 @@ registry:
 
     - name: adv-mbsp-oenxp-walnascar-rsb3720
       description: "Advantech EIoT Yocto Walnascar RSB3720"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.2"
       build:
         path: build/adv-mbsp-oenxp-rsb3720-walnascar
         environment:
@@ -83,10 +76,6 @@ registry:
 
     - name: adv-mbsp-oenxp-styhead-rsb3720
       description: "Advantech EIoT Yocto Styhead RSB3720"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.1"
       build:
         path: build/adv-mbsp-oenxp-rsb3720-styhead
         environment:
@@ -96,10 +85,6 @@ registry:
 
     - name: adv-mbsp-oenxp-scarthgap-rsb3720
       description: "Advantech EIoT Yocto Scarthgap RSB3720"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.0"
       build:
         path: build/adv-mbsp-oenxp-rsb3720-scarthgap
         environment:
@@ -123,10 +108,6 @@ registry:
 
     - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rsb3720
       description: "Advantech EIoT Yocto Walnascar SWUpdate RSB3720"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.2"
       build:
         path: build/adv-ota-mbsp-oenxp-swupdate-rsb3720-walnascar
         environment:
@@ -135,12 +116,12 @@ registry:
           - adv-mbsp-oenxp-walnascar-rsb3720.yaml
           - features/ota/swupdate/adv-ota-walnascar.yml
 
+    # =====================================
+    # Poky QEMU ARM64 BSPs  
+    # =====================================
+
     - name: poky-qemuarm64-master
       description: "QEMU ARM64 Master BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.3"
       build:
         path: build/qemu-arm64-master
         environment:
@@ -152,10 +133,6 @@ registry:
 
     - name: poky-qemuarm64-kirkstone
       description: "QEMU ARM64 Kirkstone BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "4.0"
       build:
         path: build/qemu-arm64-kirkstone
         environment:
@@ -167,10 +144,6 @@ registry:
 
     - name: poky-qemuarm64-nanbield
       description: "QEMU ARM64 Nanbield BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "4.1"
       build:
         path: build/qemu-arm64-nanbield
         environment:
@@ -182,10 +155,6 @@ registry:
 
     - name: poky-qemuarm64-mickledore
       description: "QEMU ARM64 Mickledore BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "4.2"
       build:
         path: build/qemu-arm64-mickledore
         environment:
@@ -197,10 +166,6 @@ registry:
 
     - name: poky-qemuarm64-scarthgap
       description: "QEMU ARM64 Scarthgap BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.0"
       build:
         path: build/qemu-arm64-scarthgap
         environment:
@@ -212,10 +177,6 @@ registry:
 
     - name: poky-qemuarm64-styhead
       description: "QEMU ARM64 Styhead BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.1"
       build:
         path: build/qemu-arm64-styhead
         environment:
@@ -227,10 +188,6 @@ registry:
 
     - name: poky-qemuarm64-walnascar
       description: "QEMU ARM64 Walnascar BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.2"
       build:
         path: build/qemu-arm64-walnascar
         environment:
@@ -242,10 +199,6 @@ registry:
 
     - name: poky-qemuarm64-whinlatter
       description: "QEMU ARM64 Whinlatter BSP"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.2"
       build:
         path: build/qemu-arm64-whinlatter
         environment:
