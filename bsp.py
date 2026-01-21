@@ -244,8 +244,8 @@ class BSP:
     """
     name: str
     description: str
-    os: OperatingSystem
     build: BuildSetup
+    os: Optional[OperatingSystem] = None
 
 @dataclass
 class Registry:
