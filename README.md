@@ -182,8 +182,8 @@ pip install -e .
 # List available BSPs in the registry
 python bsp.py list
 
-# Validate a BSP configuration without building (fast)
-python bsp.py build <bsp_name> --validate
+# Checkout and validate a BSP configuration without building (fast)
+python bsp.py build <bsp_name> --checkout
 
 # Build a specific BSP
 python bsp.py build <bsp_name>
@@ -277,14 +277,14 @@ registry:
 |---------|-------------|---------|
 | `list` | List all available BSPs | `python bsp.py list` |
 | `build <bsp_name>` | Build a specific BSP | `python bsp.py build imx8mpevk` |
-| `build <bsp_name> --validate` | Validate BSP configuration without building (fast) | `python bsp.py build imx8mpevk --validate` |
+| `build <bsp_name> --checkout` | Checkout and validate BSP configuration without building (fast) | `python bsp.py build imx8mpevk --checkout` |
 | `shell <bsp_name>` | Enter interactive shell | `python bsp.py shell imx8mpevk` |
 | `export <bsp_name>` | Export KAS configuration | `python bsp.py export imx8mpevk` |
 | `containers` | List available containers | `python bsp.py containers` |
 
-### Build Validation
+### Checkout and Validation
 
-The `--validate` flag provides a fast way to validate BSP configurations without performing time-consuming Docker builds and Yocto compilations. This is particularly useful for:
+The `--checkout` flag provides a fast way to checkout and validate BSP configurations without performing time-consuming Docker builds and Yocto compilations. This follows the KAS command naming convention (`kas checkout`). It is particularly useful for:
 
 - **CI/CD pipelines**: Quickly verify configuration validity before committing resources to a full build
 - **Development iteration**: Test configuration changes without waiting for complete builds
@@ -301,8 +301,8 @@ The `--validate` flag provides a fast way to validate BSP configurations without
 **Example:**
 
 ```bash
-# Validate configuration for RSB3720 board
-python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720 --validate
+# Checkout and validate configuration for RSB3720 board
+python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720 --checkout
 
 # If validation passes, proceed with full build
 python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720
