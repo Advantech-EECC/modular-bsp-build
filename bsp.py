@@ -1230,6 +1230,48 @@ class KasManager:
             logging.error(f"Build failed: {e}")
             sys.exit(1)
 
+    def checkout_project(self, show_output: bool = True) -> None:
+        """
+        Checkout/validate the Yocto project repositories using KAS.
+        
+        This method validates that the KAS configuration is correct and
+        repositories can be cloned without performing a full build. This is
+        useful for quick validation of build configurations.
+        
+        Args:
+            show_output: Whether to show checkout output in real-time
+            
+        Raises:
+            SystemExit: If checkout/validation fails or prerequisites are not met
+        """
+        # Validate environment configuration first
+        if not self.env_manager.validate_environment():
+            logging.error("Environment configuration validation failed")
+            sys.exit(1)
+
+        # Validate configuration files
+        if not self.validate_kas_files(check_includes=True):
+            logging.error("Cannot checkout due to missing files")
+            sys.exit(1)
+
+        # Check KAS availability
+        if not self.check_kas_available():
+            logging.error("KAS is not available. Please install with: pip install kas")
+            sys.exit(1)
+
+        # Build KAS command arguments
+        kas_files_str = self._get_kas_files_string()
+        args = ["checkout", kas_files_str]
+
+        try:
+            self._run_kas_command(args, show_output)
+            logging.info("Checkout/validation completed successfully!")
+        except SystemExit:
+            raise
+        except Exception as e:
+            logging.error(f"Checkout/validation failed: {e}")
+            sys.exit(1)
+
     def shell_session(self, command: str = None, show_output: bool = True) -> None:
         """
         Start KAS shell session or execute command in build environment.
@@ -1585,12 +1627,13 @@ class BspManager:
         logging.info(f"Preparing build directory: {build_path}")
         resolver.ensure_directory(build_path)
 
-    def _get_kas_manager_for_bsp(self, bsp: BSP) -> KasManager:
+    def _get_kas_manager_for_bsp(self, bsp: BSP, use_container: bool = True) -> KasManager:
         """
         Create and configure a KAS manager for the specified BSP.
         
         Args:
             bsp: BSP configuration object
+            use_container: Whether to use containerized KAS (default: True)
             
         Returns:
             Configured KasManager instance
@@ -1618,50 +1661,61 @@ class BspManager:
             bsp.build.path, 
             download_dir=downloads, 
             sstate_dir=sstate, 
-            use_container=True, 
-            container_image=container_config.image,
+            use_container=use_container, 
+            container_image=container_config.image if use_container else None,
             env_manager=self.env_manager
         )
 
         return kas_mgr
 
-    def build_bsp(self, bsp_name: str) -> None:
+    def build_bsp(self, bsp_name: str, validate_only: bool = False) -> None:
         """
         Build a specific BSP including Docker image and Yocto build.
         
         This is the main build method that orchestrates the complete
         BSP build process from Docker image creation to Yocto build.
+        When validate_only is True, performs validation without the full build.
         
         Args:
             bsp_name: Name of the BSP to build
+            validate_only: If True, validates configuration without building
             
         Raises:
             SystemExit: If any step of the build process fails
         """
-        logging.info(f"Building BSP: {bsp_name}")
+        if validate_only:
+            logging.info(f"Validating BSP: {bsp_name}")
+        else:
+            logging.info(f"Building BSP: {bsp_name}")
         
         # Retrieve BSP configuration
         bsp = self.get_bsp_by_name(bsp_name)
         
-        logging.info(f"Building {bsp.name} - {bsp.description}")
+        if validate_only:
+            logging.info(f"Validating {bsp.name} - {bsp.description}")
+        else:
+            logging.info(f"Building {bsp.name} - {bsp.description}")
         
         # Get container configuration
         container_config = self.get_container_config_for_bsp(bsp)
         
-        # Build Docker image if configured
-        if container_config.file and container_config.image:
-            build_docker(
-                ".", 
-                container_config.file, 
-                container_config.image, 
-                container_config.args
-            )
+        # Build Docker image if configured (skip for validation mode)
+        if not validate_only:
+            if container_config.file and container_config.image:
+                build_docker(
+                    ".", 
+                    container_config.file, 
+                    container_config.image, 
+                    container_config.args
+                )
+        else:
+            logging.info("Skipping Docker build in validation mode")
         
         # Prepare build directory
         self.prepare_build_directory(bsp.build.path)
         
-        # Get KAS manager and execute build
-        kas_mgr = self._get_kas_manager_for_bsp(bsp)
+        # Get KAS manager - use native KAS for validation, container for builds
+        kas_mgr = self._get_kas_manager_for_bsp(bsp, use_container=not validate_only)
         
         # Dump configuration for verification (debugging)
         config_output = kas_mgr.dump_config(show_output=False)
@@ -1669,10 +1723,15 @@ class BspManager:
             logging.debug("Configuration dump:")
             logging.debug(config_output)
 
-        # Execute build
-        kas_mgr.build_project()
-        
-        logging.info(f"BSP {bsp_name} built successfully!")
+        if validate_only:
+            # Execute validation via checkout only
+            logging.info("Performing validation (checkout without build)...")
+            kas_mgr.checkout_project()
+            logging.info(f"BSP {bsp_name} validated successfully!")
+        else:
+            # Execute full build
+            kas_mgr.build_project()
+            logging.info(f"BSP {bsp_name} built successfully!")
 
     def shell_into_bsp(self, bsp_name: str, command: str = None) -> None:
         """
@@ -1821,6 +1880,11 @@ def main() -> int:
             action='store_true',
             help='Clean before building'
         )
+        build_parser.add_argument(
+            '--validate',
+            action='store_true',
+            help='Validate build configuration without building (fast)'
+        )
 
         # List command
         subparsers.add_parser('list', help='List available BSPs')
@@ -1880,7 +1944,8 @@ def main() -> int:
 
         # Execute requested command
         if args.command == 'build':
-            bsp_mgr.build_bsp(args.bsp_name)
+            validate_only = getattr(args, 'validate', False)
+            bsp_mgr.build_bsp(args.bsp_name, validate_only=validate_only)
         elif args.command == 'list':
             bsp_mgr.list_bsp()
         elif args.command == 'containers':
