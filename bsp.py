@@ -1668,39 +1668,39 @@ class BspManager:
 
         return kas_mgr
 
-    def build_bsp(self, bsp_name: str, validate_only: bool = False) -> None:
+    def build_bsp(self, bsp_name: str, checkout_only: bool = False) -> None:
         """
         Build a specific BSP including Docker image and Yocto build.
         
         This is the main build method that orchestrates the complete
         BSP build process from Docker image creation to Yocto build.
-        When validate_only is True, performs validation without the full build.
+        When checkout_only is True, performs checkout and validation without the full build.
         
         Args:
             bsp_name: Name of the BSP to build
-            validate_only: If True, validates configuration without building
+            checkout_only: If True, only checkout and validate configuration without building
             
         Raises:
             SystemExit: If any step of the build process fails
         """
-        if validate_only:
-            logging.info(f"Validating BSP: {bsp_name}")
+        if checkout_only:
+            logging.info(f"Checking out BSP: {bsp_name}")
         else:
             logging.info(f"Building BSP: {bsp_name}")
         
         # Retrieve BSP configuration
         bsp = self.get_bsp_by_name(bsp_name)
         
-        if validate_only:
-            logging.info(f"Validating {bsp.name} - {bsp.description}")
+        if checkout_only:
+            logging.info(f"Checking out {bsp.name} - {bsp.description}")
         else:
             logging.info(f"Building {bsp.name} - {bsp.description}")
         
         # Get container configuration
         container_config = self.get_container_config_for_bsp(bsp)
         
-        # Build Docker image if configured (skip for validation mode)
-        if not validate_only:
+        # Build Docker image if configured (skip for checkout mode)
+        if not checkout_only:
             if container_config.file and container_config.image:
                 build_docker(
                     ".", 
@@ -1709,13 +1709,13 @@ class BspManager:
                     container_config.args
                 )
         else:
-            logging.info("Skipping Docker build in validation mode")
+            logging.info("Skipping Docker build in checkout mode")
         
         # Prepare build directory
         self.prepare_build_directory(bsp.build.path)
         
-        # Get KAS manager - use native KAS for validation, container for builds
-        kas_mgr = self._get_kas_manager_for_bsp(bsp, use_container=not validate_only)
+        # Get KAS manager - use native KAS for checkout, container for builds
+        kas_mgr = self._get_kas_manager_for_bsp(bsp, use_container=not checkout_only)
         
         # Dump configuration for verification (debugging)
         config_output = kas_mgr.dump_config(show_output=False)
@@ -1723,11 +1723,11 @@ class BspManager:
             logging.debug("Configuration dump:")
             logging.debug(config_output)
 
-        if validate_only:
-            # Execute validation via checkout only
-            logging.info("Performing validation (checkout without build)...")
+        if checkout_only:
+            # Execute checkout for validation only
+            logging.info("Performing checkout and validation (no build)...")
             kas_mgr.checkout_project()
-            logging.info(f"BSP {bsp_name} validated successfully!")
+            logging.info(f"BSP {bsp_name} checked out and validated successfully!")
         else:
             # Execute full build
             kas_mgr.build_project()
@@ -1881,9 +1881,9 @@ def main() -> int:
             help='Clean before building'
         )
         build_parser.add_argument(
-            '--validate',
+            '--checkout',
             action='store_true',
-            help='Validate build configuration without building (fast)'
+            help='Checkout and validate build configuration without building (fast)'
         )
 
         # List command
@@ -1944,8 +1944,8 @@ def main() -> int:
 
         # Execute requested command
         if args.command == 'build':
-            validate_only = getattr(args, 'validate', False)
-            bsp_mgr.build_bsp(args.bsp_name, validate_only=validate_only)
+            checkout_only = getattr(args, 'checkout', False)
+            bsp_mgr.build_bsp(args.bsp_name, checkout_only=checkout_only)
         elif args.command == 'list':
             bsp_mgr.list_bsp()
         elif args.command == 'containers':
