@@ -10,12 +10,14 @@ on:
       - '**.yml'
       - '**.yaml'
       - 'requirements.txt'
+      - 'Dockerfile*'
       - '.github/workflows/validate-kas-configs.yml'
   pull_request:
     paths:
       - '**.yml'
       - '**.yaml'
       - 'requirements.txt'
+      - 'Dockerfile*'
       - '.github/workflows/validate-kas-configs.yml'
   workflow_dispatch:
 
@@ -458,4 +460,86 @@ jobs:
             exit 1
           else
             echo "✅ All KAS checkout validations passed!"
+          fi
+
+  validate-dockerfiles:
+    name: Validate Dockerfiles
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Run hadolint on Dockerfiles
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: "Dockerfile.*"
+          recursive: true
+          failure-threshold: warning
+      
+      - name: Validate Dockerfile syntax
+        run: |
+          echo "Validating Dockerfile syntax and best practices..."
+          
+          # Find all Dockerfiles
+          DOCKERFILES=$(find . -maxdepth 1 -name "Dockerfile*" -type f)
+          
+          if [ -z "$DOCKERFILES" ]; then
+            echo "No Dockerfiles found!"
+            exit 0
+          fi
+          
+          echo "Found Dockerfiles:"
+          echo "$DOCKERFILES"
+          echo ""
+          
+          FAILED=0
+          PASSED=0
+          
+          for dockerfile in $DOCKERFILES; do
+            echo "=========================================="
+            echo "Validating: $dockerfile"
+            echo "=========================================="
+            
+            # Check basic syntax - file should have FROM instruction
+            if grep -q "^FROM " "$dockerfile"; then
+              echo "✓ Has FROM instruction"
+            else
+              echo "✗ Missing FROM instruction"
+              FAILED=$((FAILED + 1))
+              continue
+            fi
+            
+            # Check for best practices
+            if grep -q "apt-get update" "$dockerfile" && grep -q "apt-get install" "$dockerfile"; then
+              echo "✓ Uses apt-get for package management"
+            fi
+            
+            if grep -q "rm -rf /var/lib/apt/lists/\|apt-get clean" "$dockerfile"; then
+              echo "✓ Cleans up apt cache"
+            fi
+            
+            # Check for common issues
+            if grep -q "RUN.*&&.*\\\\$" "$dockerfile"; then
+              echo "✓ Uses multi-line RUN commands properly"
+            fi
+            
+            PASSED=$((PASSED + 1))
+            echo ""
+          done
+          
+          echo "=========================================="
+          echo "Dockerfile Validation Summary"
+          echo "=========================================="
+          echo "Passed: $PASSED"
+          echo "Failed: $FAILED"
+          echo ""
+          
+          if [ $FAILED -gt 0 ]; then
+            echo "❌ Dockerfile validation failed!"
+            exit 1
+          else
+            echo "✅ All Dockerfiles are valid!"
           fi
