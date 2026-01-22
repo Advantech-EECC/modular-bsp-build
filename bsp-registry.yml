@@ -728,10 +728,6 @@ registry:
 
     - name: adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720
       description: "Advantech EIoT Yocto Walnascar RAUC RSB3720"
-      os:
-        name: Linux
-        build_system: yocto
-        version: "5.2"
       build:
         path: build/adv-ota-mbsp-oenxp-rauc-rsb3720-walnascar
         environment:
