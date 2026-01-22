@@ -1209,7 +1209,7 @@ class KasManager:
 
         # Check KAS availability
         if not self.check_kas_available():
-            logging.error("KAS is not available. Please install with: pip install kas")
+            logging.error("KAS is not available. Please install KAS (e.g., 'pip install kas' or use your package manager)")
             sys.exit(1)
 
         # Build KAS command arguments
@@ -1256,7 +1256,7 @@ class KasManager:
 
         # Check KAS availability
         if not self.check_kas_available():
-            logging.error("KAS is not available. Please install with: pip install kas")
+            logging.error("KAS is not available. Please install KAS (e.g., 'pip install kas' or use your package manager)")
             sys.exit(1)
 
         # Build KAS command arguments
