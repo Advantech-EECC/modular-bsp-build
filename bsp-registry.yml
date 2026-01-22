@@ -84,6 +84,100 @@ registry:
           - adv-mbsp-oenxp-walnascar-rom2620-ed91.yaml
 
     # =====================================
+    # Advantech ROM2620 ED91 OTA BSPs
+    # =====================================
+
+    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rom2620-ed91
+      description: "ROM2620 ED91 Walnascar RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom2620-ed91-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom2620-ed91.yaml
+          - features/ota/rauc/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rom2620-ed91
+      description: "ROM2620 ED91 Walnascar SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom2620-ed91-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom2620-ed91.yaml
+          - features/ota/swupdate/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-walnascar-rom2620-ed91
+      description: "ROM2620 ED91 Walnascar OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom2620-ed91-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom2620-ed91.yaml
+          - features/ota/ostree/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-rauc-styhead-rom2620-ed91
+      description: "ROM2620 ED91 Styhead RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom2620-ed91-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom2620-ed91.yaml
+          - features/ota/rauc/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-styhead-rom2620-ed91
+      description: "ROM2620 ED91 Styhead SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom2620-ed91-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom2620-ed91.yaml
+          - features/ota/swupdate/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-styhead-rom2620-ed91
+      description: "ROM2620 ED91 Styhead OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom2620-ed91-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom2620-ed91.yaml
+          - features/ota/ostree/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-rauc-scarthgap-rom2620-ed91
+      description: "ROM2620 ED91 Scarthgap RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom2620-ed91-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom2620-ed91.yaml
+          - features/ota/rauc/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-scarthgap-rom2620-ed91
+      description: "ROM2620 ED91 Scarthgap SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom2620-ed91-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom2620-ed91.yaml
+          - features/ota/swupdate/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-scarthgap-rom2620-ed91
+      description: "ROM2620 ED91 Scarthgap OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom2620-ed91-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom2620-ed91.yaml
+          - features/ota/ostree/adv-ota-scarthgap.yml
+
+    # =====================================
     # Advantech ROM2820 ED93 BSPs
     # =====================================
 
@@ -113,6 +207,100 @@ registry:
           container: "ubuntu-22.04"
         configuration:
           - adv-mbsp-oenxp-walnascar-rom2820-ed93.yaml
+
+    # =====================================
+    # Advantech ROM2820 ED93 OTA BSPs
+    # =====================================
+
+    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rom2820-ed93
+      description: "ROM2820 ED93 Walnascar RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom2820-ed93-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom2820-ed93.yaml
+          - features/ota/rauc/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rom2820-ed93
+      description: "ROM2820 ED93 Walnascar SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom2820-ed93-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom2820-ed93.yaml
+          - features/ota/swupdate/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-walnascar-rom2820-ed93
+      description: "ROM2820 ED93 Walnascar OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom2820-ed93-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom2820-ed93.yaml
+          - features/ota/ostree/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-rauc-styhead-rom2820-ed93
+      description: "ROM2820 ED93 Styhead RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom2820-ed93-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom2820-ed93.yaml
+          - features/ota/rauc/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-styhead-rom2820-ed93
+      description: "ROM2820 ED93 Styhead SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom2820-ed93-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom2820-ed93.yaml
+          - features/ota/swupdate/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-styhead-rom2820-ed93
+      description: "ROM2820 ED93 Styhead OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom2820-ed93-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom2820-ed93.yaml
+          - features/ota/ostree/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-rauc-scarthgap-rom2820-ed93
+      description: "ROM2820 ED93 Scarthgap RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom2820-ed93-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom2820-ed93.yaml
+          - features/ota/rauc/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-scarthgap-rom2820-ed93
+      description: "ROM2820 ED93 Scarthgap SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom2820-ed93-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom2820-ed93.yaml
+          - features/ota/swupdate/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-scarthgap-rom2820-ed93
+      description: "ROM2820 ED93 Scarthgap OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom2820-ed93-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom2820-ed93.yaml
+          - features/ota/ostree/adv-ota-scarthgap.yml
           
     # =====================================
     # Advantech ROM5720-DB5901 BSPs
@@ -146,6 +334,100 @@ registry:
           - adv-mbsp-oenxp-walnascar-rom5720-db5901.yaml
 
     # =====================================
+    # Advantech ROM5720-DB5901 OTA BSPs
+    # =====================================
+
+    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rom5720-db5901
+      description: "ROM5720-DB5901 Walnascar RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom5720-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5720-db5901.yaml
+          - features/ota/rauc/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rom5720-db5901
+      description: "ROM5720-DB5901 Walnascar SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom5720-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5720-db5901.yaml
+          - features/ota/swupdate/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-walnascar-rom5720-db5901
+      description: "ROM5720-DB5901 Walnascar OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom5720-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5720-db5901.yaml
+          - features/ota/ostree/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-rauc-styhead-rom5720-db5901
+      description: "ROM5720-DB5901 Styhead RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom5720-db5901-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5720-db5901.yaml
+          - features/ota/rauc/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-styhead-rom5720-db5901
+      description: "ROM5720-DB5901 Styhead SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom5720-db5901-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5720-db5901.yaml
+          - features/ota/swupdate/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-styhead-rom5720-db5901
+      description: "ROM5720-DB5901 Styhead OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom5720-db5901-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5720-db5901.yaml
+          - features/ota/ostree/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-rauc-scarthgap-rom5720-db5901
+      description: "ROM5720-DB5901 Scarthgap RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom5720-db5901-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5720-db5901.yaml
+          - features/ota/rauc/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-scarthgap-rom5720-db5901
+      description: "ROM5720-DB5901 Scarthgap SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom5720-db5901-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5720-db5901.yaml
+          - features/ota/swupdate/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-scarthgap-rom5720-db5901
+      description: "ROM5720-DB5901 Scarthgap OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom5720-db5901-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5720-db5901.yaml
+          - features/ota/ostree/adv-ota-scarthgap.yml
+
+    # =====================================
     # Advantech ROM5721-1G-DB5901 BSPs
     # =====================================
 
@@ -175,6 +457,40 @@ registry:
           container: "ubuntu-22.04"
         configuration:
           - adv-mbsp-oenxp-walnascar-rom5721-1g-db5901.yaml
+
+    # =====================================
+    # Advantech ROM5721-1G-DB5901 OTA BSPs
+    # =====================================
+
+    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rom5721-1g-db5901
+      description: "ROM5721-1G-DB5901 Walnascar RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom5721-1g-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5721-1g-db5901.yaml
+          - features/ota/rauc/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rom5721-1g-db5901
+      description: "ROM5721-1G-DB5901 Walnascar SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom5721-1g-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5721-1g-db5901.yaml
+          - features/ota/swupdate/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-walnascar-rom5721-1g-db5901
+      description: "ROM5721-1G-DB5901 Walnascar OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom5721-1g-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5721-1g-db5901.yaml
+          - features/ota/ostree/adv-ota-walnascar.yml
 
     # =====================================
     # Advantech ROM5721-2G-DB5901 BSPs
@@ -208,6 +524,40 @@ registry:
           - adv-mbsp-oenxp-walnascar-rom5721-2g-db5901.yaml
 
     # =====================================
+    # Advantech ROM5721-2G-DB5901 OTA BSPs
+    # =====================================
+
+    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rom5721-2g-db5901
+      description: "ROM5721-2G-DB5901 Walnascar RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom5721-2g-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5721-2g-db5901.yaml
+          - features/ota/rauc/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rom5721-2g-db5901
+      description: "ROM5721-2G-DB5901 Walnascar SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom5721-2g-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5721-2g-db5901.yaml
+          - features/ota/swupdate/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-walnascar-rom5721-2g-db5901
+      description: "ROM5721-2G-DB5901 Walnascar OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom5721-2g-db5901-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5721-2g-db5901.yaml
+          - features/ota/ostree/adv-ota-walnascar.yml
+
+    # =====================================
     # Advantech ROM5722-DB2510 BSPs
     # =====================================
 
@@ -237,6 +587,100 @@ registry:
           container: "ubuntu-22.04"
         configuration:
           - adv-mbsp-oenxp-walnascar-rom5722-db2510.yaml
+
+    # =====================================
+    # Advantech ROM5722-DB2510 OTA BSPs
+    # =====================================
+
+    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rom5722-db2510
+      description: "ROM5722-DB2510 Walnascar RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom5722-db2510-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5722-db2510.yaml
+          - features/ota/rauc/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rom5722-db2510
+      description: "ROM5722-DB2510 Walnascar SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom5722-db2510-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5722-db2510.yaml
+          - features/ota/swupdate/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-walnascar-rom5722-db2510
+      description: "ROM5722-DB2510 Walnascar OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom5722-db2510-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rom5722-db2510.yaml
+          - features/ota/ostree/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-rauc-styhead-rom5722-db2510
+      description: "ROM5722-DB2510 Styhead RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom5722-db2510-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5722-db2510.yaml
+          - features/ota/rauc/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-styhead-rom5722-db2510
+      description: "ROM5722-DB2510 Styhead SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom5722-db2510-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5722-db2510.yaml
+          - features/ota/swupdate/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-styhead-rom5722-db2510
+      description: "ROM5722-DB2510 Styhead OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom5722-db2510-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rom5722-db2510.yaml
+          - features/ota/ostree/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-rauc-scarthgap-rom5722-db2510
+      description: "ROM5722-DB2510 Scarthgap RAUC OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rom5722-db2510-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5722-db2510.yaml
+          - features/ota/rauc/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-scarthgap-rom5722-db2510
+      description: "ROM5722-DB2510 Scarthgap SWUpdate OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rom5722-db2510-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5722-db2510.yaml
+          - features/ota/swupdate/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-scarthgap-rom5722-db2510
+      description: "ROM5722-DB2510 Scarthgap OSTree OTA BSP"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rom5722-db2510-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rom5722-db2510.yaml
+          - features/ota/ostree/adv-ota-scarthgap.yml
           
     # =====================================
     # Advantech RSB3720 ACL BSPs
@@ -305,6 +749,84 @@ registry:
         configuration:
           - adv-mbsp-oenxp-walnascar-rsb3720.yaml
           - features/ota/swupdate/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-walnascar-rsb3720
+      description: "Advantech EIoT Yocto Walnascar OSTree RSB3720"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rsb3720-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rsb3720.yaml
+          - features/ota/ostree/adv-ota-walnascar.yml
+
+    # =====================================
+    # Advantech RSB3720 Styhead OTA BSPs
+    # =====================================
+
+    - name: adv-ota-mbsp-oenxp-rauc-styhead-rsb3720
+      description: "Advantech EIoT Yocto Styhead RAUC RSB3720"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rsb3720-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rsb3720.yaml
+          - features/ota/rauc/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-styhead-rsb3720
+      description: "Advantech EIoT Yocto Styhead SWUpdate RSB3720"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rsb3720-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rsb3720.yaml
+          - features/ota/swupdate/adv-ota-styhead.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-styhead-rsb3720
+      description: "Advantech EIoT Yocto Styhead OSTree RSB3720"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rsb3720-styhead
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-styhead-rsb3720.yaml
+          - features/ota/ostree/adv-ota-styhead.yml
+
+    # =====================================
+    # Advantech RSB3720 Scarthgap OTA BSPs
+    # =====================================
+
+    - name: adv-ota-mbsp-oenxp-rauc-scarthgap-rsb3720
+      description: "Advantech EIoT Yocto Scarthgap RAUC RSB3720"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rsb3720-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rsb3720.yaml
+          - features/ota/rauc/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-scarthgap-rsb3720
+      description: "Advantech EIoT Yocto Scarthgap SWUpdate RSB3720"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rsb3720-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rsb3720.yaml
+          - features/ota/swupdate/adv-ota-scarthgap.yml
+
+    - name: adv-ota-mbsp-oenxp-ostree-scarthgap-rsb3720
+      description: "Advantech EIoT Yocto Scarthgap OSTree RSB3720"
+      build:
+        path: build/adv-ota-mbsp-oenxp-ostree-rsb3720-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-scarthgap-rsb3720.yaml
+          - features/ota/ostree/adv-ota-scarthgap.yml
 
     # =====================================
     # Poky QEMU ARM64 BSPs  
