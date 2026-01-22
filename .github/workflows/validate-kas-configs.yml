@@ -19,6 +19,9 @@ on:
       - '.github/workflows/validate-kas-configs.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   validate-yaml-syntax:
     name: Validate YAML Syntax
