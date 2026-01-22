@@ -182,6 +182,9 @@ pip install -e .
 # List available BSPs in the registry
 python bsp.py list
 
+# Validate a BSP configuration without building (fast)
+python bsp.py build <bsp_name> --validate
+
 # Build a specific BSP
 python bsp.py build <bsp_name>
 
@@ -274,9 +277,36 @@ registry:
 |---------|-------------|---------|
 | `list` | List all available BSPs | `python bsp.py list` |
 | `build <bsp_name>` | Build a specific BSP | `python bsp.py build imx8mpevk` |
+| `build <bsp_name> --validate` | Validate BSP configuration without building (fast) | `python bsp.py build imx8mpevk --validate` |
 | `shell <bsp_name>` | Enter interactive shell | `python bsp.py shell imx8mpevk` |
 | `export <bsp_name>` | Export KAS configuration | `python bsp.py export imx8mpevk` |
 | `containers` | List available containers | `python bsp.py containers` |
+
+### Build Validation
+
+The `--validate` flag provides a fast way to validate BSP configurations without performing time-consuming Docker builds and Yocto compilations. This is particularly useful for:
+
+- **CI/CD pipelines**: Quickly verify configuration validity before committing resources to a full build
+- **Development iteration**: Test configuration changes without waiting for complete builds
+- **Pre-build checks**: Ensure all required files and repositories are accessible before starting a build
+
+**How it works:**
+
+1. Validates BSP configuration files and dependencies
+2. Skips Docker image build (uses native KAS installation)
+3. Runs `kas checkout` to verify repository configurations
+4. Validates that all required source repositories can be cloned
+5. Confirms build configuration is valid without performing actual compilation
+
+**Example:**
+
+```bash
+# Validate configuration for RSB3720 board
+python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720 --validate
+
+# If validation passes, proceed with full build
+python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720
+```
 
 ---
 
