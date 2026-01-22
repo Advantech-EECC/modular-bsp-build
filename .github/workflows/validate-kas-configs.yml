@@ -517,12 +517,12 @@ jobs:
               echo "✓ Uses apt-get for package management"
             fi
             
-            if grep -q "rm -rf /var/lib/apt/lists/\|apt-get clean" "$dockerfile"; then
+            if grep -q "rm -rf /var/lib/apt/lists/" "$dockerfile" || grep -q "apt-get clean" "$dockerfile"; then
               echo "✓ Cleans up apt cache"
             fi
             
             # Check for common issues
-            if grep -q "RUN.*&&.*\\\\$" "$dockerfile"; then
+            if grep -q 'RUN.*&&.*\\$' "$dockerfile"; then
               echo "✓ Uses multi-line RUN commands properly"
             fi
             
