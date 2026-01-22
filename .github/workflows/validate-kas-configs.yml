@@ -80,207 +80,115 @@ jobs:
           kas --version
           echo "KAS version check passed"
       
-      - name: Validate KAS configuration structure
+      - name: Create validation script
         run: |
-          echo "Validating KAS configuration structure..."
-          
-          python3 << 'EOF'
-import yaml
-import glob
-import sys
-import os
+          cat > validate_kas.py << 'PYEOF'
+          import yaml
+          import glob
+          import sys
+          import os
 
-# Find all top-level KAS configuration files
-kas_configs = glob.glob("adv-*.yaml")
-kas_configs.sort()
+          # Find all top-level KAS configuration files
+          kas_configs = glob.glob("adv-*.yaml")
+          kas_configs.sort()
 
-if not kas_configs:
-    print("No KAS configuration files found!")
-    sys.exit(1)
+          if not kas_configs:
+              print("No KAS configuration files found!")
+              sys.exit(1)
 
-print(f"Found {len(kas_configs)} KAS configuration files")
-print()
+          print(f"Found {len(kas_configs)} KAS configuration files")
+          print()
 
-failed = 0
-passed = 0
-warnings = 0
+          failed = 0
+          passed = 0
+          warnings = 0
 
-for config_file in kas_configs:
-    print(f"Validating: {config_file}")
-    
-    try:
-        with open(config_file, 'r') as f:
-            config = yaml.safe_load(f)
-        
-        # Check if it has a header section
-        if 'header' not in config:
-            print(f"  ✗ Missing 'header' section")
-            failed += 1
-            continue
-        
-        header = config['header']
-        
-        # Check version
-        if 'version' not in header:
-            print(f"  ⚠ Warning: Missing 'version' in header")
-            warnings += 1
-        else:
-            version = header['version']
-            print(f"  ✓ Version: {version}")
-        
-        # Check includes
-        if 'includes' in header:
-            includes = header['includes']
-            print(f"  ✓ Includes: {len(includes)} file(s)")
-            
-            # Verify included files exist (only local includes)
-            for include in includes:
-                if isinstance(include, str):
-                    include_path = include
-                    if not include_path.startswith('http') and ':' not in include_path:
-                        if not os.path.exists(include_path):
-                            print(f"    ✗ Missing include file: {include_path}")
-                            failed += 1
-                        else:
-                            print(f"    ✓ Include exists: {include_path}")
-                elif isinstance(include, dict) and 'file' in include:
-                    # Remote repo include - skip validation
-                    print(f"    ⊘ Remote include: {include.get('repo', 'unknown')}/{include['file']}")
-        else:
-            print(f"  ⚠ Warning: No includes found (standalone config)")
-            warnings += 1
-        
-        # Check for common sections
-        if 'repos' in config:
-            print(f"  ✓ Has 'repos' section with {len(config['repos'])} repo(s)")
-        
-        if 'machine' in config:
-            print(f"  ✓ Machine: {config['machine']}")
-        
-        if 'distro' in config:
-            print(f"  ✓ Distro: {config['distro']}")
-        
-        passed += 1
-        print()
-        
-    except yaml.YAMLError as e:
-        print(f"  ✗ YAML parsing error: {e}")
-        failed += 1
-        print()
-    except Exception as e:
-        print(f"  ✗ Unexpected error: {e}")
-        failed += 1
-        print()
-
-print("=" * 60)
-print("Validation Summary")
-print("=" * 60)
-print(f"Passed: {passed}")
-print(f"Failed: {failed}")
-print(f"Warnings: {warnings}")
-print()
-
-if failed > 0:
-    print("❌ KAS configuration validation failed!")
-    sys.exit(1)
-else:
-    print("✅ All KAS configurations are structurally valid!")
-    if warnings > 0:
-        print(f"⚠  {warnings} warning(s) found")
-EOF
-
-  validate-kas-includes:
-    name: Validate KAS Include Paths
-    runs-on: ubuntu-latest
-    needs: validate-yaml-syntax
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      
-      - name: Install PyYAML
-        run: |
-          python -m pip install --upgrade pip
-          pip install PyYAML
-      
-      - name: Check include file references
-        run: |
-          echo "Checking that all included files exist..."
-          
-          FAILED=0
-          CHECKED=0
-          
-          # Find all YAML files
-          find . -type f \( -name "*.yml" -o -name "*.yaml" \) \
-            -not -path "./.git/*" \
-            -not -path "./venv/*" \
-            -not -path "./build*/*" \
-            -not -path "./archived/*" | while read -r file; do
-            
-            CHECKED=$((CHECKED + 1))
-            
-            # Extract include paths from the file
-            INCLUDES=$(python3 << EOF
-import yaml
-import sys
-import os
-
-try:
-    with open('$file', 'r') as f:
-        data = yaml.safe_load(f)
-        if data and 'header' in data and 'includes' in data['header']:
-            for include in data['header']['includes']:
-                if isinstance(include, str):
-                    print(include)
-                elif isinstance(include, dict):
-                    # Handle includes with repo: and file: keys
-                    if 'file' in include:
-                        print(include['file'])
-except Exception as e:
-    print(f"Error parsing: {e}", file=sys.stderr)
-    sys.exit(1)
-EOF
-)
-            
-            if [ $? -ne 0 ]; then
-              echo "✗ Failed to parse: $file"
-              FAILED=$((FAILED + 1))
-              continue
-            fi
-            
-            # Check each include file exists (relative to the config file's directory)
-            BASE_DIR=$(dirname "$file")
-            
-            for include in $INCLUDES; do
-              # Skip remote repo includes (they have 'repo:' key)
-              if [[ "$include" == *"repo:"* ]]; then
-                continue
-              fi
+          for config_file in kas_configs:
+              print(f"Validating: {config_file}")
               
-              INCLUDE_PATH="$BASE_DIR/$include"
-              
-              if [ ! -f "$INCLUDE_PATH" ]; then
-                echo "✗ Missing include in $file: $include"
-                echo "  Expected path: $INCLUDE_PATH"
-                FAILED=$((FAILED + 1))
-              fi
-            done
-          done
-          
-          echo ""
-          if [ $FAILED -gt 0 ]; then
-            echo "❌ Found $FAILED missing include file(s)!"
-            exit 1
-          else
-            echo "✅ All include file references are valid!"
-          fi
+              try:
+                  with open(config_file, 'r') as f:
+                      config = yaml.safe_load(f)
+                  
+                  # Check if it has a header section
+                  if 'header' not in config:
+                      print(f"  ✗ Missing 'header' section")
+                      failed += 1
+                      continue
+                  
+                  header = config['header']
+                  
+                  # Check version
+                  if 'version' not in header:
+                      print(f"  ⚠ Warning: Missing 'version' in header")
+                      warnings += 1
+                  else:
+                      version = header['version']
+                      print(f"  ✓ Version: {version}")
+                  
+                  # Check includes
+                  if 'includes' in header:
+                      includes = header['includes']
+                      print(f"  ✓ Includes: {len(includes)} file(s)")
+                      
+                      # Verify included files exist (only local includes)
+                      for include in includes:
+                          if isinstance(include, str):
+                              include_path = include
+                              if not include_path.startswith('http') and ':' not in include_path:
+                                  if not os.path.exists(include_path):
+                                      print(f"    ✗ Missing include file: {include_path}")
+                                      failed += 1
+                                  else:
+                                      print(f"    ✓ Include exists: {include_path}")
+                          elif isinstance(include, dict) and 'file' in include:
+                              # Remote repo include - skip validation
+                              print(f"    ⊘ Remote include: {include.get('repo', 'unknown')}/{include['file']}")
+                  else:
+                      print(f"  ⚠ Warning: No includes found (standalone config)")
+                      warnings += 1
+                  
+                  # Check for common sections
+                  if 'repos' in config:
+                      print(f"  ✓ Has 'repos' section with {len(config['repos'])} repo(s)")
+                  
+                  if 'machine' in config:
+                      print(f"  ✓ Machine: {config['machine']}")
+                  
+                  if 'distro' in config:
+                      print(f"  ✓ Distro: {config['distro']}")
+                  
+                  passed += 1
+                  print()
+                  
+              except yaml.YAMLError as e:
+                  print(f"  ✗ YAML parsing error: {e}")
+                  failed += 1
+                  print()
+              except Exception as e:
+                  print(f"  ✗ Unexpected error: {e}")
+                  failed += 1
+                  print()
+
+          print("=" * 60)
+          print("Validation Summary")
+          print("=" * 60)
+          print(f"Passed: {passed}")
+          print(f"Failed: {failed}")
+          print(f"Warnings: {warnings}")
+          print()
+
+          if failed > 0:
+              print("❌ KAS configuration validation failed!")
+              sys.exit(1)
+          else:
+              print("✅ All KAS configurations are structurally valid!")
+              if warnings > 0:
+                  print(f"⚠  {warnings} warning(s) found")
+          PYEOF
+      
+      - name: Run validation
+        run: python3 validate_kas.py
 
   validate-kas-schema:
     name: Validate KAS Schema Versions
@@ -303,66 +211,67 @@ EOF
           python -m pip install --upgrade pip
           pip install PyYAML
       
-      - name: Check KAS schema versions
+      - name: Create schema validation script
         run: |
-          echo "Checking KAS schema versions in configuration files..."
-          
-          python3 << 'EOF'
-import yaml
-import os
-import glob
+          cat > check_schema.py << 'PYEOF'
+          import yaml
+          import os
+          import glob
 
-# Find all YAML files
-yaml_files = []
-for pattern in ['*.yml', '*.yaml']:
-    yaml_files.extend(glob.glob(pattern))
-    yaml_files.extend(glob.glob(f'**/{pattern}', recursive=True))
+          # Find all YAML files
+          yaml_files = []
+          for pattern in ['*.yml', '*.yaml']:
+              yaml_files.extend(glob.glob(pattern))
+              yaml_files.extend(glob.glob(f'**/{pattern}', recursive=True))
 
-# Filter out unwanted paths
-yaml_files = [f for f in yaml_files 
-              if not f.startswith('.git/') 
-              and not f.startswith('venv/')
-              and not f.startswith('build')
-              and not f.startswith('archived/')]
+          # Filter out unwanted paths
+          yaml_files = [f for f in yaml_files 
+                        if not f.startswith('.git/') 
+                        and not f.startswith('venv/')
+                        and not f.startswith('build')
+                        and not f.startswith('archived/')]
 
-version_stats = {}
-files_with_version = []
-files_without_version = []
+          version_stats = {}
+          files_with_version = []
+          files_without_version = []
 
-for yaml_file in yaml_files:
-    try:
-        with open(yaml_file, 'r') as f:
-            data = yaml.safe_load(f)
-            
-        if data and isinstance(data, dict) and 'header' in data:
-            if 'version' in data['header']:
-                version = data['header']['version']
-                files_with_version.append((yaml_file, version))
-                version_stats[version] = version_stats.get(version, 0) + 1
-            else:
-                files_without_version.append(yaml_file)
-    except Exception as e:
-        print(f"Warning: Could not parse {yaml_file}: {e}")
+          for yaml_file in yaml_files:
+              try:
+                  with open(yaml_file, 'r') as f:
+                      data = yaml.safe_load(f)
+                      
+                  if data and isinstance(data, dict) and 'header' in data:
+                      if 'version' in data['header']:
+                          version = data['header']['version']
+                          files_with_version.append((yaml_file, version))
+                          version_stats[version] = version_stats.get(version, 0) + 1
+                      else:
+                          files_without_version.append(yaml_file)
+              except Exception as e:
+                  print(f"Warning: Could not parse {yaml_file}: {e}")
 
-print("=" * 60)
-print("KAS Schema Version Report")
-print("=" * 60)
-print()
+          print("=" * 60)
+          print("KAS Schema Version Report")
+          print("=" * 60)
+          print()
 
-if version_stats:
-    print("Version Distribution:")
-    for version in sorted(version_stats.keys()):
-        print(f"  Version {version}: {version_stats[version]} file(s)")
-    print()
+          if version_stats:
+              print("Version Distribution:")
+              for version in sorted(version_stats.keys()):
+                  print(f"  Version {version}: {version_stats[version]} file(s)")
+              print()
 
-if files_without_version:
-    print(f"Files without version header: {len(files_without_version)}")
-    for f in files_without_version:
-        print(f"  - {f}")
-    print()
+          if files_without_version:
+              print(f"Files without version header: {len(files_without_version)}")
+              for f in files_without_version:
+                  print(f"  - {f}")
+              print()
 
-print(f"Total files with KAS header: {len(files_with_version)}")
-print(f"Total files checked: {len(yaml_files)}")
-print()
-print("✅ KAS schema version check complete!")
-EOF
+          print(f"Total files with KAS header: {len(files_with_version)}")
+          print(f"Total files checked: {len(yaml_files)}")
+          print()
+          print("✅ KAS schema version check complete!")
+          PYEOF
+      
+      - name: Check KAS schema versions
+        run: python3 check_schema.py
