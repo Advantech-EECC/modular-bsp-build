@@ -463,7 +463,7 @@ jobs:
           fi
 
   validate-dockerfiles:
-    name: Validate Dockerfiles
+    name: Docker containers validation
     runs-on: ubuntu-latest
     
     steps:
