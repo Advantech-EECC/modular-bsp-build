@@ -168,6 +168,9 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Install bsp manager
+pip install -e .
 ```
 
 ## Basic Usage
