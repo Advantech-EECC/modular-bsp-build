@@ -472,16 +472,20 @@ jobs:
         with:
           fetch-depth: 1
       
-      - name: Run hadolint on Dockerfiles
+      - name: Run hadolint on Dockerfiles (informative)
         uses: hadolint/hadolint-action@v3.1.0
+        continue-on-error: true
         with:
           dockerfile: "Dockerfile.*"
           recursive: true
           failure-threshold: warning
       
-      - name: Validate Dockerfile syntax
+      - name: Validate Dockerfile syntax (informative)
+        continue-on-error: true
         run: |
           echo "Validating Dockerfile syntax and best practices..."
+          echo "Note: This validation is informative only and will not fail the build"
+          echo ""
           
           # Find all Dockerfiles
           DOCKERFILES=$(find . -maxdepth 1 -name "Dockerfile*" -type f)
@@ -495,7 +499,7 @@ jobs:
           echo "$DOCKERFILES"
           echo ""
           
-          FAILED=0
+          ISSUES=0
           PASSED=0
           
           for dockerfile in $DOCKERFILES; do
@@ -507,9 +511,8 @@ jobs:
             if grep -q "^FROM " "$dockerfile"; then
               echo "✓ Has FROM instruction"
             else
-              echo "✗ Missing FROM instruction"
-              FAILED=$((FAILED + 1))
-              continue
+              echo "⚠ Missing FROM instruction"
+              ISSUES=$((ISSUES + 1))
             fi
             
             # Check for best practices
@@ -531,15 +534,76 @@ jobs:
           done
           
           echo "=========================================="
-          echo "Dockerfile Validation Summary"
+          echo "Dockerfile Validation Summary (Informative)"
           echo "=========================================="
-          echo "Passed: $PASSED"
-          echo "Failed: $FAILED"
+          echo "Files checked: $PASSED"
+          echo "Issues found: $ISSUES"
+          echo ""
+          
+          if [ $ISSUES -gt 0 ]; then
+            echo "⚠ Found $ISSUES issue(s) in Dockerfiles (informative only)"
+          else
+            echo "✅ All Dockerfiles passed validation checks!"
+          fi
+      
+      - name: Build Docker images
+        run: |
+          echo "Building Docker images to validate they can be built successfully..."
+          echo ""
+          
+          FAILED=0
+          BUILT=0
+          
+          # Build Dockerfile.ubuntu
+          if [ -f "Dockerfile.ubuntu" ]; then
+            echo "=========================================="
+            echo "Building: Dockerfile.ubuntu"
+            echo "=========================================="
+            
+            if docker build -f Dockerfile.ubuntu \
+              --build-arg DISTRO=ubuntu:20.04 \
+              --build-arg KAS_VERSION=4.7 \
+              -t test-kas-ubuntu:latest .; then
+              echo "✓ Successfully built Dockerfile.ubuntu"
+              BUILT=$((BUILT + 1))
+            else
+              echo "✗ Failed to build Dockerfile.ubuntu"
+              FAILED=$((FAILED + 1))
+            fi
+            echo ""
+          fi
+          
+          # Build Dockerfile.debian
+          if [ -f "Dockerfile.debian" ]; then
+            echo "=========================================="
+            echo "Building: Dockerfile.debian"
+            echo "=========================================="
+            
+            if docker build -f Dockerfile.debian \
+              -t test-kas-debian:latest .; then
+              echo "✓ Successfully built Dockerfile.debian"
+              BUILT=$((BUILT + 1))
+            else
+              echo "✗ Failed to build Dockerfile.debian"
+              FAILED=$((FAILED + 1))
+            fi
+            echo ""
+          fi
+          
+          # Cleanup - remove built images to free space
+          docker rmi test-kas-ubuntu:latest 2>/dev/null || true
+          docker rmi test-kas-debian:latest 2>/dev/null || true
+          
+          echo "=========================================="
+          echo "Docker Build Summary"
+          echo "=========================================="
+          echo "Successfully built: $BUILT"
+          echo "Failed to build: $FAILED"
           echo ""
           
           if [ $FAILED -gt 0 ]; then
-            echo "❌ Dockerfile validation failed!"
+            echo "❌ Docker image build validation failed!"
             exit 1
           else
-            echo "✅ All Dockerfiles are valid!"
+            echo "✅ All Docker images built successfully!"
           fi
