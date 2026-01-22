@@ -39,19 +39,47 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install PyYAML yamllint
+          pip install PyYAML
       
       - name: Validate YAML syntax
         run: |
-          echo "Validating YAML syntax for all .yml and .yaml files..."
-          find . -type f \( -name "*.yml" -o -name "*.yaml" \) \
-            -not -path "./.git/*" \
-            -not -path "./venv/*" \
-            -not -path "./build*/*" | while read -r file; do
-            echo "Checking: $file"
-            python -c "import yaml; yaml.safe_load(open('$file'))" || exit 1
-          done
-          echo "✓ All YAML files have valid syntax"
+          cat > validate_yaml.py << 'PYEOF'
+          import yaml
+          import sys
+          import os
+          
+          # Find all YAML files
+          yaml_files = []
+          for root, dirs, files in os.walk('.'):
+              # Skip certain directories
+              dirs[:] = [d for d in dirs if d not in ['.git', 'venv', 'build', 'layers']]
+              for file in files:
+                  if file.endswith(('.yml', '.yaml')):
+                      yaml_files.append(os.path.join(root, file))
+          
+          print(f"Validating YAML syntax for {len(yaml_files)} files...")
+          failed = 0
+          
+          for yaml_file in sorted(yaml_files):
+              try:
+                  with open(yaml_file, 'r') as f:
+                      yaml.safe_load(f)
+                  print(f"✓ {yaml_file}")
+              except yaml.YAMLError as e:
+                  print(f"✗ {yaml_file}: {e}")
+                  failed += 1
+              except Exception as e:
+                  print(f"✗ {yaml_file}: {e}")
+                  failed += 1
+          
+          if failed > 0:
+              print(f"\n❌ {failed} file(s) failed validation")
+              sys.exit(1)
+          else:
+              print("\n✅ All YAML files have valid syntax")
+          PYEOF
+          
+          python3 validate_yaml.py
 
   validate-kas-configs:
     name: Validate KAS Configurations
@@ -89,6 +117,8 @@ jobs:
           import os
 
           # Find all top-level KAS configuration files
+          # Note: This repository uses 'adv-*.yaml' naming convention for main BSP configurations
+          # Include files (like common.yml, yocto/*.yml) are validated separately
           kas_configs = glob.glob("adv-*.yaml")
           kas_configs.sort()
 
@@ -135,7 +165,9 @@ jobs:
                       for include in includes:
                           if isinstance(include, str):
                               include_path = include
-                              if not include_path.startswith('http') and ':' not in include_path:
+                              # Check if it's a local file (not a URL/URI)
+                              if not (include_path.startswith(('http://', 'https://', 'git://', 'ssh://', 'ftp://')) 
+                                      or '@' in include_path):
                                   if not os.path.exists(include_path):
                                       print(f"    ✗ Missing include file: {include_path}")
                                       failed += 1
@@ -224,12 +256,10 @@ jobs:
               yaml_files.extend(glob.glob(pattern))
               yaml_files.extend(glob.glob(f'**/{pattern}', recursive=True))
 
-          # Filter out unwanted paths
+          # Filter out unwanted paths - consistent with first job
+          excluded_dirs = ['.git/', 'venv/', 'build', 'archived/', 'layers/']
           yaml_files = [f for f in yaml_files 
-                        if not f.startswith('.git/') 
-                        and not f.startswith('venv/')
-                        and not f.startswith('build')
-                        and not f.startswith('archived/')]
+                        if not any(f.startswith(exc) for exc in excluded_dirs)]
 
           version_stats = {}
           files_with_version = []
