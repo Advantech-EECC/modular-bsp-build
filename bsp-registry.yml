@@ -53,6 +53,28 @@ registry:
           - adv-bsp-oenxp-mickledore-rsb3730-4g.yaml
 
     # =====================================
+    # Advantech AOM5521 BSPs
+    # =====================================
+
+    - name: adv-bsp-oenxp-walnascar-aom5521a1
+      description: "AOM5521 A1 ACL Walnascar BSP"
+      build:
+        path: build/adv-oenxp-bsp-aom5521a1-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-bsp-oenxp-walnascar-aom5521a1.yaml
+
+    - name: adv-bsp-oenxp-walnascar-aom5521a2
+      description: "AOM5521 A2 ACL Walnascar BSP"
+      build:
+        path: build/adv-oenxp-bsp-aom5521a2-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-bsp-oenxp-walnascar-aom5521a2.yaml
+          
+    # =====================================
     # Advantech ROM2620 ED91 BSPs
     # =====================================
 
