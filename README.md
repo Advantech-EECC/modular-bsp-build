@@ -99,6 +99,8 @@ Table describes in which combinations yocto releases could be used together with
 | Board \ Yocto  | walnascar | styhead | scarthgap | mickledore | langdale | kirkstone | Status        |
 | -------------- | :-------: | :-----: | :-------: | :--------: | :------: | :-------: | ------------- |
 | **RSB3720**    |     ✅     |    ✅    |     ✅     |     ❌      |    ❌     |     🟡     | 🟢 Stable      |
+| **RSB3720 4G** |     ✅     |    ❌    |     ❌     |     ❌      |    ❌     |     ❌     | 🟢 Stable      |
+| **RSB3720 6G** |     ✅     |    ❌    |     ❌     |     ❌      |    ❌     |     ❌     | 🟢 Stable      |
 | **RSB3730**    |     ❌     |    ❌    |     ❌     |     ✅      |    ❌     |     ❌     | 🟡 Development |
 | **ROM2620**    |     ✅     |    ✅    |     ✅     |     ❌      |    ❌     |     ❌     | 🟢 Stable      |
 | **ROM5720**    |     ✅     |    ✅    |     ✅     |     ❌      |    ❌     |     ❌     | 🟢 Stable      |
@@ -121,6 +123,8 @@ Table describes in which combinations yocto releases could be used together with
 | **Hardware**   | **Supported Releases** | **Status** | **Documentation** |
 |----------------|-------------------------|------------|-------------------|
 | **RSB3720**    | walnascar, styhead, scarthgap | 🟢 Stable | [Advantech RSB-3720 Product Page](https://www.advantech.com/en-us/products/5912096e-f242-4b17-993a-1acdcaada6f6/rsb-3720/mod_d2f1b0bc-650b-449a-8ef7-b65ce4f69949) · [User Manual](https://www.manualslib.com/manual/2293645/Advantech-Rsb-3720.html) |
+| **RSB3720 4G** | walnascar | 🟢 Stable | *(Same as RSB3720, variant-specific)* |
+| **RSB3720 6G** | walnascar | 🟢 Stable | *(Same as RSB3720, variant-specific)* |
 | **RSB3730**    | mickledore | 🟡 Development | [Advantech RSB-3730 Product Page](https://www.advantech.com/en-eu/products/5912096e-f242-4b17-993a-1acdcaada6f6/rsb-3730/mod_5d7887e6-b7e3-427c-8729-b81ac7d89ccd) · [RSB-3730 User Manual (PDF)](https://advdownload.advantech.com/productfile/Downloadfile4/1-2HACYHA/RSB-3730_User_Manual_Eng_yocto%20Ed.1_FINAL.pdf) · [Yocto BSP Guide](https://ess-wiki.advantech.com.tw/view/Yocto_Linux_BSP_Ver.A_User_Guide_for_RSB-3730_series-Yocto_4.2) |
 | **ROM2620**    | walnascar, styhead, scarthgap | 🟢 Stable | [Advantech ROM-2620 Product Page](https://www.advantech.com/en-eu/products/8fc6f753-ca1d-49f9-8676-10d53129570f/rom-2620/mod_294031c8-4a21-4b95-adf2-923c412ef761) |
 | **ROM5720**    | walnascar, styhead, scarthgap | 🟢 Stable | [Advantech ROM-5720 Product Page](https://www.advantech.com/en-eu/products/77b59009-31a9-4751-bee1-45827a844421/rom-5720/mod_4fbfe9fa-f5b2-4ba8-940e-e47585ad0fef) |
@@ -162,6 +166,8 @@ The following boards support OTA updates with the indicated technologies and Yoc
 | Board | RAUC | SWUpdate | OSTree | Supported Releases |
 |-------|:----:|:--------:|:------:|-------------------|
 | **RSB3720** | ✅ | ✅ | ✅ | walnascar, styhead, scarthgap |
+| **RSB3720-4G** | ✅ | ✅ | ❌ | walnascar |
+| **RSB3720-6G** | ✅ | ✅ | ❌ | walnascar |
 | **ROM2620-ED91** | ✅ | ✅ | ✅ | walnascar, styhead, scarthgap |
 | **ROM2820-ED93** | ✅ | ✅ | ✅ | walnascar, styhead, scarthgap |
 | **ROM5720-DB5901** | ✅ | ✅ | ✅ | walnascar, styhead, scarthgap |
@@ -177,6 +183,9 @@ To build a BSP image with OTA support, use the `just ota-mbsp` command:
 # Build with RAUC OTA support
 just ota-mbsp rsb3720 rauc walnascar
 
+# Build with RAUC OTA support for RSB3720 4G variant
+just ota-mbsp rsb3720-4g rauc walnascar
+
 # Build with SWUpdate OTA support
 just ota-mbsp rsb3720 swupdate scarthgap
 
@@ -191,7 +200,10 @@ Alternatively, you can use the `bsp.py` tool directly:
 python bsp.py list | grep ota
 
 # Build a specific OTA configuration
-python bsp.py build adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720
+python bsp.py build adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720-6g
+
+# Build RSB3720 4G variant with RAUC OTA support
+python bsp.py build adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720-4g
 ```
 
 ---
@@ -354,11 +366,14 @@ The `--checkout` flag provides a fast way to checkout and validate BSP configura
 **Example:**
 
 ```bash
-# Checkout and validate configuration for RSB3720 board
-python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720 --checkout
+# Checkout and validate configuration for RSB3720 6G board
+python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720-6g --checkout
+
+# Checkout and validate configuration for RSB3720 4G board
+python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720-4g --checkout
 
 # If validation passes, proceed with full build
-python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720
+python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720-6g
 ```
 
 ---
@@ -563,7 +578,10 @@ source .env
 
 # run the build
 # kas build <path-to-kas-yaml-file>
-kas build adv-mbsp-oenxp-walnascar-rsb3720.yaml
+kas build adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
+
+# Build RSB3720 4G variant
+kas build adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
 ```
 
 ### Building a BSP image using KAS in a container
@@ -581,7 +599,10 @@ Container image should have `kas` tool installed inside and use [scripts/kas/con
 To run build inside a docker container use `kas-container` tool
 
 ```bash
-kas-container build adv-mbsp-oenxp-walnascar-rsb3720.yaml
+kas-container build adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
+
+# Build RSB3720 4G variant
+kas-container build adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
 ```
 
 ### Bitbake development shell
@@ -589,13 +610,19 @@ kas-container build adv-mbsp-oenxp-walnascar-rsb3720.yaml
 Using pure `kas` it is possible to enter bitbake shell via command:
 
 ```bash
-kas shell adv-mbsp-oenxp-walnascar-rsb3720.yaml
+kas shell adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
+
+# Or for RSB3720 4G variant
+kas shell adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
 ```
 
 or in a `docker` container using following command:
 
 ```bash
-kas-container shell adv-mbsp-oenxp-walnascar-rsb3720.yaml
+kas-container shell adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
+
+# Or for RSB3720 4G variant
+kas-container shell adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
 ```
 
 ---
@@ -609,7 +636,10 @@ This chapter provides overview of advanced topics working with KAS build configu
 kas tool can dump final configuration in standart output with `kas dump` command
 
 ```bash
-kas dump adv-mbsp-oenxp-walnascar-rsb3720.yaml > final.yaml
+kas dump adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml > final.yaml
+
+# Or for RSB3720 4G variant
+kas dump adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml > final.yaml
 ```
 
 For details check https://kas.readthedocs.io/en/latest/userguide/plugins.html#module-kas.plugins.dump
@@ -632,7 +662,7 @@ header:
   version: 19
   includes:
     - repo: bsp-registry
-      file: adv-mbsp-oenxp-walnascar-rsb3720.yaml
+      file: adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
 
 repos:
   this:
