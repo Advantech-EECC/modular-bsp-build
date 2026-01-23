@@ -41,7 +41,7 @@ env:
 jobs:
   test-bsp-builds:
     name: Test BSP Builds
-    runs-on: node
+    runs-on: [self-hosted]
     
     steps:
       - name: Checkout repository
