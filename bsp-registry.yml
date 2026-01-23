@@ -56,6 +56,15 @@ registry:
     # Advantech AOM5521 BSPs
     # =====================================
 
+    - name: adv-bsp-oenxp-scarthgap-aom5521a1
+      description: "AOM5521 A1 ACL Scarthgap BSP"
+      build:
+        path: build/adv-oenxp-bsp-aom5521a1-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-bsp-oenxp-scarthgap-aom5521a1.yaml
+
     - name: adv-bsp-oenxp-walnascar-aom5521a1
       description: "AOM5521 A1 ACL Walnascar BSP"
       build:
