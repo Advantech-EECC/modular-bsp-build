@@ -79,7 +79,12 @@ jobs:
             echo "single_bsp=false" >> $GITHUB_OUTPUT
             
             # Get list of all BSPs from bsp.py
-            BSP_LIST=$(python3 bsp.py list 2>/dev/null | grep '^-' | sed 's/^- //' | cut -d':' -f1 | jq -R -s -c 'split("\n")[:-1]')
+            # Format: "- bsp-name: description" -> extract just bsp-name
+            BSP_LIST=$(python3 bsp.py list 2>/dev/null | \
+              grep '^-' | \
+              sed 's/^- //' | \
+              awk -F': ' '{print $1}' | \
+              jq -R -s -c 'split("\n")[:-1]')
             
             echo "matrix={\"bsp\":$BSP_LIST}" >> $GITHUB_OUTPUT
             echo "Generated matrix for $(echo $BSP_LIST | jq '. | length') BSPs"
