@@ -16,6 +16,10 @@ A Board Support Package (`BSP`) build configuration registry defines environment
   - [NXP Boards Compatibility Matrix](#nxp-boards-compatibility-matrix)
     - [Alternative View](#alternative-view)
       - [Yocto releases](#yocto-releases)
+    - [OTA Update Support](#ota-update-support)
+      - [Supported OTA Technologies](#supported-ota-technologies)
+      - [OTA Support Matrix](#ota-support-matrix)
+      - [Building Images with OTA Support](#building-images-with-ota-support)
 - [BSP Registry Manager](#bsp-registry-manager)
   - [Overview](#overview)
   - [Installation](#installation)
@@ -140,6 +144,55 @@ This list below covers the most recent and commonly referenced Yocto releases:
 * [Kirkstone (Yocto 4.0 LTS)](https://docs.yoctoproject.org/kirkstone/releases.html)  
 
 The full overview of Yocto releases can be found here https://www.yoctoproject.org/development/releases/
+
+### OTA Update Support
+
+The BSP registry includes Over-The-Air (OTA) update configurations for supported boards. OTA updates enable remote software updates without physical access to devices, critical for production deployments.
+
+#### Supported OTA Technologies
+
+* **RAUC** (Robust Auto-Update Controller): A safe and reliable software update framework that supports atomic updates with rollback capabilities
+* **SWUpdate**: A software update framework designed for embedded systems with support for multiple update strategies
+* **OSTree**: An upgrade system for Linux-based operating systems that performs atomic upgrades of complete filesystem trees
+
+#### OTA Support Matrix
+
+The following boards support OTA updates with the indicated technologies and Yocto releases:
+
+| Board | RAUC | SWUpdate | OSTree | Supported Releases |
+|-------|:----:|:--------:|:------:|-------------------|
+| **RSB3720** | ✅ | ✅ | ✅ | walnascar, styhead, scarthgap |
+| **ROM2620-ED91** | ✅ | ✅ | ✅ | walnascar, styhead, scarthgap |
+| **ROM2820-ED93** | ✅ | ✅ | ✅ | walnascar, styhead, scarthgap |
+| **ROM5720-DB5901** | ✅ | ✅ | ✅ | walnascar, styhead, scarthgap |
+| **ROM5721-1G-DB5901** | ✅ | ✅ | ✅ | walnascar |
+| **ROM5721-2G-DB5901** | ✅ | ✅ | ✅ | walnascar |
+| **ROM5722-DB2510** | ✅ | ✅ | ✅ | walnascar, styhead, scarthgap |
+
+#### Building Images with OTA Support
+
+To build a BSP image with OTA support, use the `just ota-mbsp` command:
+
+```bash
+# Build with RAUC OTA support
+just ota-mbsp rsb3720 rauc walnascar
+
+# Build with SWUpdate OTA support
+just ota-mbsp rsb3720 swupdate scarthgap
+
+# Build with OSTree OTA support
+just ota-mbsp rom5722-db2510 ostree styhead
+```
+
+Alternatively, you can use the `bsp.py` tool directly:
+
+```bash
+# List all available OTA configurations
+python bsp.py list | grep ota
+
+# Build a specific OTA configuration
+python bsp.py build adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720
+```
 
 ---
 
