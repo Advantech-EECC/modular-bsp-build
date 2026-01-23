@@ -24,9 +24,19 @@ on:
       - 'scripts/**'
       - '.github/workflows/test-bsp-builds.yml'
   workflow_dispatch:
+    inputs:
+      bsp_name:
+        description: 'BSP to build (e.g., poky-qemuarm64-scarthgap)'
+        required: false
+        default: 'poky-qemuarm64-scarthgap'
+        type: string
 
 permissions:
   contents: read
+
+env:
+  # Default BSP to build (can be overridden by workflow_dispatch input)
+  DEFAULT_BSP: 'poky-qemuarm64-scarthgap'
 
 jobs:
   test-bsp-builds:
@@ -78,19 +88,34 @@ jobs:
           echo "Building BSP Images"
           echo "=========================================="
           
-          # Select BSPs to build (QEMU BSPs are faster for testing)
-          # These can be configured based on build server capabilities
-          BSP_TO_BUILD="poky-qemuarm64-scarthgap"
+          # Select BSP to build (configurable via workflow_dispatch or environment)
+          BSP_TO_BUILD="${{ github.event.inputs.bsp_name || env.DEFAULT_BSP }}"
           
           echo "Building BSP: $BSP_TO_BUILD"
+          echo "Build started at: $(date)"
           echo "=========================================="
           
-          # Run the BSP build using bsp.py
-          if python3 bsp.py build "$BSP_TO_BUILD"; then
+          # Create log directory
+          mkdir -p /tmp/bsp-build-logs
+          BUILD_LOG="/tmp/bsp-build-logs/build-${BSP_TO_BUILD}-$(date +%Y%m%d-%H%M%S).log"
+          
+          # Run the BSP build using bsp.py with output logging
+          echo "Build output will be logged to: $BUILD_LOG"
+          set -x  # Enable command echoing for better visibility
+          if python3 bsp.py build "$BSP_TO_BUILD" 2>&1 | tee "$BUILD_LOG"; then
+            set +x
+            echo ""
             echo "✓ Successfully built $BSP_TO_BUILD"
+            echo "Build completed at: $(date)"
             BUILD_SUCCESS=1
           else
+            set +x
+            echo ""
             echo "✗ Failed to build $BSP_TO_BUILD"
+            echo "Build failed at: $(date)"
+            echo ""
+            echo "Last 50 lines of build log:"
+            tail -50 "$BUILD_LOG"
             BUILD_SUCCESS=0
           fi
           
@@ -98,11 +123,13 @@ jobs:
           echo "=========================================="
           echo "Build Summary"
           echo "=========================================="
+          echo "BSP: $BSP_TO_BUILD"
+          echo "Log file: $BUILD_LOG"
           
           if [ $BUILD_SUCCESS -eq 1 ]; then
-            echo "✅ BSP build completed successfully!"
+            echo "Status: ✅ Build completed successfully!"
           else
-            echo "❌ BSP build failed!"
+            echo "Status: ❌ Build failed!"
             exit 1
           fi
       
@@ -113,7 +140,13 @@ jobs:
           echo "Cleaning up build artifacts"
           echo "=========================================="
           
-          # Remove any temporary build directories
+          # Remove temporary build logs (but preserve in case of failure for debugging)
+          if [ -d /tmp/bsp-build-logs ]; then
+            echo "Build logs location: /tmp/bsp-build-logs"
+            ls -lh /tmp/bsp-build-logs/ || true
+          fi
+          
+          # Clean up other temporary files
           rm -rf /tmp/kas_* /tmp/bsp_* 2>/dev/null || true
           
           # Note: Build directories may be preserved for caching
