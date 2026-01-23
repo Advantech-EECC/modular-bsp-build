@@ -1,0 +1,9 @@
+header:
+  version: 14
+
+machine: "rsb3720-4g"
+
+local_conf_header:
+  ostree-rsb3720: |
+
+    SOTA_MACHINE:rsb3720-4g ?= "rsb3720-4g"

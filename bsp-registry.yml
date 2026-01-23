@@ -696,17 +696,21 @@ registry:
           - adv-bsp-oenxp-kirkstone-rsb3720.yaml
 
     # =====================================
-    # Advantech RSB3720 Modular BSPs
+    # Advantech RSB3720-4G Modular BSPs
     # =====================================
 
-    - name: adv-mbsp-oenxp-walnascar-rsb3720
-      description: "Advantech EIoT Yocto Walnascar RSB3720"
+    - name: adv-mbsp-oenxp-walnascar-rsb3720-4g
+      description: "Advantech EIoT Yocto Walnascar RSB3720-4G"
       build:
-        path: build/adv-mbsp-oenxp-rsb3720-walnascar
+        path: build/adv-mbsp-oenxp-rsb3720-4g-walnascar
         environment:
           container: "ubuntu-22.04"
         configuration:
-          - adv-mbsp-oenxp-walnascar-rsb3720.yaml
+          - adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
+
+    # =====================================
+    # Advantech RSB3720-6G Modular BSPs
+    # =====================================
 
     - name: adv-mbsp-oenxp-styhead-rsb3720
       description: "Advantech EIoT Yocto Styhead RSB3720"
@@ -726,24 +730,62 @@ registry:
         configuration:
           - adv-mbsp-oenxp-scarthgap-rsb3720.yaml
 
-    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720
-      description: "Advantech EIoT Yocto Walnascar RAUC RSB3720"
+    - name: adv-mbsp-oenxp-walnascar-rsb3720-4g
+      description: "Advantech EIoT Yocto Walnascar RSB3720-4G"
       build:
-        path: build/adv-ota-mbsp-oenxp-rauc-rsb3720-walnascar
+        path: build/adv-mbsp-oenxp-rsb3720-4g-walnascar
         environment:
           container: "ubuntu-22.04"
         configuration:
-          - adv-mbsp-oenxp-walnascar-rsb3720.yaml
+          - adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
+          
+    - name: adv-mbsp-oenxp-walnascar-rsb3720-6g
+      description: "Advantech EIoT Yocto Walnascar RSB3720-6G"
+      build:
+        path: build/adv-mbsp-oenxp-rsb3720-6g-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
+
+    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720-4g
+      description: "Advantech EIoT Yocto Walnascar RAUC RSB3720-4G"
+      build:
+        path: build/adv-ota-mbsp-oenxp-rauc-rsb3720-4g-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
           - features/ota/rauc/adv-ota-walnascar.yml
 
-    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rsb3720
-      description: "Advantech EIoT Yocto Walnascar SWUpdate RSB3720"
+    - name: adv-ota-mbsp-oenxp-rauc-walnascar-rsb3720-6g
+      description: "Advantech EIoT Yocto Walnascar RAUC RSB3720-6G"
       build:
-        path: build/adv-ota-mbsp-oenxp-swupdate-rsb3720-walnascar
+        path: build/adv-ota-mbsp-oenxp-rauc-rsb3720-6g-walnascar
         environment:
           container: "ubuntu-22.04"
         configuration:
-          - adv-mbsp-oenxp-walnascar-rsb3720.yaml
+          - adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
+          - features/ota/rauc/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rsb3720-4g
+      description: "Advantech EIoT Yocto Walnascar SWUpdate RSB3720-4G"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rsb3720-4g-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
+          - features/ota/swupdate/adv-ota-walnascar.yml
+
+    - name: adv-ota-mbsp-oenxp-swupdate-walnascar-rsb3720-6g
+      description: "Advantech EIoT Yocto Walnascar SWUpdate RSB3720-6G"
+      build:
+        path: build/adv-ota-mbsp-oenxp-swupdate-rsb3720-6g-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
           - features/ota/swupdate/adv-ota-walnascar.yml
 
     - name: adv-ota-mbsp-oenxp-ostree-walnascar-rsb3720
