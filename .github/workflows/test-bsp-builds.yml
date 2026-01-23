@@ -72,153 +72,38 @@ jobs:
           python3 bsp.py list
           echo ""
       
-      - name: Test BSP configuration export
+      - name: Build BSP images
         run: |
           echo "=========================================="
-          echo "Testing BSP Configuration Export"
+          echo "Building BSP Images"
           echo "=========================================="
           
-          # Get first available BSP from the registry
-          FIRST_BSP=$(python3 bsp.py list 2>/dev/null | grep '^-' | head -1 | cut -d':' -f1 | sed 's/^- //')
+          # Select BSPs to build (QEMU BSPs are faster for testing)
+          # These can be configured based on build server capabilities
+          BSP_TO_BUILD="poky-qemuarm64-scarthgap"
           
-          if [ -n "$FIRST_BSP" ]; then
-            echo "Testing export for: $FIRST_BSP"
-            # Unset GITCONFIG_FILE to avoid conflicts with default config path in CI environment
-            unset GITCONFIG_FILE
-            python3 bsp.py export "$FIRST_BSP" > /tmp/bsp_export_test.yml 2>&1 || true
-            
-            if [ -s /tmp/bsp_export_test.yml ]; then
-              echo "✓ BSP export successful"
-              echo "Configuration preview:"
-              head -30 /tmp/bsp_export_test.yml
-            else
-              echo "⚠ BSP export requires network access or additional setup"
-            fi
+          echo "Building BSP: $BSP_TO_BUILD"
+          echo "=========================================="
+          
+          # Run the BSP build using bsp.py
+          if python3 bsp.py build "$BSP_TO_BUILD"; then
+            echo "✓ Successfully built $BSP_TO_BUILD"
+            BUILD_SUCCESS=1
           else
-            echo "✗ No BSPs found in registry"
-            exit 1
-          fi
-          echo ""
-      
-      - name: Validate BSP YAML configurations
-        run: |
-          echo "=========================================="
-          echo "Validating BSP YAML Configurations"
-          echo "=========================================="
-          
-          # Find all top-level BSP configuration files
-          BSP_CONFIGS=$(find . -maxdepth 1 -name "adv-*.yaml" -type f)
-          
-          if [ -z "$BSP_CONFIGS" ]; then
-            echo "No BSP configuration files found!"
-            exit 1
+            echo "✗ Failed to build $BSP_TO_BUILD"
+            BUILD_SUCCESS=0
           fi
           
-          TOTAL=$(echo "$BSP_CONFIGS" | wc -l)
-          echo "Found $TOTAL BSP configuration files"
-          echo ""
-          
-          FAILED=0
-          PASSED=0
-          
-          for config in $BSP_CONFIGS; do
-            echo "Validating: $config"
-            
-            # Basic YAML syntax validation
-            if python3 -c "import yaml; yaml.safe_load(open('$config', 'r'))" 2>/dev/null; then
-              echo "  ✓ Valid YAML syntax"
-              PASSED=$((PASSED + 1))
-            else
-              echo "  ✗ Invalid YAML syntax"
-              FAILED=$((FAILED + 1))
-            fi
-          done
-          
           echo ""
           echo "=========================================="
-          echo "Validation Summary"
+          echo "Build Summary"
           echo "=========================================="
-          echo "Total configurations: $TOTAL"
-          echo "Passed: $PASSED"
-          echo "Failed: $FAILED"
-          echo ""
           
-          if [ $FAILED -gt 0 ]; then
-            echo "❌ BSP configuration validation failed!"
-            exit 1
+          if [ $BUILD_SUCCESS -eq 1 ]; then
+            echo "✅ BSP build completed successfully!"
           else
-            echo "✅ All BSP configurations are valid!"
-          fi
-      
-      - name: Test KAS checkout on sample configurations
-        run: |
-          echo "=========================================="
-          echo "Testing KAS Checkout on Sample BSP Configurations"
-          echo "=========================================="
-          
-          # Select a small subset of configurations to test (first 2)
-          TEST_CONFIGS=$(find . -maxdepth 1 -name "adv-*.yaml" -type f | head -2)
-          
-          if [ -z "$TEST_CONFIGS" ]; then
-            echo "No configurations found to test!"
+            echo "❌ BSP build failed!"
             exit 1
-          fi
-          
-          echo "Testing configurations:"
-          echo "$TEST_CONFIGS"
-          echo ""
-          
-          FAILED=0
-          PASSED=0
-          
-          for config in $TEST_CONFIGS; do
-            echo "=========================================="
-            echo "Testing KAS checkout: $config"
-            echo "=========================================="
-            
-            # Create temporary work directory
-            TEMP_DIR=$(mktemp -d)
-            export KAS_WORK_DIR="$TEMP_DIR"
-            
-            # Run kas checkout with a timeout (180 seconds)
-            # This validates the configuration by attempting to set up the build environment
-            # The timeout prevents hanging on network-dependent operations
-            if timeout 180 kas checkout "$config" 2>&1 | tee /tmp/kas_test.log; then
-              echo "✓ KAS checkout successful for: $config"
-              PASSED=$((PASSED + 1))
-            else
-              EXIT_CODE=$?
-              if [ $EXIT_CODE -eq 124 ]; then
-                echo "⚠ KAS checkout timed out for: $config"
-                # Timeout is acceptable as we're just testing configuration validity
-                PASSED=$((PASSED + 1))
-              elif grep -q "repository" /tmp/kas_test.log; then
-                echo "✓ KAS checkout started processing: $config"
-                PASSED=$((PASSED + 1))
-              else
-                echo "✗ KAS checkout failed for: $config"
-                tail -20 /tmp/kas_test.log
-                FAILED=$((FAILED + 1))
-              fi
-            fi
-            
-            # Cleanup
-            rm -rf "$TEMP_DIR"
-            echo ""
-          done
-          
-          echo "=========================================="
-          echo "KAS Checkout Test Summary"
-          echo "=========================================="
-          echo "Passed: $PASSED"
-          echo "Failed: $FAILED"
-          echo ""
-          
-          if [ $FAILED -gt 0 ]; then
-            echo "❌ KAS checkout tests failed!"
-            exit 1
-          else
-            echo "✅ All KAS checkout tests passed!"
           fi
       
       - name: Cleanup build artifacts
@@ -230,5 +115,8 @@ jobs:
           
           # Remove any temporary build directories
           rm -rf /tmp/kas_* /tmp/bsp_* 2>/dev/null || true
+          
+          # Note: Build directories may be preserved for caching
+          # on the self-hosted runner based on build server configuration
           
           echo "✓ Cleanup complete"
