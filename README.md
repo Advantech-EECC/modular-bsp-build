@@ -2,6 +2,7 @@
 
 [![Validate KAS Configurations](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/validate-kas-configs.yml/badge.svg)](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/validate-kas-configs.yml)
 [![Docker containers validation](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/validate-docker-containers.yml/badge.svg)](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/validate-docker-containers.yml)
+[![Test BSP Builds](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/test-bsp-builds.yml/badge.svg)](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/test-bsp-builds.yml)
 
 A Board Support Package (`BSP`) build configuration registry defines environment variables, build systems and configurations to build a BSP images. It ensures that the BSP can be consistently built and customized, providing a structured way to manage hardware features, initialization routines, and software components required for embedded systems. This registry allows reproducible builds across different environments and makes it easier to tailor BSPs for unique hardware platforms while maintaining compatibility with the broader OS stack.
 
