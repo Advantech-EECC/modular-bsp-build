@@ -49,6 +49,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # dacite is required by bsp.py for data class conversion
           pip install dacite
       
       - name: Verify build environment
@@ -82,6 +83,7 @@ jobs:
           
           if [ -n "$FIRST_BSP" ]; then
             echo "Testing export for: $FIRST_BSP"
+            # Unset GITCONFIG_FILE to avoid conflicts with default config path in CI environment
             unset GITCONFIG_FILE
             python3 bsp.py export "$FIRST_BSP" > /tmp/bsp_export_test.yml 2>&1 || true
             
@@ -123,7 +125,7 @@ jobs:
             echo "Validating: $config"
             
             # Basic YAML syntax validation
-            if python3 -c "import yaml; yaml.safe_load(open('$config'))" 2>/dev/null; then
+            if python3 -c "import yaml; yaml.safe_load(open('$config', 'r'))" 2>/dev/null; then
               echo "  ✓ Valid YAML syntax"
               PASSED=$((PASSED + 1))
             else
@@ -178,8 +180,9 @@ jobs:
             TEMP_DIR=$(mktemp -d)
             export KAS_WORK_DIR="$TEMP_DIR"
             
-            # Run kas checkout with a timeout
+            # Run kas checkout with a timeout (180 seconds)
             # This validates the configuration by attempting to set up the build environment
+            # The timeout prevents hanging on network-dependent operations
             if timeout 180 kas checkout "$config" 2>&1 | tee /tmp/kas_test.log; then
               echo "✓ KAS checkout successful for: $config"
               PASSED=$((PASSED + 1))
