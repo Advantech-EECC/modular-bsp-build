@@ -794,14 +794,78 @@ class KasManager:
 
         self.original_cwd = Path.cwd()
         self._yaml_cache = {}  # Cache for parsed YAML files to avoid re-parsing
+        self._is_isar = None  # Cache for ISAR detection
 
         # Ensure build directory exists before starting any operations
         resolver.ensure_directory(str(self.build_dir))
 
+    def _is_isar_build(self) -> bool:
+        """
+        Detect if this is an ISAR build by checking KAS configuration files.
+        
+        ISAR (Integration System for Automated Root filesystem generation) builds
+        require special Docker privileges (--privileged, --cap-add=SYS_ADMIN) when
+        running in containers. This method checks if any of the KAS configuration
+        files specify build_system: isar.
+        
+        Returns:
+            True if ISAR build system is detected, False otherwise
+        """
+        # Return cached result if already checked
+        if self._is_isar is not None:
+            return self._is_isar
+        
+        # Check all KAS files and their includes for build_system: isar
+        files_to_check = set(self.kas_files)
+        checked_files = set()
+        
+        while files_to_check:
+            file_path = files_to_check.pop()
+            if file_path in checked_files:
+                continue
+            
+            checked_files.add(file_path)
+            
+            try:
+                yaml_content = self._parse_yaml_file(file_path)
+                
+                # Check if build_system is set to isar
+                if yaml_content.get('build_system') == 'isar':
+                    self._is_isar = True
+                    return True
+                
+                # Add includes to files_to_check
+                includes = self._find_includes_in_yaml(yaml_content)
+                for include in includes:
+                    try:
+                        resolved_include = self._resolve_include_path(include, self._resolve_kas_file(file_path))
+                        files_to_check.add(resolved_include)
+                    except SystemExit:
+                        # Include file not found, skip it
+                        pass
+            except (SystemExit, Exception):
+                # If file can't be parsed, skip it
+                pass
+        
+        self._is_isar = False
+        return False
+
     def _get_kas_command(self) -> List[str]:
-        """Get the appropriate KAS command (native or container)."""
+        """
+        Get the appropriate KAS command (native or container).
+        
+        For ISAR builds using kas-container, automatically adds the --isar flag
+        which enables required Docker privileges (--privileged, --cap-add=SYS_ADMIN).
+        
+        Returns:
+            List of command components for KAS execution
+        """
         if self.use_container:
-            return ["kas-container"]
+            cmd = ["kas-container"]
+            # Add --isar flag for ISAR builds to enable required Docker capabilities
+            if self._is_isar_build():
+                cmd.append("--isar")
+            return cmd
         else:
             return ["kas"]
 
