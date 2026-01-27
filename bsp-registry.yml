@@ -26,9 +26,38 @@ containers:
           value: "ubuntu:22.04"
         - name: "KAS_VERSION"
           value: "5.0"
+  - debian-13:
+      file: Dockerfile.debian
+      image: "advantech/bsp-registry/debian-13/kas:5.0"
+      args:
+        - name: "KAS_VERSION"
+          value: "5.0"
+        - name: "DISTRO" 
+          value: "debian-bookworm"
+  - isar-debian-13:
+      file: Dockerfile.isar.debian
+      image: "advantech/bsp-registry/isar/debian-13/kas:5.0"
+      args:
+        - name: "KAS_VERSION"
+          value: "5.0"
+        - name: "DISTRO" 
+          value: "debian-bookworm"
 
 registry:
   bsp:
+
+    # =====================================
+    # Advantech Isar RSB3720 BSPs
+    # =====================================
+
+    - name: adv-mbsp-isar-debian-rsb3720
+      description: "RSB3720 Isar bookworm BSP"
+      build:
+        path: build/adv-isar-bsp-rsb3720-debian
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - adv-mbsp-isar-debian-rsb3720.yaml
 
     # =====================================
     # Advantech RSB3730 BSPs
@@ -1015,3 +1044,41 @@ registry:
           - yocto/whinlatter.yml
           - compilers/clang/whinlatter.yml
           - yocto/qemu/qemuarm64.yaml     
+
+    # =====================================
+    # Isar QEMU ARM64 OTA BSPs
+    # =====================================
+
+    - name: isar-qemuarm64-ubuntu-noble
+      description: "QEMU ARM64 Isar ubuntu noble BSP"
+      build:
+        path: build/qemuarm64-isar-ubuntu-noble
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - isar/distro/ubuntu-noble.yaml
+          - isar/qemu/qemuarm64.yaml
+          - isar/isar.yaml
+
+    - name: isar-qemuarm64-debian-bookworm
+      description: "QEMU ARM64 Isar bookworm BSP"
+      build:
+        path: build/qemuarm64-isar-debian-bookworm
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - isar/distro/debian-bookworm.yaml
+          - isar/qemu/qemuarm64.yaml
+          - isar/isar.yaml
+
+    - name: isar-qemuarm-debian-bookworm
+      description: "QEMU ARM Isar bookworm BSP"
+      build:
+        path: build/qemuarm-isar-debian-bookworm
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - isar/distro/debian-bookworm.yaml
+          - isar/qemu/qemuarm.yaml
+          - isar/isar.yaml
+          
