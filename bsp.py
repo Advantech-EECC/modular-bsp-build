@@ -162,10 +162,12 @@ class Docker:
         image: Docker image name/tag for the build environment
         file: Path to Dockerfile for building custom images
         args: List of Docker build arguments (name=value pairs)
+        privileged: Run container in privileged mode (enables --isar for kas-container)
     """
     image: Optional[str]
     file: Optional[str]
     args: List[DockerArg] = field(default_factory=empty_list)
+    privileged: Optional[bool] = False
 
 @dataclass
 class ContainerDefinition:
@@ -351,7 +353,8 @@ def convert_containers_list_to_dict(containers_list: List[Dict[str, Any]]) -> Di
                     image=container_config.get('image'),
                     file=container_config.get('file'),
                     args=[DockerArg(name=arg['name'], value=arg['value']) 
-                          for arg in container_config.get('args', [])]
+                          for arg in container_config.get('args', [])],
+                    privileged=container_config.get('privileged', False)
                 )
             else:
                 logging.warning(f"Invalid container configuration for {container_name}, skipping")
@@ -751,6 +754,7 @@ class KasManager:
     def __init__(self, kas_files: List[str], build_dir: str = "build", use_container: bool = False,
                  download_dir: str = None, sstate_dir: str = None,
                  container_engine: str = None, container_image: str = None,
+                 container_privileged: bool = False,
                  search_paths: List[str] = None, env_manager: EnvironmentManager = None):
         """
         Initialize KAS manager with configuration.
@@ -763,6 +767,7 @@ class KasManager:
             sstate_dir: Shared state cache directory for build acceleration
             container_engine: Container runtime (docker, podman)
             container_image: Custom container image for kas-container
+            container_privileged: Run container in privileged mode (enables --isar flag)
             search_paths: Additional paths to search for configuration files
             env_manager: Environment configuration manager
             
@@ -778,6 +783,7 @@ class KasManager:
         self.use_container = use_container
         self.container_engine = container_engine
         self.container_image = container_image
+        self.container_privileged = container_privileged
         self.search_paths = search_paths or []
         self.download_dir = download_dir
         self.sstate_dir = sstate_dir
@@ -794,78 +800,15 @@ class KasManager:
 
         self.original_cwd = Path.cwd()
         self._yaml_cache = {}  # Cache for parsed YAML files to avoid re-parsing
-        self._is_isar = None  # Cache for ISAR detection
 
         # Ensure build directory exists before starting any operations
         resolver.ensure_directory(str(self.build_dir))
-
-    def _is_isar_build(self) -> bool:
-        """
-        Detect if this is an ISAR build by checking KAS configuration files.
-        
-        ISAR (Integration System for Automated Root filesystem generation) builds
-        require special Docker privileges (--privileged, --cap-add=SYS_ADMIN) when
-        running in containers. This method checks if any of the KAS configuration
-        files specify build_system: isar.
-        
-        Returns:
-            True if ISAR build system is detected, False otherwise
-        """
-        # Return cached result if already checked
-        if self._is_isar is not None:
-            return self._is_isar
-        
-        # Resolve all initial files to absolute paths to avoid duplicates
-        files_to_check = set()
-        for kas_file in self.kas_files:
-            try:
-                resolved = self._resolve_kas_file(kas_file)
-                files_to_check.add(resolved)
-            except SystemExit:
-                # File not found, skip it during detection
-                logging.debug(f"Could not resolve KAS file for ISAR detection: {kas_file}")
-                pass
-        
-        checked_files = set()
-        
-        while files_to_check:
-            resolved_file_path = files_to_check.pop()
-            if resolved_file_path in checked_files:
-                continue
-            
-            checked_files.add(resolved_file_path)
-            
-            try:
-                yaml_content = self._parse_yaml_file(resolved_file_path)
-                
-                # Check if build_system is set to isar
-                if yaml_content.get('build_system') == 'isar':
-                    self._is_isar = True
-                    return True
-                
-                # Add includes to files_to_check
-                includes = self._find_includes_in_yaml(yaml_content)
-                for include in includes:
-                    try:
-                        resolved_include = self._resolve_include_path(include, resolved_file_path)
-                        files_to_check.add(resolved_include)
-                    except SystemExit:
-                        # Include file not found, skip it during detection
-                        logging.debug(f"Could not resolve include file for ISAR detection: {include}")
-                        pass
-            except (SystemExit, yaml.YAMLError, IOError) as e:
-                # If file can't be parsed, skip it during detection
-                logging.debug(f"Could not parse file for ISAR detection: {resolved_file_path}, error: {e}")
-                pass
-        
-        self._is_isar = False
-        return False
 
     def _get_kas_command(self) -> List[str]:
         """
         Get the appropriate KAS command (native or container).
         
-        For ISAR builds using kas-container, automatically adds the --isar flag
+        For privileged container builds (e.g., ISAR), adds the --isar flag
         which enables required Docker privileges (--privileged, --cap-add=SYS_ADMIN).
         
         Returns:
@@ -873,8 +816,8 @@ class KasManager:
         """
         if self.use_container:
             cmd = ["kas-container"]
-            # Add --isar flag for ISAR builds to enable required Docker capabilities
-            if self._is_isar_build():
+            # Add --isar flag for privileged builds to enable required Docker capabilities
+            if self.container_privileged:
                 cmd.append("--isar")
             return cmd
         else:
@@ -1738,6 +1681,7 @@ class BspManager:
             sstate_dir=sstate, 
             use_container=use_container, 
             container_image=container_config.image if use_container else None,
+            container_privileged=container_config.privileged if use_container else False,
             env_manager=self.env_manager
         )
 
