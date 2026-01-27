@@ -167,7 +167,7 @@ class Docker:
     image: Optional[str]
     file: Optional[str]
     args: List[DockerArg] = field(default_factory=empty_list)
-    privileged: Optional[bool] = False
+    privileged: bool = False
 
 @dataclass
 class ContainerDefinition:
@@ -811,12 +811,17 @@ class KasManager:
         For privileged container builds (e.g., ISAR), adds the --isar flag
         which enables required Docker privileges (--privileged, --cap-add=SYS_ADMIN).
         
+        Note: The --isar flag is a kas-container feature that enables privileged
+        Docker capabilities. Despite the name, it can be used for any build requiring
+        elevated container privileges, not just ISAR builds.
+        
         Returns:
             List of command components for KAS execution
         """
         if self.use_container:
             cmd = ["kas-container"]
             # Add --isar flag for privileged builds to enable required Docker capabilities
+            # (--privileged, --cap-add=SYS_ADMIN, --cap-add=MKNOD)
             if self.container_privileged:
                 cmd.append("--isar")
             return cmd
