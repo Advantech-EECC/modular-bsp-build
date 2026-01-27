@@ -37,6 +37,7 @@ containers:
   - isar-debian-13:
       file: Dockerfile.isar.debian
       image: "advantech/bsp-registry/isar/debian-13/kas:5.0"
+      privileged: true
       args:
         - name: "KAS_VERSION"
           value: "5.0"
