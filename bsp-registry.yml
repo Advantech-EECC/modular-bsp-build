@@ -42,7 +42,7 @@ containers:
         - name: "KAS_VERSION"
           value: "5.0"
         - name: "DISTRO" 
-          value: "debian-bookworm"
+          value: "debian-trixie"
 
 registry:
   bsp:
@@ -52,9 +52,9 @@ registry:
     # =====================================
 
     - name: adv-mbsp-isar-debian-rsb3720
-      description: "RSB3720 Isar bookworm BSP"
+      description: "RSB3720 Isar debian trixie BSP"
       build:
-        path: build/adv-isar-bsp-rsb3720-debian
+        path: build/adv-isar-bsp-rsb3720-debian-trixie
         environment:
           container: "isar-debian-13"
         configuration:
@@ -1061,25 +1061,25 @@ registry:
           - isar/qemu/qemuarm64.yaml
           - isar/isar.yaml
 
-    - name: isar-qemuarm64-debian-bookworm
-      description: "QEMU ARM64 Isar bookworm BSP"
+    - name: isar-qemuarm64-debian-trixie
+      description: "QEMU ARM64 Isar debian trixie BSP"
       build:
-        path: build/qemuarm64-isar-debian-bookworm
+        path: build/qemuarm64-isar-debian-trixie
         environment:
           container: "isar-debian-13"
         configuration:
-          - isar/distro/debian-bookworm.yaml
+          - isar/distro/debian-trixie.yaml
           - isar/qemu/qemuarm64.yaml
           - isar/isar.yaml
 
-    - name: isar-qemuarm-debian-bookworm
-      description: "QEMU ARM Isar bookworm BSP"
+    - name: isar-qemuarm-debian-trixie
+      description: "QEMU ARM Isar debian trixie BSP"
       build:
-        path: build/qemuarm-isar-debian-bookworm
+        path: build/qemuarm-isar-debian-trixie
         environment:
           container: "isar-debian-13"
         configuration:
-          - isar/distro/debian-bookworm.yaml
+          - isar/distro/debian-trixie.yaml
           - isar/qemu/qemuarm.yaml
           - isar/isar.yaml
           
