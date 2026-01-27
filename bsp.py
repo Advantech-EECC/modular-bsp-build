@@ -815,19 +815,28 @@ class KasManager:
         if self._is_isar is not None:
             return self._is_isar
         
-        # Check all KAS files and their includes for build_system: isar
-        files_to_check = set(self.kas_files)
+        # Resolve all initial files to absolute paths to avoid duplicates
+        files_to_check = set()
+        for kas_file in self.kas_files:
+            try:
+                resolved = self._resolve_kas_file(kas_file)
+                files_to_check.add(resolved)
+            except SystemExit:
+                # File not found, skip it during detection
+                logging.debug(f"Could not resolve KAS file for ISAR detection: {kas_file}")
+                pass
+        
         checked_files = set()
         
         while files_to_check:
-            file_path = files_to_check.pop()
-            if file_path in checked_files:
+            resolved_file_path = files_to_check.pop()
+            if resolved_file_path in checked_files:
                 continue
             
-            checked_files.add(file_path)
+            checked_files.add(resolved_file_path)
             
             try:
-                yaml_content = self._parse_yaml_file(file_path)
+                yaml_content = self._parse_yaml_file(resolved_file_path)
                 
                 # Check if build_system is set to isar
                 if yaml_content.get('build_system') == 'isar':
@@ -838,13 +847,15 @@ class KasManager:
                 includes = self._find_includes_in_yaml(yaml_content)
                 for include in includes:
                     try:
-                        resolved_include = self._resolve_include_path(include, self._resolve_kas_file(file_path))
+                        resolved_include = self._resolve_include_path(include, resolved_file_path)
                         files_to_check.add(resolved_include)
                     except SystemExit:
-                        # Include file not found, skip it
+                        # Include file not found, skip it during detection
+                        logging.debug(f"Could not resolve include file for ISAR detection: {include}")
                         pass
-            except (SystemExit, Exception):
-                # If file can't be parsed, skip it
+            except (SystemExit, yaml.YAMLError, IOError) as e:
+                # If file can't be parsed, skip it during detection
+                logging.debug(f"Could not parse file for ISAR detection: {resolved_file_path}, error: {e}")
                 pass
         
         self._is_isar = False
