@@ -1,0 +1,7 @@
+header:
+  version: 14
+
+machine: qemui386
+
+target:
+  - isar-image-base

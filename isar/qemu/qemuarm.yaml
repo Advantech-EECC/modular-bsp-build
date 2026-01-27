@@ -1,0 +1,7 @@
+header:
+  version: 14
+
+machine: qemuarm
+
+target:
+  - isar-image-base
