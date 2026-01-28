@@ -3,7 +3,11 @@
 [![Validate KAS Configurations](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/validate-kas-configs.yml/badge.svg)](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/validate-kas-configs.yml)
 [![Docker containers validation](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/validate-docker-containers.yml/badge.svg)](https://github.com/Advantech-EECC/bsp-registry/actions/workflows/validate-docker-containers.yml)
 
-A Board Support Package (`BSP`) build configuration registry defines environment variables, build systems and configurations to build a BSP images. It ensures that the BSP can be consistently built and customized, providing a structured way to manage hardware features, initialization routines, and software components required for embedded systems. This registry allows reproducible builds across different environments and makes it easier to tailor BSPs for unique hardware platforms while maintaining compatibility with the broader OS stack.
+A Board Support Package (`BSP`) build configuration registry defines environment variables, build systems and configurations to build BSP images. It ensures that the BSP can be consistently built and customized, providing a structured way to manage hardware features, initialization routines, and software components required for embedded systems. This registry allows reproducible builds across different environments and makes it easier to tailor BSPs for unique hardware platforms while maintaining compatibility with the broader OS stack.
+
+The registry supports two build systems:
+* **Yocto Project**: For building custom embedded Linux distributions with full control over the software stack
+* **Isar**: For building Debian-based embedded systems using native Debian packaging tools
 
 # Table of Contents
 
@@ -16,6 +20,12 @@ A Board Support Package (`BSP`) build configuration registry defines environment
   - [2.1. NXP Boards Compatibility Matrix](#21-nxp-boards-compatibility-matrix)
     - [2.1.1. Alternative View](#211-alternative-view)
       - [2.1.1.1. Yocto releases](#2111-yocto-releases)
+  - [2.2. Isar Build System Support](#22-isar-build-system-support)
+    - [2.2.1. Isar Overview](#221-isar-overview)
+    - [2.2.2. Isar Hardware Support](#222-isar-hardware-support)
+    - [2.2.3. Building Isar BSPs](#223-building-isar-bsps)
+    - [2.2.4. Isar Container Configuration](#224-isar-container-configuration)
+    - [2.2.5. Isar Resources](#225-isar-resources)
     - [2.1.2. OTA Update Support](#212-ota-update-support)
       - [2.1.2.1. Supported OTA Technologies](#2121-supported-ota-technologies)
       - [2.1.2.2. OTA Support Matrix](#2122-ota-support-matrix)
@@ -28,12 +38,12 @@ A Board Support Package (`BSP`) build configuration registry defines environment
   - [3.5. Configuration File Structure](#35-configuration-file-structure)
   - [3.6. Command Reference](#36-command-reference)
     - [3.6.1. Checkout and Validation](#361-checkout-and-validation)
-- [4. HowTo Assemble BSPs](#4-howto-assemble-bsps)
-  - [4.1. Host System dependencies](#41-host-system-dependencies)
-    - [4.1.1. Setup Python virtual environment](#411-setup-python-virtual-environment)
-      - [4.1.1.1. Advanced Tools for Managing Multiple Python Environments](#4111-advanced-tools-for-managing-multiple-python-environments)
-      - [4.1.1.2. Install Python packages dependencies](#4112-install-python-packages-dependencies)
-    - [4.1.2. Setting up Docker engine](#412-setting-up-docker-engine)
+  - [4. HowTo Assemble BSPs](#4-howto-assemble-bsps)
+    - [4.1. Host System dependencies](#41-host-system-dependencies)
+      - [4.1.1. Setup Python virtual environment](#411-setup-python-virtual-environment)
+        - [4.1.1.1. Advanced Tools for Managing Multiple Python Environments](#4111-advanced-tools-for-managing-multiple-python-environments)
+        - [4.1.1.2. Install Python packages dependencies](#4112-install-python-packages-dependencies)
+      - [4.1.2. Setting up Docker engine](#412-setting-up-docker-engine)
       - [4.1.2.1. Docker `buildx`](#4121-docker-buildx)
   - [4.2. Building BSP](#42-building-bsp)
     - [4.2.1. Setup build environment](#421-setup-build-environment)
@@ -45,18 +55,18 @@ A Board Support Package (`BSP`) build configuration registry defines environment
     - [4.3.1. Building a BSP image using KAS in a container](#431-building-a-bsp-image-using-kas-in-a-container)
     - [4.3.2. Bitbake development shell](#432-bitbake-development-shell)
   - [4.4. HowTo build a BSP using Repo Tool](#44-howto-build-a-bsp-using-repo-tool)
-- [5. Advanced Topics](#5-advanced-topics)
-  - [5.1. Export KAS configuration](#51-export-kas-configuration)
-  - [5.2. Lock KAS configuration](#52-lock-kas-configuration)
-  - [5.3. Reusing BSP Registry configurations](#53-reusing-bsp-registry-configurations)
-- [6. Patches](#6-patches)
-- [7. Links](#7-links)
+  - [5. Advanced Topics](#5-advanced-topics)
+    - [5.1. Export KAS configuration](#51-export-kas-configuration)
+    - [5.2. Lock KAS configuration](#52-lock-kas-configuration)
+    - [5.3. Reusing BSP Registry configurations](#53-reusing-bsp-registry-configurations)
+  - [6. Patches](#6-patches)
+  - [7. Links](#7-links)
 
 ---
 
 # 1. Build System Architecture
 
-Build System Architecture defines the structure and workflow of how source code, configurations, and dependencies are transformed into deployable artifacts.
+Build System Architecture defines the structure and workflow of how source code, configurations, and dependencies are transformed into deployable artifacts. The registry supports two build systems: **Yocto Project** (for custom embedded Linux distributions) and **Isar** (for Debian-based embedded systems).
 
 ## 1.1. Component Overview
 
@@ -72,9 +82,9 @@ The build system follows a layered architecture that ensures reproducibility, is
 ├─────────────────────────────────────────┤
 │         Docker Container Engine         │  # Isolated build environment
 ├─────────────────────────────────────────┤
-│           Yocto Project Build           │  # Core build system
+│    Yocto Project / Isar Build System    │  # Core build systems
 ├─────────────────────────────────────────┤
-│        Source Layers & Recipes          │  # BSP components
+│   Source Layers / Debian Packages       │  # BSP components
 └─────────────────────────────────────────┘
 ```
 
@@ -86,8 +96,8 @@ The build system follows a layered architecture that ensures reproducibility, is
 | **Justfile Recipes** | User-friendly command interface | `just bsp`, `just mbsp`, `just ota-mbsp` commands |
 | **KAS Configuration Files** | Build definitions and dependencies | YAML configs for boards, distros, and features |
 | **Docker Container Engine** | Isolated build environment | Consistent toolchains, isolated dependencies |
-| **Yocto Project Build** | Core build system | BitBake, OpenEmbedded, meta-layers |
-| **Source Layers & Recipes** | BSP components | Machine configs, recipes, kernel, applications |
+| **Yocto Project / Isar Build System** | Core build systems | Yocto: BitBake, OpenEmbedded, meta-layers; Isar: apt, dpkg, Debian packages |
+| **Source Layers / Debian Packages** | BSP components | Yocto: Machine configs, recipes, kernel; Isar: Debian packages, system configuration |
 
 ---
 
@@ -151,6 +161,85 @@ This list below covers the most recent and commonly referenced Yocto releases:
 * [Kirkstone (Yocto 4.0 LTS)](https://docs.yoctoproject.org/kirkstone/releases.html)  
 
 The full overview of Yocto releases can be found here https://www.yoctoproject.org/development/releases/
+
+## 2.2. Isar Build System Support
+
+In addition to Yocto-based BSPs, this registry supports **Isar** (Integration System for Automated Root filesystem generation), a build system specifically designed for creating Debian-based embedded Linux systems. Isar uses Debian's native packaging tools (apt, dpkg) rather than BitBake, providing a more familiar environment for developers experienced with Debian/Ubuntu systems.
+
+### 2.2.1. Isar Overview
+
+**Key Features:**
+* Native Debian package management (apt/dpkg)
+* Supports multiple Debian-based distributions (Debian, Ubuntu, Raspberry Pi OS)
+* Faster build times for Debian-familiar developers
+* Direct access to Debian package ecosystem
+* Cross-compilation support for ARM, ARM64, x86, and x86-64 architectures
+
+**Supported Distributions:**
+* Debian (Bookworm, Bullseye, Buster, Trixie, Sid)
+* Ubuntu (Focal, Jammy, Noble)
+* Raspberry Pi OS (Bookworm, Bullseye)
+
+### 2.2.2. Isar Hardware Support
+
+The registry includes Isar-based BSP configurations for the following targets:
+
+| Hardware | Distribution | Status | BSP Name |
+|----------|-------------|--------|----------|
+| **RSB3720** | Debian Trixie | 🟡 Development | `adv-mbsp-isar-debian-rsb3720` |
+| **QEMU ARM64** | Debian Trixie | ✅ Ready | `isar-qemuarm64-debian-trixie` |
+| **QEMU ARM64** | Ubuntu Noble | ✅ Ready | `isar-qemuarm64-ubuntu-noble` |
+| **QEMU ARM** | Debian Trixie | ✅ Ready | `isar-qemuarm-debian-trixie` |
+
+**Status Legend:**
+* ✅ **Ready**: Functional and available for testing/development
+* 🟡 **Development**: Under active development
+
+### 2.2.3. Building Isar BSPs
+
+Isar builds require privileged container execution to support Debian package management operations. The registry handles this automatically when using Isar-enabled containers.
+
+**Example: Build RSB3720 with Debian Trixie**
+```bash
+python bsp.py build adv-mbsp-isar-debian-rsb3720
+```
+
+**Example: Build QEMU ARM64 with Debian Trixie**
+```bash
+python bsp.py build isar-qemuarm64-debian-trixie
+```
+
+**Example: Build QEMU ARM64 with Ubuntu Noble**
+```bash
+python bsp.py build isar-qemuarm64-ubuntu-noble
+```
+
+### 2.2.4. Isar Container Configuration
+
+Isar builds use the `isar-debian-13` container, which is automatically configured with:
+* Privileged mode for package management operations
+* Based on official kas-isar container images
+* KAS version 5.0
+* Debian Trixie base distribution
+
+The container definition in `bsp-registry.yml`:
+```yaml
+- isar-debian-13:
+    file: Dockerfile.isar.debian
+    image: "advantech/bsp-registry/isar/debian-13/kas:5.0"
+    privileged: true
+    args:
+      - name: "KAS_VERSION"
+        value: "5.0"
+      - name: "DISTRO"
+        value: "debian-trixie"
+```
+
+### 2.2.5. Isar Resources
+
+* [Isar Documentation](https://github.com/ilbers/isar/blob/master/doc/user_manual.md)
+* [Isar GitHub Repository](https://github.com/ilbers/isar)
+* [Advantech Isar Modular BSP](https://github.com/Advantech-EECC/meta-isar-modular-bsp-nxp)
 
 ### 2.1.2. OTA Update Support
 
@@ -381,11 +470,11 @@ python bsp.py build adv-mbsp-oenxp-walnascar-rsb3720-6g
 
 ---
 
-# 4. HowTo Assemble BSPs
+## 4. HowTo Assemble BSPs
 
 This chapter explains how to assemble modular BSPs using KAS configuration files. It provides step‑by‑step instructions for setting up prerequisites, selecting the right configuration, and running builds to generate reproducible BSP images tailored to specific hardware platforms.
 
-## 4.1. Host System dependencies
+### 4.1. Host System dependencies
 
 The host system must provide essential tools and libraries required for building BSPs, including compilers, version control systems, and scripting environments. Ensuring these dependencies are installed and up to date guarantees a stable build process and consistent results across different development environments.
 
@@ -400,7 +489,7 @@ The host system must provide essential tools and libraries required for building
 
 The build have been tested on the following host systems: `Ubuntu 22.04`, `Ubuntu 24.04`
 
-### 4.1.1. Setup Python virtual environment
+#### 4.1.1. Setup Python virtual environment
 
 It is recommended to install python based tools and packages in a separate python virtual envronment, which could be created
 using python virtualenv package.
@@ -415,7 +504,7 @@ To activate virtual environment use following command:
 source venv/bin/activate
 ```
 
-#### 4.1.1.1. Advanced Tools for Managing Multiple Python Environments
+##### 4.1.1.1. Advanced Tools for Managing Multiple Python Environments
 
 While venv and virtualenv cover most basic needs, advanced tools provide additional functionality for dependency management, reproducibility, and handling multiple Python versions.
 
@@ -423,7 +512,7 @@ While venv and virtualenv cover most basic needs, advanced tools provide additio
 * [pyenv](https://github.com/pyenv/pyenv)
 * [conda](https://docs.conda.io/projects/conda/en/stable/user-guide/install/index.html) 
 
-#### 4.1.1.2. Install Python packages dependencies
+##### 4.1.1.2. Install Python packages dependencies
 
 BSP registry repository contains `requirements.txt` file with the list of python modules required to run configuration and build.
 
@@ -431,7 +520,7 @@ BSP registry repository contains `requirements.txt` file with the list of python
 pip3 install -r requirements.txt
 ```
 
-### 4.1.2. Setting up Docker engine
+#### 4.1.2. Setting up Docker engine
 
 The BSP images build would run in a docker container, meaning host system should have docker installed.
 If your host system is Ubuntu, check official docker installation guide at <https://docs.docker.com/engine/install/ubuntu/>.
@@ -464,7 +553,7 @@ To prepare build environment for the [KAS](https://kas.readthedocs.io/en/latest/
 
 **Example `.env` file:**
 
-```
+```bash
 KAS_WORKDIR=<path-to>/modular-bsp-build
 KAS_CONTAINER_ENGINE=docker
 KAS_CONTAINER_IMAGE=advantech/bsp-registry/ubuntu:20.04
@@ -477,13 +566,13 @@ is populated automatically by `just env` rule.
 
 Path to the `.gitconfig` file can be adjusted
 
-```
+```bash
 GITCONFIG_FILE=<absolute-path>/.gitconfig
 ```
 
 and paths to the yocto cache
 
-```
+```bash
 DL_DIR=<absolute-path>/cache/downloads/
 SSTATE_DIR=<absolute-path>/cache/sstate/ 
 ```
@@ -492,7 +581,7 @@ in the `Justfile`.
 
 ### 4.2.2. Overview of shortcuts available in Justfile
 
-```
+```bash
 Available recipes:
     help                                           # Print available commands
 
@@ -592,6 +681,7 @@ kas build adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
 Define environment variables `KAS_CONTAINER_ENGINE` and `KAS_CONTAINER_IMAGE`. 
 
 For example:
+
 ```bash
 export KAS_CONTAINER_ENGINE=docker
 export KAS_CONTAINER_IMAGE=advantech/bsp-registry/ubuntu:22.04
@@ -633,27 +723,29 @@ kas-container shell adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
 For users who prefer the traditional Yocto workflow using the `repo` tool and standard BitBake commands, we provide comprehensive documentation in a separate guide.
 
 The repo-based workflow is ideal for:
-- Developers familiar with standard Yocto Project workflows
-- Integration with NXP i.MX reference documentation
-- Projects requiring fine-grained control over layer management
-- Direct use of BitBake without container abstraction
+
+* Developers familiar with standard Yocto Project workflows
+* Integration with NXP i.MX reference documentation
+* Projects requiring fine-grained control over layer management
+* Direct use of BitBake without container abstraction
 
 **📖 See the complete guide:** [Building Modular BSP using Repo Tool](BUILDING_WITH_REPO.md)
 
 This guide covers:
-- Installing and configuring the repo tool
-- Downloading BSP sources from the [imx-manifest](https://github.com/Advantech-EECC/imx-manifest) repository
-- Setting up the build environment
-- Building images for Advantech boards (RSB3720, ROM2620, ROM5722, etc.)
-- Troubleshooting common issues
+
+* Installing and configuring the repo tool
+* Downloading BSP sources from the [imx-manifest](https://github.com/Advantech-EECC/imx-manifest) repository
+* Setting up the build environment
+* Building images for Advantech boards (RSB3720, ROM2620, ROM5722, etc.)
+* Troubleshooting common issues
 
 ---
 
-# 5. Advanced Topics
+## 5. Advanced Topics
 
 This chapter provides overview of advanced topics working with KAS build configurations.
 
-## 5.1. Export KAS configuration
+### 5.1. Export KAS configuration
 
 kas tool can dump final configuration in standart output with `kas dump` command
 
@@ -668,12 +760,12 @@ For details check https://kas.readthedocs.io/en/latest/userguide/plugins.html#mo
 
 `final.yaml` would contain all the included `yaml` configuration files and can be reused later.
 
-## 5.2. Lock KAS configuration
+### 5.2. Lock KAS configuration
 
 Similar to `kas dump` there is a `kas lock` command, it would generate a yaml file with all layer revisions. 
 For datailed overview check official kas documentation https://kas.readthedocs.io/en/latest/userguide/plugins.html#module-kas.plugins.lock
 
-## 5.3. Reusing BSP Registry configurations
+### 5.3. Reusing BSP Registry configurations
 
 It is possible to include BSP registry YAML configurations in your images (provided your project uses kas to assemble OS images). An example KAS configuration 
 
@@ -738,24 +830,26 @@ LAYERDEPENDS_custom = "eecc-nxp"
 
 ---
 
-# 6. Patches
+## 6. Patches
 
 The BSP registry uses patches to fix build issues, add hardware support, and ensure compatibility across different Yocto releases. Patches are organized by vendor and Yocto version to maintain stability and reproducibility.
 
 The repository contains **15 patches** organized into:
-- **NXP vendor patches** (13 patches): Address build failures, dependency corrections, and hardware-specific configurations for NXP i.MX platforms
-- **OTA feature patches** (2 patches): Enable OSTree-based over-the-air updates for Styhead and Walnascar releases
+
+* **NXP vendor patches** (13 patches): Address build failures, dependency corrections, and hardware-specific configurations for NXP i.MX platforms
+* **OTA feature patches** (2 patches): Enable OSTree-based over-the-air updates for Styhead and Walnascar releases
 
 All patches are documented with:
-- Purpose and rationale
-- Affected layers and recipes
-- Yocto release compatibility
+
+* Purpose and rationale
+* Affected layers and recipes
+* Yocto release compatibility
 
 For detailed information about each patch, including what they fix and which components they affect, see the **[Patches Documentation](patches/README.md)**.
 
 ---
 
-# 7. Links
+## 7. Links
 
 * [Building Modular BSP using Repo Tool](BUILDING_WITH_REPO.md) - Alternative build method using Google's repo tool
 * [KAS Container](https://kas.readthedocs.io/en/latest/userguide/kas-container.html)
