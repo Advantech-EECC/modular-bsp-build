@@ -52,6 +52,7 @@ A Board Support Package (`BSP`) build configuration registry defines environment
   - [Export KAS configuration](#export-kas-configuration)
   - [Lock KAS configuration](#lock-kas-configuration)
   - [Reusing BSP Registry configurations](#reusing-bsp-registry-configurations)
+- [Tutorials](#tutorials)
 - [Links](#links)
 
 ---
@@ -780,6 +781,14 @@ LAYERVERSION_custom = "0.1"
 LAYERSERIES_COMPAT_custom = "scarthgap"
 LAYERDEPENDS_custom = "eecc-nxp"
 ```
+
+---
+
+# Tutorials
+
+Step-by-step guides for working with specific features and hardware.
+
+*   [PTP (Precision Time Protocol) on i.MX8](docs/tutorials/ptp/readme.md): Learn how to set up, test, and synchronize clocks using PTP on Advantech i.MX8 platforms, including building a custom test application.
 
 ---
 
