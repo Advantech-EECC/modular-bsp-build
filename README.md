@@ -27,6 +27,7 @@ A Board Support Package (`BSP`) build configuration registry defines environment
   - [Container Management](#container-management)
   - [Configuration File Structure](#configuration-file-structure)
   - [Command Reference](#command-reference)
+    - [Checkout and Validation](#checkout-and-validation)
 - [HowTo Assemble BSPs](#howto-assemble-bsps)
   - [Host System dependencies](#host-system-dependencies)
     - [Setup Python virtual environment](#setup-python-virtual-environment)
@@ -43,10 +44,15 @@ A Board Support Package (`BSP`) build configuration registry defines environment
   - [HowTo build a BSP using KAS](#howto-build-a-bsp-using-kas)
     - [Building a BSP image using KAS in a container](#building-a-bsp-image-using-kas-in-a-container)
     - [Bitbake development shell](#bitbake-development-shell-1)
+  - [Building and Installing Yocto SDK](#building-and-installing-yocto-sdk)
+    - [Building SDK via KAS](#building-sdk-via-kas)
+    - [Building SDK via Bitbake Shell](#building-sdk-via-bitbake-shell)
+    - [Installing the SDK](#installing-the-sdk)
 - [Advanced Topics](#advanced-topics)
   - [Export KAS configuration](#export-kas-configuration)
   - [Lock KAS configuration](#lock-kas-configuration)
   - [Reusing BSP Registry configurations](#reusing-bsp-registry-configurations)
+- [Tutorials](#tutorials)
 - [Links](#links)
 
 ---
@@ -625,6 +631,68 @@ kas-container shell adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
 kas-container shell adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
 ```
 
+## Building and Installing Yocto SDK
+
+To develop applications for the target device (like the PTP test application), an SDK (Software Development Kit) is required. It contains the cross-compiler, libraries, and headers matching the target image.
+
+### Building SDK via KAS
+
+To build the SDK using KAS, use the `--task` (or `-c`) parameter with the `populate_sdk` task.
+
+```bash
+# General syntax
+kas build <configuration-file> --task populate_sdk
+
+# Example
+kas build adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml --task populate_sdk
+```
+
+If using `kas-container`:
+
+```bash
+kas-container build adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml --task populate_sdk
+```
+
+### Building SDK via Bitbake Shell
+
+You can also build the SDK from within the bitbake development shell:
+
+1. **Enter the shell**:
+   ```bash
+   just mbsp-shell rsb3720 walnascar
+
+   # or
+
+   python bsp.py shell <bsp-name>
+   ```
+
+
+2. **Run bitbake**:
+   ```bash
+   bitbake -c populate_sdk imx-image-full
+   ```
+
+### Installing the SDK
+
+After the build completes, the SDK installer script (a `.sh` file) will be located in the deploy directory (typically `build/tmp/deploy/sdk/`).
+
+1. **Locate the installer**:
+   ```bash
+   find build/tmp/deploy/sdk/ -name "*.sh"
+   ```
+
+2. **Run the installer**:
+   ```bash
+   ./build/tmp/deploy/sdk/fsl-imx-xwayland-glibc-x86_64-imx-image-core-armv8a-rsb3720-6g-toolchain-6.12-walnascar.sh
+   ```
+
+3. **Follow the prompts** to specify the installation directory (default is usually `/opt/poky/...` or `/opt/fsl-imx-xwayland/...`).
+
+4. **Source the environment** to use the SDK:
+   ```bash
+   source /path/to/sdk/environment-setup-aarch64-poky-linux
+   ```
+
 ---
 
 # Advanced Topics
@@ -713,6 +781,14 @@ LAYERVERSION_custom = "0.1"
 LAYERSERIES_COMPAT_custom = "scarthgap"
 LAYERDEPENDS_custom = "eecc-nxp"
 ```
+
+---
+
+# Tutorials
+
+Step-by-step guides for working with specific features and hardware.
+
+*   [PTP (Precision Time Protocol) on i.MX8](docs/tutorials/ptp/readme.md): Learn how to set up, test, and synchronize clocks using PTP on Advantech i.MX8 platforms, including building a custom test application.
 
 ---
 
