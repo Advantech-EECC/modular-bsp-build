@@ -1045,6 +1045,9 @@ registry:
           - isar/qemu/qemuarm64.yaml
           - isar/isar.yaml
 
+    # =====================================
+    # Isar QEMU ARM OTA BSPs
+    # =====================================
     - name: isar-qemuarm-debian-trixie
       description: "QEMU ARM Isar debian trixie BSP"
       build:
