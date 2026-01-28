@@ -1,0 +1,4 @@
+ARG KAS_VERSION=5.0
+ARG DISTRO=debian-bookworm
+
+FROM ghcr.io/siemens/kas/kas-isar:${KAS_VERSION}-${DISTRO}
