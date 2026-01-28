@@ -33,7 +33,7 @@ containers:
         - name: "KAS_VERSION"
           value: "5.0"
         - name: "DISTRO" 
-          value: "debian-bookworm"
+          value: "debian-trixie"
   - isar-debian-13:
       file: Dockerfile.isar.debian
       image: "advantech/bsp-registry/isar/debian-13/kas:5.0"
