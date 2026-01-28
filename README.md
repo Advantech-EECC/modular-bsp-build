@@ -167,7 +167,7 @@ In addition to Yocto-based BSPs, this registry supports **Isar** (Integration Sy
 
 **Key Features:**
 * Native Debian package management (apt/dpkg)
-* Supports multiple Debian-based distributions (Debian, Ubuntu, Raspberry Pi OS)
+* Supports multiple Debian-based distributions (Debian, Ubuntu)
 * Faster build times for Debian-familiar developers
 * Direct access to Debian package ecosystem
 * Cross-compilation support for ARM, ARM64, x86, and x86-64 architectures
@@ -175,7 +175,6 @@ In addition to Yocto-based BSPs, this registry supports **Isar** (Integration Sy
 **Supported Distributions:**
 * Debian (Bookworm, Bullseye, Buster, Trixie, Sid)
 * Ubuntu (Focal, Jammy, Noble)
-* Raspberry Pi OS (Bookworm, Bullseye)
 
 ### Isar Hardware Support
 
