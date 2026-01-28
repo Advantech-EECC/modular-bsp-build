@@ -1,7 +1,7 @@
 header:
   version: 14
   includes:
-    - isar/distro/debian-bookworm.yaml
+    - isar/distro/debian-trixie.yaml
     - isar/isar.yaml
     
 machine: "rsb3720"
@@ -10,14 +10,9 @@ target:
   - isar-image-base
 
 repos:
-  modular-bsp:
-    url: "https://github.com/miketsukerman/meta-modular-bsp.git"
+  meta-isar-modular-bsp-nxp:
+    url: "https://github.com/Advantech-EECC/meta-isar-modular-bsp-nxp.git"
     branch: "main"
-    path: "layers/modular-bsp"
+    path: "layers/meta-isar-modular-bsp-nxp"
     layers:
-      meta-mbsp-isar-nxp:
-
-bblayers_conf_header:
-  standard: |
-    BBPATH = "${TOPDIR}"
-    BBFILES ?= ""
+      .:
