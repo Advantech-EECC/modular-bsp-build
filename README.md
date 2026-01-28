@@ -720,4 +720,3 @@ LAYERDEPENDS_custom = "eecc-nxp"
 
 * [KAS Container](https://kas.readthedocs.io/en/latest/userguide/kas-container.html)
 * [KAS](https://kas.readthedocs.io/en/latest/intro.html)
-* [BSP Registry Manager Documentation](#bsp-registry-manager)
