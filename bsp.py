@@ -809,19 +809,22 @@ class KasManager:
         Get the appropriate KAS command (native or container).
         
         For privileged container builds (e.g., ISAR), adds the --isar flag
-        which enables required Docker privileges (--privileged, --cap-add=SYS_ADMIN).
+        which enables the --privileged Docker flag, granting the container
+        all capabilities including SYS_ADMIN and MKNOD.
         
         Note: The --isar flag is a kas-container feature that enables privileged
         Docker capabilities. Despite the name, it can be used for any build requiring
         elevated container privileges, not just ISAR builds.
+        
+        See: https://github.com/siemens/kas/blob/master/kas-container
         
         Returns:
             List of command components for KAS execution
         """
         if self.use_container:
             cmd = ["kas-container"]
-            # Add --isar flag for privileged builds to enable required Docker capabilities
-            # (--privileged, --cap-add=SYS_ADMIN, --cap-add=MKNOD)
+            # Add --isar flag for privileged builds, which sets --privileged
+            # (granting all capabilities including SYS_ADMIN and MKNOD)
             if self.container_privileged:
                 cmd.append("--isar")
             return cmd
