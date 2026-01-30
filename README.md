@@ -163,6 +163,8 @@ The full overview of Yocto releases can be found here https://www.yoctoproject.o
 
 In addition to Yocto-based BSPs, this registry supports **Isar** (Integration System for Automated Root filesystem generation), a build system specifically designed for creating Debian-based embedded Linux systems. Isar uses Debian's native packaging tools (apt, dpkg) rather than BitBake, providing a more familiar environment for developers experienced with Debian/Ubuntu systems.
 
+📖 **For detailed information**, see the **[Isar Directory README](isar/README.md)** which includes comprehensive documentation on configuration, build architecture, and ASCII diagrams of the image generation process.
+
 ### Isar Overview
 
 **Key Features:**
@@ -233,6 +235,7 @@ The container definition in `bsp-registry.yml`:
 
 ### Isar Resources
 
+* **[Isar Directory README](isar/README.md)** - Comprehensive guide to Isar configuration, build process diagrams, and advanced topics
 * [Isar Documentation](https://github.com/ilbers/isar/blob/master/doc/user_manual.md)
 * [Isar GitHub Repository](https://github.com/ilbers/isar)
 * [Advantech Isar Modular BSP](https://github.com/Advantech-EECC/meta-isar-modular-bsp-nxp)
