@@ -168,6 +168,8 @@ In addition to Yocto-based BSPs, this registry supports **Isar** (Integration Sy
 
 ### 2.2.1. Isar Overview
 
+📖 **For detailed information**, see the **[Isar Directory README](isar/README.md)** which includes comprehensive documentation on configuration, build architecture, and ASCII diagrams of the image generation process.
+
 **Key Features:**
 * Native Debian package management (apt/dpkg)
 * Supports multiple Debian-based distributions (Debian, Ubuntu)
@@ -236,6 +238,7 @@ The container definition in `bsp-registry.yml`:
 
 ### 2.2.5. Isar Resources
 
+* **[Isar Directory README](isar/README.md)** - Comprehensive guide to Isar configuration, build process diagrams, and advanced topics
 * [Isar Documentation](https://github.com/ilbers/isar/blob/master/doc/user_manual.md)
 * [Isar GitHub Repository](https://github.com/ilbers/isar)
 * [Advantech Isar Modular BSP](https://github.com/Advantech-EECC/meta-isar-modular-bsp-nxp)
