@@ -1,4 +1,7 @@
-FROM ghcr.io/siemens/kas/kas:5.0-debian-bookworm
+ARG KAS_VERSION=5.0
+ARG DISTRO=debian-bookworm
+
+FROM ghcr.io/siemens/kas/kas:${KAS_VERSION}-${DISTRO}
 
 RUN sudo apt update 
 

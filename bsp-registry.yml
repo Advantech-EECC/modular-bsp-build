@@ -26,9 +26,39 @@ containers:
           value: "ubuntu:22.04"
         - name: "KAS_VERSION"
           value: "5.0"
+  - debian-13:
+      file: Dockerfile.debian
+      image: "advantech/bsp-registry/debian-13/kas:5.0"
+      args:
+        - name: "KAS_VERSION"
+          value: "5.0"
+        - name: "DISTRO" 
+          value: "debian-trixie"
+  - isar-debian-13:
+      file: Dockerfile.isar.debian
+      image: "advantech/bsp-registry/isar/debian-13/kas:5.0"
+      privileged: true
+      args:
+        - name: "KAS_VERSION"
+          value: "5.0"
+        - name: "DISTRO" 
+          value: "debian-trixie"
 
 registry:
   bsp:
+
+    # =====================================
+    # Advantech Isar RSB3720 BSPs
+    # =====================================
+
+    - name: adv-mbsp-isar-debian-rsb3720
+      description: "RSB3720 Isar debian trixie BSP"
+      build:
+        path: build/adv-isar-bsp-rsb3720-debian-trixie
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - adv-mbsp-isar-debian-rsb3720.yaml
 
     # =====================================
     # Advantech RSB3730 BSPs
@@ -988,3 +1018,44 @@ registry:
           - yocto/whinlatter.yml
           - compilers/clang/whinlatter.yml
           - yocto/qemu/qemuarm64.yaml     
+
+    # =====================================
+    # Isar QEMU ARM64 OTA BSPs
+    # =====================================
+
+    - name: isar-qemuarm64-ubuntu-noble
+      description: "QEMU ARM64 Isar ubuntu noble BSP"
+      build:
+        path: build/qemuarm64-isar-ubuntu-noble
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - isar/distro/ubuntu-noble.yaml
+          - isar/qemu/qemuarm64.yaml
+          - isar/isar.yaml
+
+    - name: isar-qemuarm64-debian-trixie
+      description: "QEMU ARM64 Isar debian trixie BSP"
+      build:
+        path: build/qemuarm64-isar-debian-trixie
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - isar/distro/debian-trixie.yaml
+          - isar/qemu/qemuarm64.yaml
+          - isar/isar.yaml
+
+    # =====================================
+    # Isar QEMU ARM OTA BSPs
+    # =====================================
+    - name: isar-qemuarm-debian-trixie
+      description: "QEMU ARM Isar debian trixie BSP"
+      build:
+        path: build/qemuarm-isar-debian-trixie
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - isar/distro/debian-trixie.yaml
+          - isar/qemu/qemuarm.yaml
+          - isar/isar.yaml
+          

@@ -1,0 +1,18 @@
+header:
+  version: 14
+  includes:
+    - isar/distro/debian-trixie.yaml
+    - isar/isar.yaml
+    
+machine: "rsb3720"
+
+target: 
+  - isar-image-base
+
+repos:
+  meta-isar-modular-bsp-nxp:
+    url: "https://github.com/Advantech-EECC/meta-isar-modular-bsp-nxp.git"
+    branch: "main"
+    path: "layers/meta-isar-modular-bsp-nxp"
+    layers:
+      .:

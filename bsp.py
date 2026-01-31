@@ -162,10 +162,12 @@ class Docker:
         image: Docker image name/tag for the build environment
         file: Path to Dockerfile for building custom images
         args: List of Docker build arguments (name=value pairs)
+        privileged: Run container in privileged mode (enables --isar for kas-container)
     """
     image: Optional[str]
     file: Optional[str]
     args: List[DockerArg] = field(default_factory=empty_list)
+    privileged: bool = False
 
 @dataclass
 class ContainerDefinition:
@@ -351,7 +353,8 @@ def convert_containers_list_to_dict(containers_list: List[Dict[str, Any]]) -> Di
                     image=container_config.get('image'),
                     file=container_config.get('file'),
                     args=[DockerArg(name=arg['name'], value=arg['value']) 
-                          for arg in container_config.get('args', [])]
+                          for arg in container_config.get('args', [])],
+                    privileged=container_config.get('privileged', False)
                 )
             else:
                 logging.warning(f"Invalid container configuration for {container_name}, skipping")
@@ -751,6 +754,7 @@ class KasManager:
     def __init__(self, kas_files: List[str], build_dir: str = "build", use_container: bool = False,
                  download_dir: str = None, sstate_dir: str = None,
                  container_engine: str = None, container_image: str = None,
+                 container_privileged: bool = False,
                  search_paths: List[str] = None, env_manager: EnvironmentManager = None):
         """
         Initialize KAS manager with configuration.
@@ -763,6 +767,7 @@ class KasManager:
             sstate_dir: Shared state cache directory for build acceleration
             container_engine: Container runtime (docker, podman)
             container_image: Custom container image for kas-container
+            container_privileged: Run container in privileged mode (enables --isar flag)
             search_paths: Additional paths to search for configuration files
             env_manager: Environment configuration manager
             
@@ -778,6 +783,7 @@ class KasManager:
         self.use_container = use_container
         self.container_engine = container_engine
         self.container_image = container_image
+        self.container_privileged = container_privileged
         self.search_paths = search_paths or []
         self.download_dir = download_dir
         self.sstate_dir = sstate_dir
@@ -799,9 +805,29 @@ class KasManager:
         resolver.ensure_directory(str(self.build_dir))
 
     def _get_kas_command(self) -> List[str]:
-        """Get the appropriate KAS command (native or container)."""
+        """
+        Get the appropriate KAS command (native or container).
+        
+        For privileged container builds (e.g., ISAR), adds the --isar flag
+        which enables the --privileged Docker flag, granting the container
+        all capabilities including SYS_ADMIN and MKNOD.
+        
+        Note: The --isar flag is a kas-container feature that enables privileged
+        Docker capabilities. Despite the name, it can be used for any build requiring
+        elevated container privileges, not just ISAR builds.
+        
+        See: https://github.com/siemens/kas/blob/master/kas-container
+        
+        Returns:
+            List of command components for KAS execution
+        """
         if self.use_container:
-            return ["kas-container"]
+            cmd = ["kas-container"]
+            # Add --isar flag for privileged builds, which sets --privileged
+            # (granting all capabilities including SYS_ADMIN and MKNOD)
+            if self.container_privileged:
+                cmd.append("--isar")
+            return cmd
         else:
             return ["kas"]
 
@@ -1663,6 +1689,7 @@ class BspManager:
             sstate_dir=sstate, 
             use_container=use_container, 
             container_image=container_config.image if use_container else None,
+            container_privileged=container_config.privileged if use_container else False,
             env_manager=self.env_manager
         )
 
