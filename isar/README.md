@@ -355,13 +355,6 @@ The Isar configuration supports the following Debian-based distributions:
 | Debian 10 | Old Old Stable | Buster | 🟠 Legacy | `distro/debian-buster.yaml` |
 | Debian Unstable | Rolling | Sid | 🔴 Experimental | `distro/debian-sid.yaml` |
 
-### Raspberry Pi OS
-
-| Distribution | Base | Status | Configuration File |
-|--------------|------|--------|-------------------|
-| Raspberry Pi OS | Bookworm | 🟢 Stable | `distro/raspios-bookworm.yaml` |
-| Raspberry Pi OS | Bullseye | 🟡 Maintenance | `distro/raspios-bullseye.yaml` |
-
 ### Ubuntu Distributions
 
 | Distribution | Version | Codename | Status | Configuration File |
@@ -784,10 +777,3 @@ For general Isar questions:
 1. Consult the [Isar User Manual](https://github.com/ilbers/isar/blob/master/doc/user_manual.md)
 2. Search [Isar GitHub Issues](https://github.com/ilbers/isar/issues)
 3. Ask on the isar-users mailing list
-
----
-
-**Last Updated**: 2026-01-30  
-**Isar Version**: v0.11  
-**KAS Version**: 5.0  
-**Maintained by**: Advantech EECC
