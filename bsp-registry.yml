@@ -1061,6 +1061,28 @@ registry:
           - isar/qemu/qemuarm64.yaml
           - isar/isar.yaml
 
+    - name: isar-qemuarm64-ubuntu-jammy
+      description: "QEMU ARM64 Isar ubuntu jammy BSP"
+      build:
+        path: build/qemuarm64-isar-ubuntu-jammy
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - isar/distro/ubuntu-jammy.yaml
+          - isar/qemu/qemuarm64.yaml
+          - isar/isar.yaml
+
+    - name: isar-qemuarm64-ubuntu-focal
+      description: "QEMU ARM64 Isar ubuntu focal BSP"
+      build:
+        path: build/qemuarm64-isar-ubuntu-focal
+        environment:
+          container: "isar-debian-13"
+        configuration:
+          - isar/distro/ubuntu-focal.yaml
+          - isar/qemu/qemuarm64.yaml
+          - isar/isar.yaml
+
     - name: isar-qemuarm64-debian-trixie
       description: "QEMU ARM64 Isar debian trixie BSP"
       build:
