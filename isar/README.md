@@ -4,23 +4,24 @@ This directory contains the Isar (Integration System for Automated Root filesyst
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [What is Isar?](#what-is-isar)
-- [Directory Structure](#directory-structure)
-- [Image Generation Process](#image-generation-process)
-- [Supported Distributions](#supported-distributions)
-- [Supported Architectures](#supported-architectures)
-- [Configuration Files](#configuration-files)
-- [Building Isar Images](#building-isar-images)
-- [Build System Architecture](#build-system-architecture)
-- [Key Features](#key-features)
-- [Advantages Over Traditional Build Systems](#advantages-over-traditional-build-systems)
-- [Advanced Topics](#advanced-topics)
-- [Resources](#resources)
+- [1. Overview](#1-overview)
+- [2. What is Isar?](#2-what-is-isar)
+- [3. Directory Structure](#3-directory-structure)
+- [4. Image Generation Process](#4-image-generation-process)
+- [5. Supported Distributions](#5-supported-distributions)
+- [6. Supported Architectures](#6-supported-architectures)
+- [7. Configuration Files](#7-configuration-files)
+- [8. Building Isar Images](#8-building-isar-images)
+- [9. Build System Architecture](#9-build-system-architecture)
+- [10. Key Features](#10-key-features)
+- [11. Advantages Over Traditional Build Systems](#11-advantages-over-traditional-build-systems)
+- [12. Advanced Topics](#12-advanced-topics)
+- [13. Resources](#13-resources)
+- [14. Getting Help](#14-getting-help)
 
 ---
 
-## Overview
+## 1. Overview
 
 The Isar directory provides a modular, reusable configuration structure for building Debian-based embedded Linux images. Unlike Yocto/OpenEmbedded which builds packages from source, Isar leverages Debian's existing binary package ecosystem while providing the customization and reproducibility features needed for embedded systems.
 
@@ -33,7 +34,7 @@ The Isar directory provides a modular, reusable configuration structure for buil
 
 ---
 
-## What is Isar?
+## 2. What is Isar?
 
 **Isar** stands for **Integration System for Automated Root filesystem generation**. It is a build framework developed by Siemens and ilbers GmbH that combines the best of both worlds:
 
@@ -59,7 +60,7 @@ The Isar directory provides a modular, reusable configuration structure for buil
 
 ---
 
-## Directory Structure
+## 3. Directory Structure
 
 ```
 isar/
@@ -93,7 +94,7 @@ isar/
 
 ---
 
-## Image Generation Process
+## 4. Image Generation Process
 
 The following ASCII diagrams illustrate the Isar image generation workflow:
 
@@ -341,7 +342,7 @@ Debian Packages → Assemble → Customize → Image
 
 ---
 
-## Supported Distributions
+## 5. Supported Distributions
 
 The Isar configuration supports the following Debian-based distributions:
 
@@ -371,7 +372,7 @@ The Isar configuration supports the following Debian-based distributions:
 
 ---
 
-## Supported Architectures
+## 6. Supported Architectures
 
 Isar supports cross-compilation for multiple CPU architectures through QEMU machine definitions:
 
@@ -394,7 +395,7 @@ In addition to QEMU virtual machines, Isar supports real hardware platforms thro
 
 ---
 
-## Configuration Files
+## 7. Configuration Files
 
 ### isar.yaml - Core Configuration
 
@@ -458,7 +459,7 @@ Defines the target machine and which image recipe to build.
 
 ---
 
-## Building Isar Images
+## 8. Building Isar Images
 
 ### Prerequisites
 
@@ -525,7 +526,7 @@ isar/isar.yaml:isar/distro/debian-trixie.yaml:adv-mbsp-isar-debian-rsb3720.yaml
 
 ---
 
-## Build System Architecture
+## 9. Build System Architecture
 
 ### Container-Based Build Environment
 
@@ -587,7 +588,7 @@ This is automatically configured in the BSP registry configuration.
 
 ---
 
-## Key Features
+## 10. Key Features
 
 ### 1. Native Debian Packaging
 
@@ -629,7 +630,7 @@ Layer-based architecture allows:
 
 ---
 
-## Advantages Over Traditional Build Systems
+## 11. Advantages Over Traditional Build Systems
 
 | Aspect | Yocto/OpenEmbedded | Isar | Advantage |
 |--------|-------------------|------|-----------|
@@ -658,7 +659,7 @@ Layer-based architecture allows:
 
 ---
 
-## Advanced Topics
+## 12. Advanced Topics
 
 ### Custom Package Development
 
@@ -726,7 +727,7 @@ kas-container build \
 
 ---
 
-## Resources
+## 13. Resources
 
 ### Official Documentation
 
@@ -765,7 +766,7 @@ kas-container build \
 
 ---
 
-## Getting Help
+## 14. Getting Help
 
 For issues specific to this BSP registry:
 1. Check the main [README.md](../README.md)
