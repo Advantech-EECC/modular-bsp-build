@@ -11,13 +11,14 @@ This directory contains the Isar (Integration System for Automated Root filesyst
 - [5. Supported Distributions](#5-supported-distributions)
 - [6. Supported Architectures](#6-supported-architectures)
 - [7. Configuration Files](#7-configuration-files)
-- [8. Building Isar Images](#8-building-isar-images)
-- [9. Build System Architecture](#9-build-system-architecture)
-- [10. Key Features](#10-key-features)
-- [11. Advantages Over Traditional Build Systems](#11-advantages-over-traditional-build-systems)
-- [12. Advanced Topics](#12-advanced-topics)
-- [13. Resources](#13-resources)
-- [14. Getting Help](#14-getting-help)
+- [8. Host System Configuration](#8-host-system-configuration)
+- [9. Building Isar Images](#9-building-isar-images)
+- [10. Build System Architecture](#10-build-system-architecture)
+- [11. Key Features](#11-key-features)
+- [12. Advantages Over Traditional Build Systems](#12-advantages-over-traditional-build-systems)
+- [13. Advanced Topics](#13-advanced-topics)
+- [14. Resources](#14-resources)
+- [15. Getting Help](#15-getting-help)
 
 ---
 
@@ -459,7 +460,44 @@ Defines the target machine and which image recipe to build.
 
 ---
 
-## 8. Building Isar Images
+## 8. Host System Configuration
+
+To successfully build Isar images, your host system must meet specific requirements and be properly configured.
+
+### Operating System Requirements
+A Linux-based operating system is required. Recommended distributions:
+- **Ubuntu**: 20.04 LTS, 22.04 LTS, or newer
+- **Debian**: 11 (Bullseye), 12 (Bookworm), or newer
+
+### Essential Tools
+
+#### 1. Docker
+Isar performs builds inside a privileged Docker container.
+- Install Docker Engine: [Docker Installation Guide](https://docs.docker.com/engine/install/)
+- **Important**: Your user must be in the `docker` group to run containers without sudo.
+  ```bash
+  sudo usermod -aG docker $USER
+  # Log out and back in for changes to take effect
+  newgrp docker
+  ```
+
+#### 2. Cross-Compilation Support (qemu-user-static)
+Isar uses QEMU user emulation for cross-compilation (e.g., building ARM64 on x86). Ensure your kernel supports `binfmt_misc` and install the static QEMU user helpers.
+
+On Debian/Ubuntu:
+```bash
+sudo apt-get install qemu-user-static binfmt-support
+```
+
+### Disk Space and Resources
+Building embedded Linux images requires significant resources:
+ - **Disk Space**: Recommended 100 GB+ free space. Isar caches downloads (`DL_DIR`) and build artifacts (`SSTATE_DIR`) which grow over time.
+ - **RAM**: 8GB minimum, 16GB+ recommended.
+ - **CPU**: Multi-core processor recommended for parallel task execution.
+
+---
+
+## 9. Building Isar Images
 
 ### Prerequisites
 
@@ -526,7 +564,7 @@ isar/isar.yaml:isar/distro/debian-trixie.yaml:adv-mbsp-isar-debian-rsb3720.yaml
 
 ---
 
-## 9. Build System Architecture
+## 10. Build System Architecture
 
 ### Container-Based Build Environment
 
@@ -588,7 +626,7 @@ This is automatically configured in the BSP registry configuration.
 
 ---
 
-## 10. Key Features
+## 11. Key Features
 
 ### 1. Native Debian Packaging
 
@@ -630,7 +668,7 @@ Layer-based architecture allows:
 
 ---
 
-## 11. Advantages Over Traditional Build Systems
+## 12. Advantages Over Traditional Build Systems
 
 | Aspect | Yocto/OpenEmbedded | Isar | Advantage |
 |--------|-------------------|------|-----------|
@@ -659,7 +697,7 @@ Layer-based architecture allows:
 
 ---
 
-## 12. Advanced Topics
+## 13. Advanced Topics
 
 ### Custom Package Development
 
@@ -727,7 +765,7 @@ kas-container build \
 
 ---
 
-## 13. Resources
+## 14. Resources
 
 ### Official Documentation
 
@@ -766,13 +804,13 @@ kas-container build \
 
 ---
 
-## 14. Getting Help
+## 15. Getting Help
 
 For issues specific to this BSP registry:
 1. Check the main [README.md](../README.md)
 2. Review example configurations in this directory
 3. Open an issue in the BSP registry repository
-4. Contact Advantech EECC support
+4. Contact Advantech ETC support
 
 For general Isar questions:
 1. Consult the [Isar User Manual](https://github.com/ilbers/isar/blob/master/doc/user_manual.md)
