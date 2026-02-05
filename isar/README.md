@@ -4,21 +4,61 @@ This directory contains the Isar (Integration System for Automated Root filesyst
 
 ## Table of Contents
 
-- [1. Overview](#1-overview)
-- [2. What is Isar?](#2-what-is-isar)
-- [3. Directory Structure](#3-directory-structure)
-- [4. Image Generation Process](#4-image-generation-process)
-- [5. Supported Distributions](#5-supported-distributions)
-- [6. Supported Architectures](#6-supported-architectures)
-- [7. Configuration Files](#7-configuration-files)
-- [8. Host System Configuration](#8-host-system-configuration)
-- [9. Building Isar Images](#9-building-isar-images)
-- [10. Build System Architecture](#10-build-system-architecture)
-- [11. Key Features](#11-key-features)
-- [12. Advantages Over Traditional Build Systems](#12-advantages-over-traditional-build-systems)
-- [13. Advanced Topics](#13-advanced-topics)
-- [14. Resources](#14-resources)
-- [15. Getting Help](#15-getting-help)
+- [Isar Build System Configuration](#isar-build-system-configuration)
+  - [Table of Contents](#table-of-contents)
+  - [1. Overview](#1-overview)
+  - [2. What is Isar?](#2-what-is-isar)
+  - [3. Directory Structure](#3-directory-structure)
+    - [3.1 File Descriptions](#31-file-descriptions)
+  - [4. Image Generation Process](#4-image-generation-process)
+    - [4.1 High-Level Build Flow](#41-high-level-build-flow)
+    - [4.2 Detailed BitBake Task Flow](#42-detailed-bitbake-task-flow)
+    - [4.3 Layer Architecture](#43-layer-architecture)
+    - [4.4 Comparison: Isar vs Yocto Build Process](#44-comparison-isar-vs-yocto-build-process)
+  - [5. Supported Distributions](#5-supported-distributions)
+    - [5.1 Debian Distributions](#51-debian-distributions)
+    - [5.2 Ubuntu Distributions](#52-ubuntu-distributions)
+  - [6. Supported Architectures](#6-supported-architectures)
+    - [6.1 Real Hardware Support](#61-real-hardware-support)
+  - [7. Configuration Files](#7-configuration-files)
+    - [7.1 isar.yaml - Core Configuration](#71-isaryaml---core-configuration)
+    - [7.2 Distribution Configuration Example](#72-distribution-configuration-example)
+    - [7.3 Machine Configuration Example](#73-machine-configuration-example)
+  - [8. Host System Configuration](#8-host-system-configuration)
+    - [8.1 Operating System Requirements](#81-operating-system-requirements)
+    - [8.2 Essential Tools](#82-essential-tools)
+      - [8.2.1 Docker](#821-docker)
+      - [8.2.2 Python Environment](#822-python-environment)
+      - [8.2.3 Cross-Compilation Support (qemu-user-static)](#823-cross-compilation-support-qemu-user-static)
+    - [8.3 Disk Space and Resources](#83-disk-space-and-resources)
+  - [9. Building Isar Images](#9-building-isar-images)
+    - [9.1 Prerequisites](#91-prerequisites)
+    - [9.2 Using BSP Registry Manager](#92-using-bsp-registry-manager)
+    - [9.3 Interactive Shell Access](#93-interactive-shell-access)
+    - [9.4 Manual Build with KAS](#94-manual-build-with-kas)
+    - [9.5 Build Configuration Composition](#95-build-configuration-composition)
+  - [10. Build System Architecture](#10-build-system-architecture)
+    - [10.1 Container-Based Build Environment](#101-container-based-build-environment)
+    - [10.2 Why Privileged Mode?](#102-why-privileged-mode)
+  - [11. Key Features](#11-key-features)
+    - [11.1 Native Debian Packaging](#111-native-debian-packaging)
+    - [11.2 Cross-Compilation Support](#112-cross-compilation-support)
+    - [11.3 Reproducible Builds](#113-reproducible-builds)
+    - [11.4 Modular Configuration](#114-modular-configuration)
+  - [12. Advantages Over Traditional Build Systems](#12-advantages-over-traditional-build-systems)
+  - [13. Advanced Topics](#13-advanced-topics)
+    - [13.1 Custom Package Development](#131-custom-package-development)
+    - [13.2 Adding Custom Layers](#132-adding-custom-layers)
+    - [13.3 Build Caching](#133-build-caching)
+    - [13.4 Multiconfig Builds](#134-multiconfig-builds)
+  - [14. Resources](#14-resources)
+    - [14.1 Official Documentation](#141-official-documentation)
+    - [14.2 Debian Resources](#142-debian-resources)
+    - [14.3 Advantech-Specific Resources](#143-advantech-specific-resources)
+    - [14.4 KAS Tool](#144-kas-tool)
+    - [14.5 Community and Support](#145-community-and-support)
+    - [14.6 Presentations and Articles](#146-presentations-and-articles)
+  - [15. Getting Help](#15-getting-help)
 
 ---
 
@@ -85,7 +125,7 @@ isar/
     └── qemux86-64.yaml   # x86 64-bit
 ```
 
-### File Descriptions
+### 3.1 File Descriptions
 
 | File/Directory | Purpose |
 |----------------|---------|
@@ -99,7 +139,7 @@ isar/
 
 The following ASCII diagrams illustrate the Isar image generation workflow:
 
-### High-Level Build Flow
+### 4.1 High-Level Build Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -196,7 +236,7 @@ The following ASCII diagrams illustrate the Isar image generation workflow:
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Detailed BitBake Task Flow
+### 4.2 Detailed BitBake Task Flow
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -266,7 +306,7 @@ The following ASCII diagrams illustrate the Isar image generation workflow:
                   └────────────────────────────────────┘
 ```
 
-### Layer Architecture
+### 4.3 Layer Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -311,7 +351,7 @@ The following ASCII diagrams illustrate the Isar image generation workflow:
    └─────────────────────────────────────────────────┘
 ```
 
-### Comparison: Isar vs Yocto Build Process
+### 4.4 Comparison: Isar vs Yocto Build Process
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -347,7 +387,7 @@ Debian Packages → Assemble → Customize → Image
 
 The Isar configuration supports the following Debian-based distributions:
 
-### Debian Distributions
+### 5.1 Debian Distributions
 
 | Distribution | Version | Codename | Status | Configuration File |
 |--------------|---------|----------|--------|-------------------|
@@ -357,7 +397,7 @@ The Isar configuration supports the following Debian-based distributions:
 | Debian 10 | Old Old Stable | Buster | 🟠 Legacy | `distro/debian-buster.yaml` |
 | Debian Unstable | Rolling | Sid | 🔴 Experimental | `distro/debian-sid.yaml` |
 
-### Ubuntu Distributions
+### 5.2 Ubuntu Distributions
 
 | Distribution | Version | Codename | Status | Configuration File |
 |--------------|---------|----------|--------|-------------------|
@@ -384,7 +424,7 @@ Isar supports cross-compilation for multiple CPU architectures through QEMU mach
 | **x86 64-bit** | qemuamd64 | amd64 | `qemu/qemux86-64.yaml` | PC platforms, testing |
 | **x86 32-bit** | qemui386 | i386 | `qemu/qemux86.yaml` | Legacy x86 systems |
 
-### Real Hardware Support
+### 6.1 Real Hardware Support
 
 In addition to QEMU virtual machines, Isar supports real hardware platforms through custom BSP layers:
 
@@ -398,7 +438,7 @@ In addition to QEMU virtual machines, Isar supports real hardware platforms thro
 
 ## 7. Configuration Files
 
-### isar.yaml - Core Configuration
+### 7.1 isar.yaml - Core Configuration
 
 ```yaml
 header:
@@ -431,7 +471,7 @@ bblayers_conf_header:
 - **layers**: Enables meta, meta-isar, and meta-test layers
 - **bblayers_conf_header**: BitBake layer configuration template
 
-### Distribution Configuration Example
+### 7.2 Distribution Configuration Example
 
 ```yaml
 # distro/debian-trixie.yaml
@@ -443,7 +483,7 @@ distro: debian-trixie
 
 Simple distribution selector that sets the Debian version to use.
 
-### Machine Configuration Example
+### 7.3 Machine Configuration Example
 
 ```yaml
 # qemu/qemuarm64.yaml
@@ -464,14 +504,14 @@ Defines the target machine and which image recipe to build.
 
 To successfully build Isar images, your host system must meet specific requirements and be properly configured.
 
-### Operating System Requirements
+### 8.1 Operating System Requirements
 A Linux-based operating system is required. Recommended distributions:
 - **Ubuntu**: 20.04 LTS, 22.04 LTS, or newer
 - **Debian**: 11 (Bullseye), 12 (Bookworm), or newer
 
-### Essential Tools
+### 8.2 Essential Tools
 
-#### 1. Docker
+#### 8.2.1 Docker
 Isar performs builds inside a privileged Docker container.
 - Install Docker Engine: [Docker Installation Guide](https://docs.docker.com/engine/install/)
 - **Important**: Your user must be in the `docker` group to run containers without sudo.
@@ -481,7 +521,13 @@ Isar performs builds inside a privileged Docker container.
   newgrp docker
   ```
 
-#### 2. Cross-Compilation Support (qemu-user-static)
+#### 8.2.2 Python Environment
+To use the BSP Registry Manager (`bsp.py`), install the required Python packages:
+```bash
+pip3 install -r requirements.txt
+```
+
+#### 8.2.3 Cross-Compilation Support (qemu-user-static)
 Isar uses QEMU user emulation for cross-compilation (e.g., building ARM64 on x86). Ensure your kernel supports `binfmt_misc` and install the static QEMU user helpers.
 
 On Debian/Ubuntu:
@@ -489,7 +535,7 @@ On Debian/Ubuntu:
 sudo apt-get install qemu-user-static binfmt-support
 ```
 
-### Disk Space and Resources
+### 8.3 Disk Space and Resources
 Building embedded Linux images requires significant resources:
  - **Disk Space**: Recommended 100 GB+ free space. Isar caches downloads (`DL_DIR`) and build artifacts (`SSTATE_DIR`) which grow over time.
  - **RAM**: 8GB minimum, 16GB+ recommended.
@@ -499,13 +545,13 @@ Building embedded Linux images requires significant resources:
 
 ## 9. Building Isar Images
 
-### Prerequisites
+### 9.1 Prerequisites
 
 1. **Docker** with privileged mode support
 2. **Python 3.x** with required dependencies
 3. **KAS tool** (handled automatically via container)
 
-### Using BSP Registry Manager
+### 9.2 Using BSP Registry Manager
 
 The recommended method is using the `bsp.py` script:
 
@@ -520,7 +566,7 @@ python bsp.py build isar-qemuarm64-debian-trixie
 python bsp.py build isar-qemuarm64-ubuntu-noble
 ```
 
-### Interactive Shell Access
+### 9.3 Interactive Shell Access
 
 Enter a build environment for debugging or development:
 
@@ -528,7 +574,7 @@ Enter a build environment for debugging or development:
 python bsp.py shell adv-mbsp-isar-debian-rsb3720
 ```
 
-### Manual Build with KAS
+### 9.4 Manual Build with KAS
 
 For advanced users, you can build directly with KAS:
 
@@ -538,7 +584,7 @@ kas-container build \
   isar/isar.yaml:isar/distro/debian-trixie.yaml:isar/qemu/qemuarm64.yaml
 ```
 
-### Build Configuration Composition
+### 9.5 Build Configuration Composition
 
 Isar builds use a modular configuration approach:
 
@@ -566,7 +612,7 @@ isar/isar.yaml:isar/distro/debian-trixie.yaml:adv-mbsp-isar-debian-rsb3720.yaml
 
 ## 10. Build System Architecture
 
-### Container-Based Build Environment
+### 10.1 Container-Based Build Environment
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -614,7 +660,7 @@ isar/isar.yaml:isar/distro/debian-trixie.yaml:adv-mbsp-isar-debian-rsb3720.yaml
   • Shared state cache (read-write)
 ```
 
-### Why Privileged Mode?
+### 10.2 Why Privileged Mode?
 
 Isar builds require privileged container execution for:
 - **Loop device access**: Creating filesystem images
@@ -628,7 +674,7 @@ This is automatically configured in the BSP registry configuration.
 
 ## 11. Key Features
 
-### 1. Native Debian Packaging
+### 11.1 Native Debian Packaging
 
 ```
 Traditional Yocto:          Isar:
@@ -644,21 +690,21 @@ Package                     Install via dpkg
 Install to rootfs           Done!
 ```
 
-### 2. Cross-Compilation Support
+### 11.2 Cross-Compilation Support
 
 Isar automatically handles cross-compilation through:
 - **sbuild**: Debian's standard cross-build tool
 - **schroot**: Isolated build environments
 - **multiarch**: Support for multiple architectures
 
-### 3. Reproducible Builds
+### 11.3 Reproducible Builds
 
 - Pinned repository commits
 - Version-locked Debian packages
 - Containerized build environment
 - Checksum validation
 
-### 4. Modular Configuration
+### 11.4 Modular Configuration
 
 Layer-based architecture allows:
 - Mix and match distributions
@@ -699,7 +745,7 @@ Layer-based architecture allows:
 
 ## 13. Advanced Topics
 
-### Custom Package Development
+### 13.1 Custom Package Development
 
 For packages not in Debian repositories, Isar supports custom package recipes:
 
@@ -716,7 +762,7 @@ meta-custom/
 │               └── changelog
 ```
 
-### Adding Custom Layers
+### 13.2 Adding Custom Layers
 
 To add custom functionality:
 
@@ -725,7 +771,7 @@ To add custom functionality:
 3. Include layer path in configuration
 4. Reference recipes in image
 
-### Build Caching
+### 13.3 Build Caching
 
 Isar leverages multiple cache levels:
 
@@ -752,7 +798,7 @@ Isar leverages multiple cache levels:
 └──────────────────────────────────────┘
 ```
 
-### Multiconfig Builds
+### 13.4 Multiconfig Builds
 
 Build for multiple machines or distributions simultaneously:
 
@@ -767,36 +813,36 @@ kas-container build \
 
 ## 14. Resources
 
-### Official Documentation
+### 14.1 Official Documentation
 
 - **Isar GitHub Repository**: [https://github.com/ilbers/isar](https://github.com/ilbers/isar)
 - **Isar User Manual**: [https://github.com/ilbers/isar/blob/master/doc/user_manual.md](https://github.com/ilbers/isar/blob/master/doc/user_manual.md)
 - **ilbers GmbH** (Isar Maintainer): [https://ilbers.de/en/isar.html](https://ilbers.de/en/isar.html)
 
-### Debian Resources
+### 14.2 Debian Resources
 
 - **Debian Packages**: [https://packages.debian.org/](https://packages.debian.org/)
 - **Debian Security Updates**: [https://www.debian.org/security/](https://www.debian.org/security/)
 - **Debian Cross-Compilation**: [https://wiki.debian.org/CrossCompiling](https://wiki.debian.org/CrossCompiling)
 
-### Advantech-Specific Resources
+### 14.3 Advantech-Specific Resources
 
 - **Advantech Isar Modular BSP for NXP**: [https://github.com/Advantech-EECC/meta-isar-modular-bsp-nxp](https://github.com/Advantech-EECC/meta-isar-modular-bsp-nxp)
 - **BSP Registry Main README**: [../README.md](../README.md)
 
-### KAS Tool
+### 14.4 KAS Tool
 
 - **KAS Documentation**: [https://kas.readthedocs.io/](https://kas.readthedocs.io/)
 - **KAS GitHub**: [https://github.com/siemens/kas](https://github.com/siemens/kas)
 - **KAS Container Images**: [https://github.com/siemens/kas/pkgs/container/kas%2Fkas-isar](https://github.com/siemens/kas/pkgs/container/kas%2Fkas-isar)
 
-### Community and Support
+### 14.5 Community and Support
 
 - **Isar Mailing List**: [isar-users@googlegroups.com](mailto:isar-users@googlegroups.com)
 - **GitHub Issues**: [https://github.com/ilbers/isar/issues](https://github.com/ilbers/isar/issues)
 - **Stack Overflow**: Tag `isar` for questions
 
-### Presentations and Articles
+### 14.6 Presentations and Articles
 
 - "Building Products with Debian and Isar" - LinuxFoundation
 - "First Experiences with the Embedded Debian Build System Isar" - ELC 2017
