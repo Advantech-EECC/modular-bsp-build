@@ -4,24 +4,36 @@ This guide describes how to build Advantech modular BSP using the `repo` tool an
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-  - [Install Repo Tool](#install-repo-tool)
-  - [Install Essential Host Packages](#install-essential-host-packages)
-- [Download Yocto Project BSP](#download-yocto-project-bsp)
-  - [Available Releases](#available-releases)
-  - [Supported Branches](#supported-branches)
-- [Setup Build Environment](#setup-build-environment)
-  - [Enabling Advantech BSP Layer](#enabling-advantech-bsp-layer)
-- [Build Images](#build-images)
-  - [Available Image Recipes](#available-image-recipes)
-- [Supported Boards](#supported-boards)
-- [Comparison with KAS-based Workflow](#comparison-with-kas-based-workflow)
-- [Additional Resources](#additional-resources)
+- [1. Overview](#1-overview)
+- [2. Prerequisites](#2-prerequisites)
+  - [2.1 Install Repo Tool](#21-install-repo-tool)
+  - [2.2 Install Essential Host Packages](#22-install-essential-host-packages)
+- [3. Download Yocto Project BSP](#3-download-yocto-project-bsp)
+  - [3.1 Available Releases](#31-available-releases)
+  - [3.2 Download Process](#32-download-process)
+  - [3.3 Supported Branches](#33-supported-branches)
+- [4. Setup Build Environment](#4-setup-build-environment)
+  - [4.1 Enabling Advantech BSP Layer](#41-enabling-advantech-bsp-layer)
+- [5. Build Images](#5-build-images)
+  - [5.1 Available Image Recipes](#51-available-image-recipes)
+- [6. Supported Boards](#6-supported-boards)
+  - [6.1 i.MX8M Plus Boards](#61-imx8m-plus-boards)
+  - [6.2 i.MX93 Boards](#62-imx93-boards)
+  - [6.3 i.MX95 Boards](#63-imx95-boards)
+- [7. Comparison with KAS-based Workflow](#7-comparison-with-kas-based-workflow)
+  - [7.1 Repo Tool Workflow (This Guide)](#71-repo-tool-workflow-this-guide)
+  - [7.2 KAS-based Workflow](#72-kas-based-workflow)
+- [8. Additional Resources](#8-additional-resources)
+  - [8.1 Official Documentation](#81-official-documentation)
+  - [8.2 Advantech Resources](#82-advantech-resources)
+  - [8.3 Google Repo Tool](#83-google-repo-tool)
+  - [8.4 NXP i.MX Resources](#84-nxp-imx-resources)
+- [9. Troubleshooting](#9-troubleshooting)
+  - [9.1 Common Issues](#91-common-issues)
+  - [9.2 Getting Help](#92-getting-help)
+- [10. Contributing](#10-contributing)
 
----
-
-## Overview
+## 1. Overview
 
 The `repo` tool is a repository management tool built on top of Git by Google. It allows you to manage multiple Git repositories as a single workspace. The Advantech modular BSP uses repo manifests to define and synchronize all the required Yocto layers and metadata for building embedded Linux images.
 
@@ -31,11 +43,9 @@ The `repo` tool is a repository management tool built on top of Git by Google. I
 - Flexible layer management
 - Easy synchronization of multiple repositories
 
----
+## 2. Prerequisites
 
-## Prerequisites
-
-### Install Repo Tool
+### 2.1 Install Repo Tool
 
 The `repo` utility must be installed first before you can download the BSP sources.
 
@@ -61,7 +71,7 @@ echo 'export PATH=${PATH}:~/bin' >> ~/.bashrc
 repo version
 ```
 
-### Install Essential Host Packages
+### 2.2 Install Essential Host Packages
 
 Your build host must have required packages for Yocto builds. The specific packages depend on your Linux distribution.
 
@@ -80,11 +90,9 @@ sudo apt-get install -y \
 **Reference:**
 For detailed host package requirements, refer to the [Yocto Project Quick Build Guide](https://docs.yoctoproject.org/5.2.4/brief-yoctoprojectqs/index.html#build-host-packages).
 
----
+## 3. Download Yocto Project BSP
 
-## Download Yocto Project BSP
-
-### Available Releases
+### 3.1 Available Releases
 
 The Advantech i.MX manifest repository provides several BSP releases based on different kernel versions:
 
@@ -94,7 +102,7 @@ The Advantech i.MX manifest repository provides several BSP releases based on di
 | 6.12.34-2.1.0 | Linux 6.12.34 | Walnascar | imx-linux-walnascar-adv |
 | 6.12.20-2.0.0 | Linux 6.12.20 | Walnascar | imx-linux-walnascar-adv |
 
-### Download Process
+### 3.2 Download Process
 
 Create a workspace directory and initialize the repo:
 
@@ -126,16 +134,14 @@ repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-walnasc
 repo sync
 ```
 
-### Supported Branches
+### 3.3 Supported Branches
 
 The imx-manifest repository contains different branches for different Yocto releases:
 
 - `imx-linux-walnascar-adv` - Yocto Walnascar (Latest)
 - Additional branches may be available for other Yocto releases
 
----
-
-## Setup Build Environment
+## 4. Setup Build Environment
 
 After downloading the sources, you need to set up the build environment. The `imx-setup-release.sh` script initializes the build configuration.
 
@@ -175,7 +181,7 @@ This script will:
 2. Set up `conf/local.conf` and `conf/bblayers.conf`
 3. Initialize the BitBake environment
 
-### Enabling Advantech BSP Layer
+### 4.1 Enabling Advantech BSP Layer
 
 **IMPORTANT:** To access Advantech-specific machine configurations, you must enable the Advantech BSP layer.
 
@@ -203,9 +209,7 @@ echo 'BBLAYERS += "${BSPDIR}/sources/meta-eecc-nxp"' >> conf/bblayers.conf
 bitbake-layers show-layers | grep meta-eecc-nxp
 ```
 
----
-
-## Build Images
+## 5. Build Images
 
 Once the environment is set up, you can build images using BitBake.
 
@@ -217,7 +221,7 @@ cd bld-xwayland  # or your build directory
 bitbake <image-recipe>
 ```
 
-### Available Image Recipes
+### 5.1 Available Image Recipes
 
 | Image Recipe | Description |
 |--------------|-------------|
@@ -250,33 +254,29 @@ For example, for RSB3720:
 tmp/deploy/images/rsb3720/
 ```
 
----
-
-## Supported Boards
+## 6. Supported Boards
 
 The following Advantech boards are supported in the modular BSP:
 
-### i.MX8M Plus Boards
+### 6.1 i.MX8M Plus Boards
 - **RSB3720** - Industrial Single Board Computer (4G and 6G variants)
 
-### i.MX93 Boards
+### 6.2 i.MX93 Boards
 - **ROM2620-ED91** - Embedded Development Board
 - **ROM2820-ED93** - Embedded Development Board
 
-### i.MX95 Boards
+### 6.3 i.MX95 Boards
 - **ROM5720-DB5901** - Development Board
 - **ROM5721-DB5901** - Development Board (1G and 2G variants)
 - **ROM5722-DB2510** - Development Board
 
 For a complete list of supported boards and their compatibility with different Yocto releases, refer to the [main README.md](README.md#nxp-boards-compatibility-matrix).
 
----
-
-## Comparison with KAS-based Workflow
+## 7. Comparison with KAS-based Workflow
 
 This repository supports two build workflows:
 
-### Repo Tool Workflow (This Guide)
+### 7.1 Repo Tool Workflow (This Guide)
 - **Pros:**
   - Standard Yocto workflow using BitBake directly
   - Compatible with NXP reference documentation
@@ -288,7 +288,9 @@ This repository supports two build workflows:
   - More setup steps required
   - Less container integration
 
-### KAS-based Workflow (See [README.md](README.md))
+### 7.2 KAS-based Workflow
+(See [README.md](README.md))
+
 - **Pros:**
   - Simplified configuration using YAML files
   - Integrated Docker container support
@@ -304,42 +306,28 @@ This repository supports two build workflows:
 - Use **Repo Tool** if you're familiar with standard Yocto workflows or need to follow NXP reference documentation
 - Use **KAS** if you want automated, reproducible builds with minimal configuration
 
----
+## 8. Additional Resources
 
-## Additional Resources
-
-### Official Documentation
+### 8.1 Official Documentation
 - [Yocto Project Documentation](https://docs.yoctoproject.org/)
 - [Yocto Project Quick Build Guide](https://docs.yoctoproject.org/5.2.4/brief-yoctoprojectqs/index.html)
 - [BitBake User Manual](https://docs.yoctoproject.org/bitbake/)
 
-### Advantech Resources
-- [Main BSP Registry README](README.md)
+### 8.2 Advantech Resources
 - [imx-manifest Repository](https://github.com/Advantech-EECC/imx-manifest)
 - [meta-eecc-nxp Layer](https://github.com/Advantech-EECC/meta-eecc-nxp)
 
-### Google Repo Tool
+### 8.3 Google Repo Tool
 - [Repo Command Reference](https://source.android.com/docs/setup/reference/repo)
 - [Repo Tool Overview](https://gerrit.googlesource.com/git-repo/)
 
-### NXP i.MX Resources
+### 8.4 NXP i.MX Resources
 - [NXP i.MX Software](https://www.nxp.com/design/software/embedded-software/i-mx-software:IMX-SW)
 - [NXP Community](https://community.nxp.com/)
 
----
+## 9. Troubleshooting
 
-## Troubleshooting
-
-### Common Issues
-
-**1. Repo sync fails with permission errors:**
-```bash
-# Ensure you have SSH keys set up for GitHub
-ssh -T git@github.com
-
-# Or use HTTPS instead
-repo init -u https://github.com/Advantech-EECC/imx-manifest ...
-```
+### 9.1 Common Issues
 
 **2. BitBake cannot find Advantech machines:**
 ```bash
@@ -350,42 +338,9 @@ grep meta-eecc-nxp conf/bblayers.conf
 echo 'BBLAYERS += "${BSPDIR}/sources/meta-eecc-nxp"' >> conf/bblayers.conf
 ```
 
-**3. Build fails with "No space left on device":**
-```bash
-# Clean up old build artifacts
-bitbake -c cleansstate <image-recipe>
-
-# Check available disk space (builds require 50GB+ free space)
-df -h
-```
-
-**4. Python version issues:**
-```bash
-# Ensure Python 3 is the default
-python3 --version
-
-# Update alternatives if needed
-sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-```
-
-### Getting Help
+### 9.2 Getting Help
 
 If you encounter issues:
 1. Check the [Yocto Project FAQ](https://www.yoctoproject.org/faq/)
 2. Review [Advantech BSP Registry Issues](https://github.com/Advantech-EECC/bsp-registry/issues)
 3. Consult the [Yocto Project Mailing Lists](https://lists.yoctoproject.org/g/yocto)
-
----
-
-## Contributing
-
-If you find issues with this documentation or the build process, please:
-1. Check existing [Issues](https://github.com/Advantech-EECC/bsp-registry/issues)
-2. Open a new issue with detailed information
-3. Submit a pull request with improvements
-
----
-
-**Last Updated:** 2026-02-06  
-**BSP Version:** 6.12.49-2.2.0  
-**Yocto Release:** Walnascar
