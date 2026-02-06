@@ -43,6 +43,7 @@ A Board Support Package (`BSP`) build configuration registry defines environment
   - [HowTo build a BSP using KAS](#howto-build-a-bsp-using-kas)
     - [Building a BSP image using KAS in a container](#building-a-bsp-image-using-kas-in-a-container)
     - [Bitbake development shell](#bitbake-development-shell-1)
+  - [HowTo build a BSP using Repo Tool](#howto-build-a-bsp-using-repo-tool)
 - [Advanced Topics](#advanced-topics)
   - [Export KAS configuration](#export-kas-configuration)
   - [Lock KAS configuration](#lock-kas-configuration)
@@ -625,6 +626,25 @@ kas-container shell adv-mbsp-oenxp-walnascar-rsb3720-6g.yaml
 kas-container shell adv-mbsp-oenxp-walnascar-rsb3720-4g.yaml
 ```
 
+## HowTo build a BSP using Repo Tool
+
+For users who prefer the traditional Yocto workflow using the `repo` tool and standard BitBake commands, we provide comprehensive documentation in a separate guide.
+
+The repo-based workflow is ideal for:
+- Developers familiar with standard Yocto Project workflows
+- Integration with NXP i.MX reference documentation
+- Projects requiring fine-grained control over layer management
+- Direct use of BitBake without container abstraction
+
+**📖 See the complete guide:** [Building Modular BSP using Repo Tool](BUILDING_WITH_REPO.md)
+
+This guide covers:
+- Installing and configuring the repo tool
+- Downloading BSP sources from the [imx-manifest](https://github.com/Advantech-EECC/imx-manifest) repository
+- Setting up the build environment
+- Building images for Advantech boards (RSB3720, ROM2620, ROM5722, etc.)
+- Troubleshooting common issues
+
 ---
 
 # Advanced Topics
@@ -718,5 +738,6 @@ LAYERDEPENDS_custom = "eecc-nxp"
 
 # Links
 
+* [Building Modular BSP using Repo Tool](BUILDING_WITH_REPO.md) - Alternative build method using Google's repo tool
 * [KAS Container](https://kas.readthedocs.io/en/latest/userguide/kas-container.html)
 * [KAS](https://kas.readthedocs.io/en/latest/intro.html)
