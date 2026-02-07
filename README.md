@@ -12,6 +12,7 @@ A Board Support Package (`BSP`) build configuration registry defines environment
 - [Build System Architecture](#build-system-architecture)
   - [Component Overview](#component-overview)
     - [Details](#details)
+- [Available Features](#available-features)
 - [Supported Hardware](#supported-hardware)
   - [NXP Boards Compatibility Matrix](#nxp-boards-compatibility-matrix)
     - [Alternative View](#alternative-view)
@@ -87,6 +88,69 @@ The build system follows a layered architecture that ensures reproducibility, is
 | **Docker Container Engine** | Isolated build environment | Consistent toolchains, isolated dependencies |
 | **Yocto Project Build** | Core build system | BitBake, OpenEmbedded, meta-layers |
 | **Source Layers & Recipes** | BSP components | Machine configs, recipes, kernel, applications |
+
+---
+
+# Available Features
+
+The BSP Registry provides a comprehensive set of optional features that can be integrated into your BSP build. These features extend the base system with additional capabilities for specialized use cases.
+
+## Feature Categories
+
+```
+┌────────────────────────────────────────────────────────┐
+│               BSP Feature Ecosystem                    │
+├────────────────────────────────────────────────────────┤
+│  User Interfaces  │  Vision & AI    │  Connectivity   │
+│  • Browser        │  • Cameras      │  • Protocols    │
+│  • Qt             │  • Deep Learning│  • ROS2         │
+│                   │  • Python AI    │                 │
+├────────────────────────────────────────────────────────┤
+│  Maintenance      │                                    │
+│  • OTA Updates    │                                    │
+│  • SBOM/Security  │                                    │
+└────────────────────────────────────────────────────────┘
+```
+
+### 📚 [Complete Features Documentation](features/README.md)
+
+For detailed information about each feature, including architecture diagrams, use cases, and integration examples, see the [Features Documentation](features/README.md).
+
+### Quick Feature Overview
+
+| Feature | Description | Use Cases |
+|---------|-------------|-----------|
+| **[Browser](features/browser/README.md)** | Chromium web browser with hardware acceleration | Web HMI, digital signage, kiosks |
+| **[Cameras](features/cameras/README.md)** | Intel RealSense depth cameras | 3D vision, robotics, AR/VR |
+| **[Deep Learning](features/deep-learning/README.md)** | Hailo AI accelerators (26 TOPS) | Object detection, classification, inference |
+| **[OTA](features/ota/README.md)** | Over-the-air updates (OSTree/RAUC/SWUpdate) | Remote firmware updates, fleet management |
+| **[Protocols](features/protocols/README.md)** | Zenoh pub/sub protocol | Distributed systems, IoT, robotics |
+| **[Python AI](features/python-ai/README.md)** | NumPy, SciPy, scientific computing | ML, data analysis, signal processing |
+| **[Qt](features/qt/README.md)** | Qt 6.x application framework | Industrial HMI, GUI applications |
+| **[ROS2](features/ros2/README.md)** | Robot Operating System 2 | Autonomous robots, mobile platforms |
+| **[SBOM](features/sbom/README.md)** | Software Bill of Materials & vulnerability scanning | Security, compliance, auditing |
+
+### Using Features in Your Build
+
+Features are integrated into BSP builds through dedicated just recipes or by including feature YAML files in KAS configurations:
+
+```bash
+# Basic BSP build (no additional features)
+just bsp rsb3720 scarthgap
+
+# Modular BSP build
+just mbsp rsb3720 scarthgap
+
+# ROS2 support
+just ros-mbsp rsb3720 humble scarthgap
+
+# OTA update support
+just ota-mbsp rsb3720 rauc scarthgap
+```
+
+For other features (browser, cameras, Qt, deep learning, protocols, Python AI, SBOM), you need to create or modify YAML configuration files to include the feature YAML files. See the [HowTo build a BSP using KAS](#howto-build-a-bsp-using-kas) section for details on working with KAS configuration files.
+
+For detailed documentation on each feature, including architecture diagrams, configuration options, and code examples, visit the [Features Directory](features/).
 
 ---
 
