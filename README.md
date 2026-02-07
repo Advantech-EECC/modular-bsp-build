@@ -47,6 +47,7 @@ A Board Support Package (`BSP`) build configuration registry defines environment
   - [Export KAS configuration](#export-kas-configuration)
   - [Lock KAS configuration](#lock-kas-configuration)
   - [Reusing BSP Registry configurations](#reusing-bsp-registry-configurations)
+- [Patches](#patches)
 - [Links](#links)
 
 ---
@@ -713,6 +714,23 @@ LAYERVERSION_custom = "0.1"
 LAYERSERIES_COMPAT_custom = "scarthgap"
 LAYERDEPENDS_custom = "eecc-nxp"
 ```
+
+---
+
+# Patches
+
+The BSP registry uses patches to fix build issues, add hardware support, and ensure compatibility across different Yocto releases. Patches are organized by vendor and Yocto version to maintain stability and reproducibility.
+
+The repository contains **15 patches** organized into:
+- **NXP vendor patches** (13 patches): Address build failures, dependency corrections, and hardware-specific configurations for NXP i.MX platforms
+- **OTA feature patches** (2 patches): Enable OSTree-based over-the-air updates for Styhead and Walnascar releases
+
+All patches are documented with:
+- Purpose and rationale
+- Affected layers and recipes
+- Yocto release compatibility
+
+For detailed information about each patch, including what they fix and which components they affect, see the **[Patches Documentation](patches/README.md)**.
 
 ---
 
