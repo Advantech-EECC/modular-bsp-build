@@ -2,7 +2,25 @@
 
 This directory contains patches that are applied to various layers in the BSP build process. Patches are organized by vendor and Yocto release version to ensure compatibility and maintainability.
 
-## Directory Structure
+## Table of Contents
+
+1. [Directory Structure](#1-directory-structure)
+2. [NXP Vendor Patches](#2-nxp-vendor-patches)
+   - 2.1. [Kirkstone Release](#21-kirkstone-release)
+   - 2.2. [Mickledore Release](#22-mickledore-release)
+   - 2.3. [Scarthgap Release](#23-scarthgap-release)
+   - 2.4. [Styhead Release](#24-styhead-release)
+   - 2.5. [Walnascar Release](#25-walnascar-release)
+3. [Feature Patches](#3-feature-patches)
+   - 3.1. [OTA (Over-The-Air Updates)](#31-ota-over-the-air-updates)
+     - 3.1.1. [OSTree Patches](#311-ostree-patches)
+4. [How Patches Are Applied](#4-how-patches-are-applied)
+5. [Contributing Patches](#5-contributing-patches)
+6. [Maintenance Notes](#6-maintenance-notes)
+7. [Author](#7-author)
+8. [License](#8-license)
+
+## 1. Directory Structure
 
 ```
 patches/
@@ -17,11 +35,11 @@ patches/
         └── ostree/        # OSTree OTA implementation patches
 ```
 
-## NXP Vendor Patches
+## 2. NXP Vendor Patches
 
 Patches in the `nxp/` directory address build issues, compatibility fixes, and hardware-specific configurations for NXP i.MX platforms across different Yocto releases.
 
-### Kirkstone Release
+### 2.1. Kirkstone Release
 
 | Patch | Description | Affected Layer/Recipe |
 |-------|-------------|----------------------|
@@ -29,7 +47,7 @@ Patches in the `nxp/` directory address build issues, compatibility fixes, and h
 
 **Purpose**: Resolves git fetch issues when building Vulkan graphics support.
 
-### Mickledore Release
+### 2.2. Mickledore Release
 
 | Patch | Description | Affected Layer/Recipe |
 |-------|-------------|----------------------|
@@ -37,7 +55,7 @@ Patches in the `nxp/` directory address build issues, compatibility fixes, and h
 
 **Purpose**: Ensures proper installation and execution of DeepView RT (runtime) package.
 
-### Scarthgap Release
+### 2.3. Scarthgap Release
 
 | Patch | Description | Affected Layer/Recipe |
 |-------|-------------|----------------------|
@@ -46,7 +64,7 @@ Patches in the `nxp/` directory address build issues, compatibility fixes, and h
 
 **Purpose**: Addresses build failures related to renamed firmware packages and image generation issues.
 
-### Styhead Release
+### 2.4. Styhead Release
 
 | Patch | Description | Affected Layer/Recipe |
 |-------|-------------|----------------------|
@@ -54,7 +72,7 @@ Patches in the `nxp/` directory address build issues, compatibility fixes, and h
 
 **Purpose**: Resolves missing dependency issues during audio stack builds for i.MX93.
 
-### Walnascar Release
+### 2.5. Walnascar Release
 
 The Walnascar release contains the most patches due to active development and support for newer hardware platforms.
 
@@ -71,13 +89,13 @@ The Walnascar release contains the most patches due to active development and su
 
 **Purpose**: Supports i.MX95 hardware platforms, particularly the Advantech AOM-5521 boards, and ensures compatibility with the Walnascar Yocto release.
 
-## Feature Patches
+## 3. Feature Patches
 
-### OTA (Over-The-Air Updates)
+### 3.1. OTA (Over-The-Air Updates)
 
 Patches in the `features/ota/` directory enable and fix OTA update functionality using OSTree technology.
 
-#### OSTree Patches
+#### 3.1.1. OSTree Patches
 
 | Patch | Description | Yocto Release |
 |-------|-------------|---------------|
@@ -97,7 +115,7 @@ Patches in the `features/ota/` directory enable and fix OTA update functionality
 - `lib/oeqa/selftest/cases/updater_qemux86_64.py` - OTA test cases
 - `recipes-sota/aktualizr/aktualizr_git.bb` - Aktualizr OTA client recipe
 
-## How Patches Are Applied
+## 4. How Patches Are Applied
 
 Patches are automatically applied during the BSP build process based on:
 1. **Vendor selection** - Determines which vendor subdirectory to use
@@ -106,7 +124,7 @@ Patches are automatically applied during the BSP build process based on:
 
 The build system applies patches in numerical order (e.g., `0001-`, `0002-`, etc.) to ensure proper dependency resolution.
 
-## Contributing Patches
+## 5. Contributing Patches
 
 When adding new patches:
 
@@ -116,20 +134,20 @@ When adding new patches:
 4. **Document changes**: Update this README with patch description and purpose
 5. **Test thoroughly**: Verify patches apply cleanly and don't break existing builds
 
-## Maintenance Notes
+## 6. Maintenance Notes
 
 - Patches are maintained per Yocto release to ensure stability
 - When upgrading to a new Yocto release, review and update patches as needed
 - Some patches may become obsolete when issues are fixed upstream
 - Regular review of patches is recommended to keep the patch set minimal
 
-## Author
+## 7. Author
 
 All patches in this repository are authored by:
 - **Mikhail Tsukerman** <mikhail.tsukerman@advantech.de>
 
 Patches are maintained by the Advantech RISC SW Team.
 
-## License
+## 8. License
 
 Patches follow the same licensing as the components they modify. Refer to individual layer licenses for details.
