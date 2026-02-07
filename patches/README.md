@@ -33,16 +33,16 @@ Patches in the `nxp/` directory address build issues, compatibility fixes, and h
 
 | Patch | Description | Affected Layer/Recipe |
 |-------|-------------|----------------------|
-| `0001-Fix-deepview-rt-package-installation.patch` | Fixes deepview-rt package installation issues | TBD |
+| `0001-Fix-deepview-rt-package-installation.patch` | Fixes shebang in deepview-modelclient script for proper Python 3 execution | meta-ml/recipes-libraries/deepview-rt |
 
-**Purpose**: Ensures proper installation of DeepView RT (runtime) package.
+**Purpose**: Ensures proper installation and execution of DeepView RT (runtime) package.
 
 ### Scarthgap Release
 
 | Patch | Description | Affected Layer/Recipe |
 |-------|-------------|----------------------|
 | `0001-Fix-dependency-names.patch` | Corrects dependency names (`sof-imx` to `firmware-sof-imx`) | meta-fsl-imx/conf/layer.conf |
-| `0002-Fix-imx-image-full-postinstall-step.patch` | Fixes postinstall step for imx-image-full | TBD |
+| `0002-Fix-imx-image-full-postinstall-step.patch` | Creates missing `/lib/firmware/nxp/` directory before installing firmware files | meta-fsl-imx/recipes-fsl/images |
 
 **Purpose**: Addresses build failures related to renamed firmware packages and image generation issues.
 
@@ -50,9 +50,9 @@ Patches in the `nxp/` directory address build issues, compatibility fixes, and h
 
 | Patch | Description | Affected Layer/Recipe |
 |-------|-------------|----------------------|
-| `0001-Add-alsa-tools-to-dependencies-to-fix-build.patch` | Adds alsa-tools to build dependencies | TBD |
+| `0001-Add-alsa-tools-to-dependencies-to-fix-build.patch` | Adds alsa-tools to mx93 build dependencies in gstreamer plugin | meta-imx-bsp/recipes-multimedia/gstreamer |
 
-**Purpose**: Resolves missing dependency issues during audio stack builds.
+**Purpose**: Resolves missing dependency issues during audio stack builds for i.MX93.
 
 ### Walnascar Release
 
@@ -61,13 +61,13 @@ The Walnascar release contains the most patches due to active development and su
 | Patch | Description | Affected Layer/Recipe |
 |-------|-------------|----------------------|
 | `0001-meta-imx-folder-name-walnascar.patch` | Fixes folder path from `sources/` to `layers/` for meta-virtualization | meta-imx-sdk/dynamic-layers/virtualization-layer |
-| `0002-Add-alsa-tools-to-dependencies-to-fix-build.patch` | Fixes imx-gst1.0 plugin dependencies | TBD |
-| `0003-Add-dependencies-for-imx95.patch` | Adds required dependencies for i.MX95 platform support | TBD |
-| `0004-Add-build-fix-for-mpv-package.patch` | Resolves build issues in mpv media player package | TBD |
-| `0006-Add-upstream-status-for-a-patch.patch` | Adds upstream status metadata to a patch | TBD |
+| `0002-Add-alsa-tools-to-dependencies-to-fix-build.patch` | Adds alsa-tools to mx93/mx943 build dependencies in gstreamer plugin | meta-imx-bsp/recipes-multimedia/gstreamer |
+| `0003-Add-dependencies-for-imx95.patch` | Adds alsa-tools dependency for i.MX95 platform support | meta-imx-bsp/recipes-multimedia/gstreamer |
+| `0004-Add-build-fix-for-mpv-package.patch` | Adds upstream status header to mplayer build fix patch | meta-oe/recipes-multimedia/mplayer |
+| `0006-Add-upstream-status-for-a-patch.patch` | Adds upstream status header to fsl-rc-local autorun patch | meta-fsl-imx/recipes-fsl/fsl-rc-local |
 | `0007-Add-imx95-aom5521-a1-machine-for-walnascar.patch` | Adds machine configuration for Advantech AOM-5521 A1 board | meta-fsl-imx/conf/machine |
-| `0008-AOM5521-Backport-OEI-patches-from-scarthgap-for-A1.patch` | Backports OEI (OE-lite Industrial) patches for AOM-5521 A1 | TBD |
-| `0009-Use-lf-6.12.34_2.1.0-branch.patch` | Updates to use lf-6.12.34_2.1.0 branch | TBD |
+| `0008-AOM5521-Backport-OEI-patches-from-scarthgap-for-A1.patch` | Backports OEI (OpenEmbedded Industrial) patches for AOM-5521 A1 board | meta-fsl-imx/recipes-bsp/imx-oei |
+| `0009-Use-lf-6.12.34_2.1.0-branch.patch` | Updates onnxruntime recipe to use lf-6.12.34_2.1.0 branch | meta-imx-ml/recipes-libraries/onnxruntime |
 
 **Purpose**: Supports i.MX95 hardware platforms, particularly the Advantech AOM-5521 boards, and ensures compatibility with the Walnascar Yocto release.
 
