@@ -1,0 +1,204 @@
+name: Test BSP Builds
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - '**.yml'
+      - '**.yaml'
+      - 'bsp.py'
+      - 'requirements.txt'
+      - 'Dockerfile*'
+      - 'scripts/**'
+      - '.github/workflows/test-bsp-builds.yml'
+  pull_request:
+    paths:
+      - '**.yml'
+      - '**.yaml'
+      - 'bsp.py'
+      - 'requirements.txt'
+      - 'Dockerfile*'
+      - 'scripts/**'
+      - '.github/workflows/test-bsp-builds.yml'
+  workflow_dispatch:
+    inputs:
+      bsp_name:
+        description: 'BSP to build (leave empty to build all BSPs in parallel)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  # Job to generate the list of BSPs to build
+  prepare-matrix:
+    name: Prepare Build Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      single_bsp: ${{ steps.set-matrix.outputs.single_bsp }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install dacite
+      
+      - name: Generate BSP matrix
+        id: set-matrix
+        run: |
+          echo "Generating BSP build matrix..."
+          
+          # Check if a specific BSP was requested
+          REQUESTED_BSP="${{ github.event.inputs.bsp_name }}"
+          
+          if [ -n "$REQUESTED_BSP" ]; then
+            # Single BSP build requested
+            echo "single_bsp=true" >> $GITHUB_OUTPUT
+            echo "matrix={\"bsp\":[\"$REQUESTED_BSP\"]}" >> $GITHUB_OUTPUT
+            echo "Building single BSP: $REQUESTED_BSP"
+          else
+            # Build all BSPs in parallel
+            echo "single_bsp=false" >> $GITHUB_OUTPUT
+            
+            # Get list of all BSPs from bsp.py
+            # Format: "- bsp-name: description" -> extract just bsp-name
+            BSP_LIST=$(python3 bsp.py list 2>/dev/null | \
+              grep '^-' | \
+              sed 's/^- //' | \
+              awk -F': ' '{print $1}' | \
+              jq -R -s -c 'split("\n")[:-1]')
+            
+            echo "matrix={\"bsp\":$BSP_LIST}" >> $GITHUB_OUTPUT
+            echo "Generated matrix for $(echo $BSP_LIST | jq '. | length') BSPs"
+            echo "BSPs to build:"
+            echo "$BSP_LIST" | jq -r '.[]'
+          fi
+
+  # Job to build BSPs in parallel
+  build-bsp:
+    name: Build ${{ matrix.bsp }}
+    needs: prepare-matrix
+    runs-on: [self-hosted]
+    strategy:
+      fail-fast: false  # Continue building other BSPs even if one fails
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # dacite is required by bsp.py for data class conversion
+          pip install dacite
+      
+      - name: Verify build environment
+        run: |
+          echo "=========================================="
+          echo "Build Environment Information"
+          echo "=========================================="
+          echo "Runner: ${{ runner.name }}"
+          echo "BSP: ${{ matrix.bsp }}"
+          echo "Python version: $(python --version)"
+          echo "KAS version: $(kas --version 2>&1 || echo 'KAS not found')"
+          echo "Docker version: $(docker --version 2>&1 || echo 'Docker not found')"
+          echo "Available disk space:"
+          df -h | grep -E '^Filesystem|/$'
+          echo ""
+      
+      - name: Build BSP image
+        run: |
+          echo "=========================================="
+          echo "Building BSP: ${{ matrix.bsp }}"
+          echo "=========================================="
+          echo "Build started at: $(date)"
+          echo "Runner: ${{ runner.name }}"
+          echo ""
+          
+          # Create log directory
+          mkdir -p /tmp/bsp-build-logs
+          BUILD_LOG="/tmp/bsp-build-logs/build-${{ matrix.bsp }}-$(date +%Y%m%d-%H%M%S).log"
+          
+          # Run the BSP build using bsp.py with output logging
+          echo "Build output will be logged to: $BUILD_LOG"
+          set -x  # Enable command echoing for better visibility
+          if python3 bsp.py build "${{ matrix.bsp }}" 2>&1 | tee "$BUILD_LOG"; then
+            set +x
+            echo ""
+            echo "✓ Successfully built ${{ matrix.bsp }}"
+            echo "Build completed at: $(date)"
+            BUILD_SUCCESS=1
+          else
+            set +x
+            echo ""
+            echo "✗ Failed to build ${{ matrix.bsp }}"
+            echo "Build failed at: $(date)"
+            echo ""
+            echo "Last 50 lines of build log:"
+            tail -50 "$BUILD_LOG"
+            BUILD_SUCCESS=0
+          fi
+          
+          echo ""
+          echo "=========================================="
+          echo "Build Summary"
+          echo "=========================================="
+          echo "BSP: ${{ matrix.bsp }}"
+          echo "Runner: ${{ runner.name }}"
+          echo "Log file: $BUILD_LOG"
+          
+          if [ $BUILD_SUCCESS -eq 1 ]; then
+            echo "Status: ✅ Build completed successfully!"
+          else
+            echo "Status: ❌ Build failed!"
+            exit 1
+          fi
+      
+      - name: Cleanup build artifacts
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "Cleaning up build artifacts"
+          echo "=========================================="
+          
+          # Remove temporary build logs (but preserve in case of failure for debugging)
+          if [ -d /tmp/bsp-build-logs ]; then
+            echo "Build logs location: /tmp/bsp-build-logs"
+            ls -lh /tmp/bsp-build-logs/ || true
+          fi
+          
+          # Clean up other temporary files
+          rm -rf /tmp/kas_* /tmp/bsp_* 2>/dev/null || true
+          
+          # Note: Build directories may be preserved for caching
+          # on the self-hosted runner based on build server configuration
+          
+          echo "✓ Cleanup complete"
