@@ -29,7 +29,7 @@ repos:
       .:
 
   meta-tensorflow:
-    commit: "eeee54cfa3c51c1fd99604a0d5f173096bdcf1da"
+    commit: "1a0c74c9666db0d89c20c9c85b4377931476886c"
 
   meta-updater:
     commit: "92f0e7aa93966e184beb1ccdfea6c8fdb27d2b18"
