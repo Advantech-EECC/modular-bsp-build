@@ -489,14 +489,14 @@ registry:
         configuration:
           - adv-mbsp-oenxp-walnascar-rom5721-1g-db5901.yaml
 
-    - name: adv-mbsp-oenxp-mickledore-rom5721-1g-db5901
-      description: "ROM5721-1G-DB5901 Mickledore BSP"
+    - name: adv-bsp-oenxp-mickledore-rom5721-1g-db5901
+      description: "ROM5721-1G-DB5901 ACL Mickledore BSP"
       build:
-        path: build/adv-oenxp-mbsp-rom5721-1g-db5901-mickledore
+        path: build/adv-oenxp-bsp-rom5721-1g-db5901-mickledore
         environment:
           container: "ubuntu-20.04"
         configuration:
-          - adv-mbsp-oenxp-mickledore-rom5721-1g-db5901.yaml
+          - adv-bsp-oenxp-mickledore-rom5721-1g-db5901.yaml
 
     # =====================================
     # Advantech ROM5721-1G-DB5901 OTA BSPs
