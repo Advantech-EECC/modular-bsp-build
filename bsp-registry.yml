@@ -459,26 +459,26 @@ registry:
           - features/ota/ostree/adv-ota-scarthgap.yml
 
     # =====================================
-    # Advantech ROM5721-1G-DB5901 BSPs
+    # Advantech ROM5721-1G/2G-DB5901 BSPs
     # =====================================
 
-    - name: adv-mbsp-oenxp-scarthgap-rom5721-1g-db5901
+    - name: adv-mbsp-oenxp-scarthgap-rom5721-2g-db5901
       description: "ROM5721-1G-DB5901 Scarthgap BSP"
       build:
-        path: build/adv-oenxp-mbsp-rom5721-1g-db5901-scarthgap
+        path: build/adv-oenxp-mbsp-rom5721-2g-db5901-scarthgap
         environment:
           container: "ubuntu-22.04"
         configuration:
-          - adv-mbsp-oenxp-scarthgap-rom5721-1g-db5901.yaml
+          - adv-mbsp-oenxp-scarthgap-rom5721-db5901.yaml
     
-    - name: adv-mbsp-oenxp-styhead-rom5721-1g-db5901
+    - name: adv-mbsp-oenxp-styhead-rom5721-2g-db5901
       description: "ROM5721-1G-DB5901 Styhead BSP"
       build:
-        path: build/adv-oenxp-mbsp-rom5721-1g-db5901-styhead
+        path: build/adv-oenxp-mbsp-rom5721-2g-db5901-styhead
         environment:
           container: "ubuntu-22.04"
         configuration:
-          - adv-mbsp-oenxp-styhead-rom5721-1g-db5901.yaml
+          - adv-mbsp-oenxp-styhead-rom5721-db5901.yaml
     
     - name: adv-mbsp-oenxp-walnascar-rom5721-1g-db5901
       description: "ROM5721-1G-DB5901 Walnascar BSP"
@@ -489,14 +489,32 @@ registry:
         configuration:
           - adv-mbsp-oenxp-walnascar-rom5721-1g-db5901.yaml
 
-    - name: adv-bsp-oenxp-mickledore-rom5721-1g-db5901
-      description: "ROM5721-1G-DB5901 ACL Mickledore BSP"
+    - name: adv-bsp-oenxp-mickledore-rom5721-2g-db5901
+      description: "ROM5721-2G-DB5901 ACL Mickledore BSP"
       build:
-        path: build/adv-oenxp-bsp-rom5721-1g-db5901-mickledore
+        path: build/adv-oenxp-bsp-rom5721-2g-db5901-mickledore
         environment:
           container: "ubuntu-20.04"
         configuration:
-          - adv-bsp-oenxp-mickledore-rom5721-1g-db5901.yaml
+          - adv-bsp-oenxp-mickledore-rom5721-2g-db5901.yaml
+
+    - name: adv-bsp-oenxp-scarthgap-rom5721-1g-db5901
+      description: "ROM5721-1G-DB5901 ACL Scarthgap BSP"
+      build:
+        path: build/adv-oenxp-bsp-rom5721-1g-db5901-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-bsp-oenxp-scarthgap-rom5721-1g-db5901.yaml
+
+    - name: adv-bsp-oenxp-scarthgap-rom5721-2g-db5901
+      description: "ROM5721-2G-DB5901 ACL Scarthgap BSP"
+      build:
+        path: build/adv-oenxp-bsp-rom5721-2g-db5901-scarthgap
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-bsp-oenxp-scarthgap-rom5721-2g-db5901.yaml
 
     # =====================================
     # Advantech ROM5721-1G-DB5901 OTA BSPs
