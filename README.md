@@ -227,7 +227,7 @@ The container definition in `bsp-registry.yml`:
 ```yaml
 - isar-debian-13:
     file: Dockerfile.isar.debian
-    image: "advantech/bsp-registry/isar/debian-13/kas:5.0"
+    image: "advantech/bsp-registry/isar/debian-13/kas:5.1"
     privileged: true
     args:
       - name: "KAS_VERSION"
@@ -372,7 +372,7 @@ python bsp.py containers
 #     File: Dockerfile.ubuntu
 #     Args: DISTRO=ubuntu:20.04, KAS_VERSION=4.7
 # - ubuntu-22.04:
-#     Image: advantech/bsp-registry/ubuntu-22.04/kas:5.0
+#     Image: advantech/bsp-registry/ubuntu-22.04/kas:5.1
 #     File: Dockerfile.ubuntu
 #     Args: DISTRO=ubuntu:22.04, KAS_VERSION=5.0
 ```
@@ -404,7 +404,7 @@ containers:
           value: "4.7"
   - ubuntu-22.04:
       file: Dockerfile.ubuntu
-      image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+      image: "advantech/bsp-registry/ubuntu-22.04/kas:5.1"
       args:
         - name: "DISTRO"
           value: "ubuntu:22.04"
