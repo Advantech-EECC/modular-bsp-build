@@ -20,27 +20,27 @@ containers:
           value: "4.7"
   - ubuntu-22.04:
       file: Dockerfile.ubuntu
-      image: "advantech/bsp-registry/ubuntu-22.04/kas:5.0"
+      image: "advantech/bsp-registry/ubuntu-22.04/kas:5.1"
       args:
         - name: "DISTRO" 
           value: "ubuntu:22.04"
         - name: "KAS_VERSION"
-          value: "5.0"
+          value: "5.1"
   - debian-13:
       file: Dockerfile.debian
-      image: "advantech/bsp-registry/debian-13/kas:5.0"
+      image: "advantech/bsp-registry/debian-13/kas:5.1"
       args:
         - name: "KAS_VERSION"
-          value: "5.0"
+          value: "5.1"
         - name: "DISTRO" 
           value: "debian-trixie"
   - isar-debian-13:
       file: Dockerfile.isar.debian
-      image: "advantech/bsp-registry/isar/debian-13/kas:5.0"
+      image: "advantech/bsp-registry/isar/debian-13/kas:5.1"
       privileged: true
       args:
         - name: "KAS_VERSION"
-          value: "5.0"
+          value: "5.1"
         - name: "DISTRO" 
           value: "debian-trixie"
 

@@ -113,8 +113,6 @@ isar/
 │   ├── debian-buster.yaml
 │   ├── debian-sid.yaml
 │   ├── debian-trixie.yaml
-│   ├── raspios-bookworm.yaml
-│   ├── raspios-bullseye.yaml
 │   ├── ubuntu-focal.yaml
 │   ├── ubuntu-jammy.yaml
 │   └── ubuntu-noble.yaml
@@ -399,8 +397,8 @@ The Isar configuration supports the following Debian-based distributions:
 
 ### 5.2 Ubuntu Distributions
 
-| Distribution | Version | Codename | Status | Configuration File |
-|--------------|---------|----------|--------|-------------------|
+| Distribution | Codename | Status | Configuration File |
+|--------------|----------|--------|-------------------|
 | Ubuntu 24.04 LTS | Noble Numbat | 🟢 Active | `distro/ubuntu-noble.yaml` |
 | Ubuntu 22.04 LTS | Jammy Jellyfish | 🟢 Stable | `distro/ubuntu-jammy.yaml` |
 | Ubuntu 20.04 LTS | Focal Fossa | 🟡 Maintenance | `distro/ubuntu-focal.yaml` |
@@ -626,7 +624,7 @@ isar/isar.yaml:isar/distro/debian-trixie.yaml:adv-mbsp-isar-debian-rsb3720.yaml
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
 │            Privileged Docker Container                      │
-│  Image: advantech/bsp-registry/isar/debian-13/kas:5.0       │
+│  Image: advantech/bsp-registry/isar/debian-13/kas:5.1       │
 │  Base: ghcr.io/siemens/kas/kas-isar:5.0-debian-bookworm    │
 │                                                             │
 │  ┌───────────────────────────────────────────────────────┐ │
