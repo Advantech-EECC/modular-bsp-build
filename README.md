@@ -424,6 +424,7 @@ registry:
         path: "build/imx8mpevk"
         environment:
           container: "ubuntu-22.04"  # Reference to container definition
+          runtime_args: "--device=/dev/net/tun --cap-add=NET_ADMIN"  # Optional kas-container args (e.g. for QEMU networking)
         docker: "docker"
         configuration:
           - "conf/imx8mpevk.yml"
