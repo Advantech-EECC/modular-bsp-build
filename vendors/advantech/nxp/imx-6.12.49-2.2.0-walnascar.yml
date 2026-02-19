@@ -7,7 +7,7 @@ repos:
   meta-eecc-nxp:
     url: "https://github.com/Advantech-EECC/meta-eecc-nxp.git"
     branch: "walnascar"
-    commit: "60b55c02d10caea191985105b3c866f69857d545"
+    commit: "a08dce2228c5b46f155c2ff3089c632fff4f3256"
     path: "layers/meta-eecc-nxp"
     layers:
       .:
