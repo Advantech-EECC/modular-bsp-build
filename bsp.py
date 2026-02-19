@@ -45,6 +45,7 @@ import argparse
 import dacite
 import tempfile
 import re
+import shutil
 
 import yaml
 from pathlib import Path
@@ -1663,6 +1664,112 @@ class BspManager:
         logging.info(f"Preparing build directory: {build_path}")
         resolver.ensure_directory(build_path)
 
+    def _copy_into_build_directory(self, bsp: BSP) -> None:
+        """Apply optional build.copy directives by copying files into the build directory.
+
+        YAML syntax (list of one-entry maps):
+
+            copy:
+              - path/to/src.file: build/
+
+        Destination is interpreted as a path *within* the BSP build directory.
+        Use "." or "./" to refer to the build directory root.
+        """
+        copy_specs = getattr(bsp.build, 'copy', None)
+        if not copy_specs:
+            return
+
+        build_dir = Path(bsp.build.path).expanduser().resolve()
+        resolver.ensure_directory(str(build_dir))
+
+        def ensure_within_build_dir(dst: Path) -> None:
+            try:
+                if not dst.resolve().is_relative_to(build_dir):
+                    raise ConfigurationError(f"Copy destination escapes build directory: {dst}")
+            except AttributeError:
+                # Python < 3.9 fallback
+                resolved_dst = dst.resolve()
+                resolved_build = build_dir.resolve()
+                if os.path.commonpath([str(resolved_dst), str(resolved_build)]) != str(resolved_build):
+                    raise ConfigurationError(f"Copy destination escapes build directory: {dst}")
+
+        for item in copy_specs:
+            if isinstance(item, dict):
+                pairs = list(item.items())
+            elif isinstance(item, str):
+                # Optional shorthand: "src:dst"
+                if ':' not in item:
+                    raise ConfigurationError(f"Invalid copy entry (expected 'src:dst'): {item}")
+                src_s, dst_s = item.split(':', 1)
+                pairs = [(src_s, dst_s)]
+            else:
+                raise ConfigurationError(f"Invalid copy entry type: {type(item)}")
+
+            for src, dst in pairs:
+                if not isinstance(src, str) or not isinstance(dst, str):
+                    raise ConfigurationError(f"Invalid copy mapping: {src} -> {dst}")
+
+                src_path = Path(src).expanduser()
+                if not src_path.is_absolute():
+                    src_path = (Path.cwd() / src_path)
+                src_path = src_path.resolve()
+
+                if not src_path.exists():
+                    raise ConfigurationError(f"Copy source does not exist: {src}")
+
+                dst_raw = dst.strip()
+                dst_is_dir_hint = dst_raw.endswith('/')
+
+                # Allow "." / "./" as a shorthand for build directory root.
+                if dst_raw in {".", "./"}:
+                    dst_raw = ""
+
+                # Prevent path traversal / absolute destinations
+                if Path(dst_raw).is_absolute():
+                    raise ConfigurationError(f"Copy destination must be relative (got absolute): {dst}")
+                if '..' in Path(dst_raw).parts:
+                    raise ConfigurationError(f"Copy destination must not contain '..': {dst}")
+
+                dst_path = (build_dir / dst_raw).resolve()
+                ensure_within_build_dir(dst_path)
+
+                if src_path.is_file():
+                    if dst_is_dir_hint or dst_raw == "" or dst_path.exists() and dst_path.is_dir():
+                        resolver.ensure_directory(str(dst_path))
+                        final_path = dst_path / src_path.name
+                    else:
+                        resolver.ensure_directory(str(dst_path.parent))
+                        final_path = dst_path
+
+                    logging.info(f"Copying file: {src_path} -> {final_path}")
+                    shutil.copy2(src_path, final_path)
+
+                elif src_path.is_dir():
+                    if dst_raw == "" or dst_is_dir_hint or (dst_path.exists() and dst_path.is_dir()):
+                        final_dir = dst_path / src_path.name
+                    else:
+                        final_dir = dst_path
+
+                    resolver.ensure_directory(str(final_dir.parent))
+                    logging.info(f"Copying directory: {src_path} -> {final_dir}")
+                    try:
+                        shutil.copytree(src_path, final_dir, dirs_exist_ok=True)
+                    except TypeError:
+                        # Python < 3.8 fallback
+                        if final_dir.exists():
+                            for child in src_path.rglob('*'):
+                                rel = child.relative_to(src_path)
+                                target = final_dir / rel
+                                if child.is_dir():
+                                    resolver.ensure_directory(str(target))
+                                else:
+                                    resolver.ensure_directory(str(target.parent))
+                                    shutil.copy2(child, target)
+                        else:
+                            shutil.copytree(src_path, final_dir)
+                else:
+                    raise ConfigurationError(f"Copy source must be a file or directory: {src}")
+
     def _get_kas_manager_for_bsp(self, bsp: BSP, use_container: bool = True) -> KasManager:
         """
         Create and configure a KAS manager for the specified BSP.
@@ -1756,6 +1863,9 @@ class BspManager:
         
         # Prepare build directory
         self.prepare_build_directory(bsp.build.path)
+
+        # Copy optional helper files into build dir
+        self._copy_into_build_directory(bsp)
         
         # Get KAS manager - use native KAS for checkout, container for builds
         kas_mgr = self._get_kas_manager_for_bsp(bsp, use_container=not checkout_only)
@@ -1813,6 +1923,9 @@ class BspManager:
         
         # Prepare build directory
         self.prepare_build_directory(bsp.build.path)
+
+        # Copy optional helper files into build dir
+        self._copy_into_build_directory(bsp)
         
         # Get KAS manager and start shell session
         kas_mgr = self._get_kas_manager_for_bsp(bsp)

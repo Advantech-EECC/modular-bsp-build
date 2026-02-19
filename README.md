@@ -422,6 +422,8 @@ registry:
         version: "scarthgap"
       build:
         path: "build/imx8mpevk"
+        copy:
+          - scripts/helper.sh: build/  # Copies into <build path>/build/
         environment:
           container: "ubuntu-22.04"  # Reference to container definition
           runtime_args: "--device=/dev/net/tun --cap-add=NET_ADMIN"  # Optional kas-container args (e.g. for QEMU networking)
