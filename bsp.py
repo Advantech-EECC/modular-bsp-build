@@ -189,9 +189,12 @@ class BuildEnvironment:
     Attributes:
         container: Name of the container to use (references containers in registry)
         docker: Direct Docker configuration (alternative to container reference)
+        runtime_args: Extra container runtime args passed to kas-container via
+            --runtime-args (e.g. "--device=/dev/net/tun --cap-add=NET_ADMIN")
     """
     container: Optional[str] = None
     docker: Optional[Docker] = None
+    runtime_args: Optional[str] = None
 
 @dataclass
 class BuildSetup:
@@ -200,6 +203,7 @@ class BuildSetup:
     
     Attributes:
         path: Build directory path for output artifacts
+        copy: Optional list of copy operations (source -> destination within build directory)
         environment: Build environment settings (Docker, container reference)
         docker: Docker runtime to use (docker, podman, etc.)
         configuration: List of KAS configuration files for the build
@@ -208,6 +212,7 @@ class BuildSetup:
     environment: BuildEnvironment
     docker: Optional[str]
     configuration: List[str]
+    copy: Optional[List[Dict[str, str]]] = field(default_factory=empty_list)
 
 @dataclass
 class Specification:
@@ -755,6 +760,7 @@ class KasManager:
                  download_dir: str = None, sstate_dir: str = None,
                  container_engine: str = None, container_image: str = None,
                  container_privileged: bool = False,
+                 container_runtime_args: str = None,
                  search_paths: List[str] = None, env_manager: EnvironmentManager = None):
         """
         Initialize KAS manager with configuration.
@@ -768,6 +774,7 @@ class KasManager:
             container_engine: Container runtime (docker, podman)
             container_image: Custom container image for kas-container
             container_privileged: Run container in privileged mode (enables --isar flag)
+            container_runtime_args: Extra container runtime args passed to kas-container via --runtime-args
             search_paths: Additional paths to search for configuration files
             env_manager: Environment configuration manager
             
@@ -784,6 +791,7 @@ class KasManager:
         self.container_engine = container_engine
         self.container_image = container_image
         self.container_privileged = container_privileged
+        self.container_runtime_args = container_runtime_args
         self.search_paths = search_paths or []
         self.download_dir = download_dir
         self.sstate_dir = sstate_dir
@@ -827,6 +835,8 @@ class KasManager:
             # (granting all capabilities including SYS_ADMIN and MKNOD)
             if self.container_privileged:
                 cmd.append("--isar")
+            if self.container_runtime_args:
+                cmd.extend(["--runtime-args", self.container_runtime_args])
             return cmd
         else:
             return ["kas"]
@@ -1666,6 +1676,11 @@ class BspManager:
         """
         # Get container configuration
         container_config = self.get_container_config_for_bsp(bsp)
+
+        # Optional per-BSP kas-container runtime args (e.g. for QEMU networking)
+        container_runtime_args = None
+        if use_container and bsp.build and bsp.build.environment:
+            container_runtime_args = bsp.build.environment.runtime_args
         
         # Get cache directories from environment manager
         downloads = None
@@ -1690,6 +1705,7 @@ class BspManager:
             use_container=use_container, 
             container_image=container_config.image if use_container else None,
             container_privileged=container_config.privileged if use_container else False,
+            container_runtime_args=container_runtime_args,
             env_manager=self.env_manager
         )
 
