@@ -83,6 +83,19 @@ registry:
           - adv-bsp-oenxp-mickledore-rsb3730-4g.yaml
 
     # =====================================
+    # Advantech AOM5521 Modular BSPs
+    # =====================================
+
+    - name: adv-mbsp-oenxp-walnascar-aom5521-db2510
+      description: "AOM5521 DB2510 A1 ACL Walnascar Modular BSP"
+      build:
+        path: build/adv-oenxp-mbsp-aom5521-db2510-walnascar
+        environment:
+          container: "ubuntu-22.04"
+        configuration:
+          - adv-mbsp-oenxp-walnascar-aom5521-db2510.yaml
+          
+    # =====================================
     # Advantech AOM5521 BSPs
     # =====================================
 
