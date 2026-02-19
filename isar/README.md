@@ -37,6 +37,7 @@ This directory contains the Isar (Integration System for Automated Root filesyst
     - [9.3 Interactive Shell Access](#93-interactive-shell-access)
     - [9.4 Manual Build with KAS](#94-manual-build-with-kas)
     - [9.5 Build Configuration Composition](#95-build-configuration-composition)
+    - [9.6 Running Images in QEMU](#96-running-images-in-qemu)
   - [10. Build System Architecture](#10-build-system-architecture)
     - [10.1 Container-Based Build Environment](#101-container-based-build-environment)
     - [10.2 Why Privileged Mode?](#102-why-privileged-mode)
@@ -605,6 +606,34 @@ isar/isar.yaml:isar/distro/ubuntu-noble.yaml:isar/qemu/qemux86-64.yaml
 # RSB3720 + Debian Trixie (includes hardware BSP layer)
 isar/isar.yaml:isar/distro/debian-trixie.yaml:adv-mbsp-isar-debian-rsb3720.yaml
 ```
+
+### 9.6 Running Images in QEMU
+
+After a successful build, you can boot the produced image using the helper script:
+
+- `isar/scripts/isar-runqemu.sh`
+
+This script expects a deploy directory that contains the image artifacts (disk image, and optionally kernel+initrd).
+
+**Common workflow:**
+
+1. Build a QEMU machine configuration (example):
+
+  ```bash
+  python bsp.py build isar-qemuarm64-debian-trixie
+  ```
+
+2. Locate the deploy directory produced by the build (it must contain `*.wic`/`*.img`/`*.ext4`).
+
+3. Start QEMU by pointing `--deploy` at that directory:
+
+  ```bash
+  ./isar/scripts/isar-runqemu.sh \
+    --machine qemuarm64 \
+    --deploy <path-to-build>/tmp/deploy/images/qemuarm64
+  ```
+
+For all options, environment variables, boot modes, and troubleshooting, see [isar/scripts/README.md](scripts/README.md)
 
 ---
 
