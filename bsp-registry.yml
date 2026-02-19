@@ -51,14 +51,14 @@ registry:
     # Advantech Isar RSB3720 BSPs
     # =====================================
 
-    - name: adv-mbsp-isar-debian-rsb3720
-      description: "RSB3720 Isar debian trixie BSP"
+    - name: adv-mbsp-isar-debian-trixie-rsb3720
+      description: "RSB3720 Isar Debian Trixie BSP"
       build:
         path: build/adv-isar-bsp-rsb3720-debian-trixie
         environment:
           container: "isar-debian-13"
         configuration:
-          - adv-mbsp-isar-debian-rsb3720.yaml
+          - adv-mbsp-isar-debian-trixie-rsb3720.yaml
 
     # =====================================
     # Advantech RSB3730 BSPs
