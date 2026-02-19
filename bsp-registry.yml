@@ -1126,6 +1126,8 @@ registry:
       description: "QEMU ARM64 Isar debian trixie BSP"
       build:
         path: build/qemuarm64-isar-debian-trixie
+        copy:
+          - isar/scripts/isar-runqemu.sh: build/
         environment:
           container: "isar-debian-13"
           runtime_args: "--device=/dev/net/tun --cap-add=NET_ADMIN"
