@@ -1,0 +1,17 @@
+header:
+  version: 14
+
+target:
+  - isar-image-base
+
+local_conf_header:
+  # INFO: To set up a proper user use mkpasswd -m sha-512 yourpassword and add the output to ROOT_PASSWORD
+  # inherit isar-useradd
+  # USERS += "myuser"
+  # USER_myuser_PASSWORD = "mypassword"
+  # USER_myuser_HOMEDIR = "/home/myuser"
+  # USER_myuser_SHELL = "/bin/bash"
+  # USER_myuser_GROUPS = "sudo"   # optional, for sudo access
+  add-root-user: |
+    # Set a root passwordless user for testing purposes
+    ROOT_PASSWORD = "123456"
