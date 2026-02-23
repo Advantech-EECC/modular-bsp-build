@@ -17,9 +17,13 @@ This guide describes how to build Advantech modular BSP using the `repo` tool an
 - [5. Build Images](#5-build-images)
   - [5.1 Available Image Recipes](#51-available-image-recipes)
 - [6. Supported Boards](#6-supported-boards)
-  - [6.1 i.MX8M Plus Boards](#61-imx8m-plus-boards)
-  - [6.2 i.MX93 Boards](#62-imx93-boards)
-  - [6.3 i.MX95 Boards](#63-imx95-boards)
+  - [6.1 Board Compatibility Matrix](#61-board-compatibility-matrix)
+  - [6.2 i.MX 8ULP Boards](#62-imx-8ulp-boards)
+  - [6.3 i.MX 93 Boards](#63-imx-93-boards)
+  - [6.4 i.MX 8M Boards](#64-imx-8m-boards)
+  - [6.5 i.MX 8M Mini Boards](#65-imx-8m-mini-boards)
+  - [6.6 i.MX 8M Plus Boards](#66-imx-8m-plus-boards)
+  - [6.7 i.MX 95 Boards](#67-imx-95-boards)
 - [7. Comparison with KAS-based Workflow](#7-comparison-with-kas-based-workflow)
   - [7.1 Repo Tool Workflow (This Guide)](#71-repo-tool-workflow-this-guide)
   - [7.2 KAS-based Workflow](#72-kas-based-workflow)
@@ -94,13 +98,22 @@ For detailed host package requirements, refer to the [Yocto Project Quick Build 
 
 ### 3.1 Available Releases
 
-The Advantech i.MX manifest repository provides several BSP releases based on different kernel versions:
+The Advantech i.MX manifest repository provides BSP releases for multiple Yocto versions. Each `-adv` manifest file adds the [`meta-modular-bsp-nxp`](https://github.com/Advantech-EECC/meta-modular-bsp-nxp) Advantech BSP layer on top of the base NXP release.
 
-| Release | Kernel Version | Yocto Release | Branch |
-|---------|----------------|---------------|--------|
-| 6.12.49-2.2.0 | Linux 6.12.49 | Walnascar | imx-linux-walnascar-adv |
-| 6.12.34-2.1.0 | Linux 6.12.34 | Walnascar | imx-linux-walnascar-adv |
-| 6.12.20-2.0.0 | Linux 6.12.20 | Walnascar | imx-linux-walnascar-adv |
+| Yocto Release | Yocto Version | Kernel Version | imx-manifest Branch | Manifest File |
+|---------------|---------------|----------------|---------------------|---------------|
+| Walnascar | 5.2 (latest) | Linux 6.12.49 | imx-linux-walnascar-adv | imx-6.12.49-2.2.0-adv-r2.xml |
+| Walnascar | 5.2 | Linux 6.12.49 | imx-linux-walnascar-adv | imx-6.12.49-2.2.0-adv.xml |
+| Walnascar | 5.2 | Linux 6.12.34 | imx-linux-walnascar-adv | imx-6.12.34-2.1.0-adv.xml |
+| Walnascar | 5.2 | Linux 6.12.20 | imx-linux-walnascar-adv | imx-6.12.20-2.0.0-adv.xml |
+| Styhead | 5.1 | Linux 6.12.3 | imx-linux-styhead-adv | imx-6.12.3-1.0.0-adv.xml |
+| Scarthgap | 5.0 | Linux 6.6.52 | imx-linux-scarthgap-adv | imx-6.6.52-2.2.0-adv-r2.xml |
+| Scarthgap | 5.0 | Linux 6.6.52 | imx-linux-scarthgap-adv | imx-6.6.52-2.2.0-adv.xml |
+| Scarthgap | 5.0 | Linux 6.6.36 | imx-linux-scarthgap-adv | imx-6.6.36-2.1.0-adv.xml |
+| Scarthgap | 5.0 | Linux 6.6.23 | imx-linux-scarthgap-adv | imx-6.6.23-2.0.0-adv.xml |
+| Nanbield | 4.3 | Linux 6.6.3 | imx-linux-nanbield-adv | imx-6.6.3-1.0.0-adv.xml |
+
+> **Note:** Manifest files with the `-r2` suffix (e.g. `imx-6.12.49-2.2.0-adv-r2.xml`) are revision 2 releases of the same NXP BSP version, using a newer commit of the `meta-modular-bsp-nxp` layer.
 
 ### 3.2 Download Process
 
@@ -112,34 +125,87 @@ mkdir -p ~/imx-yocto-bsp
 cd ~/imx-yocto-bsp
 
 # Initialize repo with a specific release manifest
-repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-walnascar-adv -m imx-6.12.49-2.2.0-adv.xml
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-walnascar-adv -m imx-6.12.49-2.2.0-adv-r2.xml
 
 # Download all the source repositories
 repo sync
 ```
 
-**Examples for Different Releases:**
+**Examples for Walnascar (Yocto 5.2) Releases:**
 
 ```bash
-# For 6.12.20-2.0.0 release
-repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-walnascar-adv -m imx-6.12.20-2.0.0-adv.xml
+# For 6.12.49-2.2.0 release (latest revision)
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-walnascar-adv -m imx-6.12.49-2.2.0-adv-r2.xml
+repo sync
+
+# For 6.12.49-2.2.0 release
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-walnascar-adv -m imx-6.12.49-2.2.0-adv.xml
 repo sync
 
 # For 6.12.34-2.1.0 release
 repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-walnascar-adv -m imx-6.12.34-2.1.0-adv.xml
 repo sync
 
-# For 6.12.49-2.2.0 release (latest)
-repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-walnascar-adv -m imx-6.12.49-2.2.0-adv.xml
+# For 6.12.20-2.0.0 release
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-walnascar-adv -m imx-6.12.20-2.0.0-adv.xml
+repo sync
+```
+
+**Examples for Styhead (Yocto 5.1) Releases:**
+
+```bash
+# For 6.12.3-1.0.0 release
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-styhead-adv -m imx-6.12.3-1.0.0-adv.xml
+repo sync
+```
+
+**Examples for Scarthgap (Yocto 5.0) Releases:**
+
+```bash
+# For 6.6.52-2.2.0 release (latest revision)
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-scarthgap-adv -m imx-6.6.52-2.2.0-adv-r2.xml
+repo sync
+
+# For 6.6.52-2.2.0 release
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-scarthgap-adv -m imx-6.6.52-2.2.0-adv.xml
+repo sync
+
+# For 6.6.36-2.1.0 release
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-scarthgap-adv -m imx-6.6.36-2.1.0-adv.xml
+repo sync
+
+# For 6.6.23-2.0.0 release
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-scarthgap-adv -m imx-6.6.23-2.0.0-adv.xml
+repo sync
+```
+
+**Examples for Nanbield (Yocto 4.3) Releases:**
+
+```bash
+# For 6.6.3-1.0.0 release
+repo init -u https://github.com/Advantech-EECC/imx-manifest -b imx-linux-nanbield-adv -m imx-6.6.3-1.0.0-adv.xml
 repo sync
 ```
 
 ### 3.3 Supported Branches
 
-The imx-manifest repository contains different branches for different Yocto releases:
+**imx-manifest Advantech branches** (use with `-u https://github.com/Advantech-EECC/imx-manifest`):
 
-- `imx-linux-walnascar-adv` - Yocto Walnascar (Latest)
-- Additional branches may be available for other Yocto releases
+| Branch | Yocto Release | Yocto Version |
+|--------|---------------|---------------|
+| `imx-linux-walnascar-adv` | Walnascar | 5.2 (Latest) |
+| `imx-linux-styhead-adv` | Styhead | 5.1 |
+| `imx-linux-scarthgap-adv` | Scarthgap | 5.0 |
+| `imx-linux-nanbield-adv` | Nanbield | 4.3 |
+
+**meta-modular-bsp-nxp branches** (Advantech BSP layer, automatically fetched by the manifests above):
+
+| Branch | Yocto Release | Yocto Version |
+|--------|---------------|---------------|
+| `walnascar` | Walnascar | 5.2 (Latest) |
+| `styhead` | Styhead | 5.1 |
+| `scarthgap` | Scarthgap | 5.0 |
+| `nanbield` | Nanbield | 4.3 |
 
 ## 4. Setup Build Environment
 
@@ -160,20 +226,32 @@ MACHINE=<machine> DISTRO=fsl-imx-<backend> source ./imx-setup-release.sh -b bld-
 **Examples for Advantech Boards:**
 
 ```bash
-# For RSB3720 board with XWayland
+# For RSB-3720 (6G) board with XWayland
 MACHINE=rsb3720 DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
 
-# For ROM2620-ED91 board with XWayland
+# For RSB-3720 (4G) board with XWayland (Walnascar only)
+MACHINE=rsb3720-4g DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
+
+# For ROM-2620-ED91 board with XWayland
 MACHINE=rom2620-ed91 DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
 
-# For ROM5722-DB2510 board with XWayland
-MACHINE=rom5722-db2510 DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
-
-# For ROM2820-ED93 board with XWayland
+# For ROM-2820-ED93 board with XWayland
 MACHINE=rom2820-ed93 DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
 
-# For ROM5720-DB5901 board with XWayland
+# For ROM-5720-DB5901 board with XWayland
 MACHINE=rom5720-db5901 DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
+
+# For ROM-5721-DB5901 (2G) board with XWayland
+MACHINE=rom5721-db5901 DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
+
+# For ROM-5721-DB5901 (1G) board with XWayland (Walnascar only)
+MACHINE=rom5721-1g-db5901 DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
+
+# For ROM-5722-DB2510 board with XWayland
+MACHINE=rom5722-db2510 DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
+
+# For AOM-5521-DB2510 board with XWayland (Walnascar only)
+MACHINE=aom5521-db2510 DISTRO=fsl-imx-xwayland source ./imx-setup-release.sh -b bld-xwayland
 ```
 
 This script will:
@@ -256,21 +334,42 @@ tmp/deploy/images/rsb3720/
 
 ## 6. Supported Boards
 
-The following Advantech boards are supported in the modular BSP:
+The following Advantech boards are supported in the modular BSP. Support availability depends on the Yocto release used.
 
-### 6.1 i.MX8M Plus Boards
-- **RSB3720** - Industrial Single Board Computer (4G and 6G variants)
+### 6.1 Board Compatibility Matrix
 
-### 6.2 i.MX93 Boards
-- **ROM2620-ED91** - Embedded Development Board
-- **ROM2820-ED93** - Embedded Development Board
+| Board | Machine Name | NXP SoC | Nanbield (4.3) | Scarthgap (5.0) | Styhead (5.1) | Walnascar (5.2) |
+|-------|-------------|---------|:--------------:|:---------------:|:-------------:|:---------------:|
+| ROM-2620-ED91 | `rom2620-ed91` | i.MX 8ULP | ✅ | ✅ | ✅ | ✅ |
+| ROM-2820-ED93 | `rom2820-ed93` | i.MX 93 | ❌ | ✅ | ✅ | ✅ |
+| ROM-5720-DB5901 | `rom5720-db5901` | i.MX 8M | ❌ | ✅ (preliminary) | ✅ (preliminary) | ✅ (preliminary) |
+| ROM-5721-DB5901 (1G) | `rom5721-1g-db5901` | i.MX 8M Mini | ❌ | ❌ | ❌ | ✅ (preliminary) |
+| ROM-5721-DB5901 (2G) | `rom5721-db5901` / `rom5721-2g-db5901` | i.MX 8M Mini | ❌ | ✅ (preliminary) | ✅ (preliminary) | ✅ (preliminary) |
+| ROM-5722-DB2510 | `rom5722-db2510` | i.MX 8M Plus | ❌ | ✅ | ✅ | ✅ |
+| RSB-3720 (6G) | `rsb3720` / `rsb3720-6g` | i.MX 8M Plus | ❌ | ✅ | ✅ | ✅ |
+| RSB-3720 (4G) | `rsb3720-4g` | i.MX 8M Plus | ❌ | ❌ | ❌ | ✅ |
+| AOM-5521-DB2510 | `aom5521-db2510` | i.MX 95 | ❌ | ❌ | ❌ | ✅ (preliminary) |
 
-### 6.3 i.MX95 Boards
-- **ROM5720-DB5901** - Development Board
-- **ROM5721-DB5901** - Development Board (1G and 2G variants)
-- **ROM5722-DB2510** - Development Board
+### 6.2 i.MX 8ULP Boards
+- **ROM-2620-ED91** - Embedded module with i.MX 8ULP SoC (`rom2620-ed91`)
 
-For a complete list of supported boards and their compatibility with different Yocto releases, refer to the [main README.md](README.md#nxp-boards-compatibility-matrix).
+### 6.3 i.MX 93 Boards
+- **ROM-2820-ED93** - Embedded module with i.MX 93 SoC (`rom2820-ed93`)
+
+### 6.4 i.MX 8M Boards
+- **ROM-5720-DB5901** - Embedded module with i.MX 8M SoC (`rom5720-db5901`) — preliminary support
+
+### 6.5 i.MX 8M Mini Boards
+- **ROM-5721-DB5901 (1G)** - Embedded module with i.MX 8M Mini, 1GB RAM (`rom5721-1g-db5901`) — Walnascar only, preliminary support
+- **ROM-5721-DB5901 (2G)** - Embedded module with i.MX 8M Mini, 2GB RAM (`rom5721-db5901` / `rom5721-2g-db5901`) — preliminary support
+
+### 6.6 i.MX 8M Plus Boards
+- **ROM-5722-DB2510** - Embedded module with i.MX 8M Plus SoC (`rom5722-db2510`)
+- **RSB-3720 (6G)** - Industrial SBC with i.MX 8M Plus, 6GB RAM (`rsb3720` / `rsb3720-6g`)
+- **RSB-3720 (4G)** - Industrial SBC with i.MX 8M Plus, 4GB RAM (`rsb3720-4g`) — Walnascar only
+
+### 6.7 i.MX 95 Boards
+- **AOM-5521-DB2510** - Module with i.MX 95 SoC (`aom5521-db2510`) — Walnascar only, preliminary support
 
 ## 7. Comparison with KAS-based Workflow
 
@@ -315,6 +414,7 @@ This repository supports two build workflows:
 
 ### 8.2 Advantech Resources
 - [imx-manifest Repository](https://github.com/Advantech-EECC/imx-manifest)
+- [meta-modular-bsp-nxp Layer](https://github.com/Advantech-EECC/meta-modular-bsp-nxp)
 - [meta-eecc-nxp Layer](https://github.com/Advantech-EECC/meta-eecc-nxp)
 
 ### 8.3 Google Repo Tool
