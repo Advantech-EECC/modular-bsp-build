@@ -11,8 +11,8 @@ target:
 
 repos:
   meta-isar-modular-bsp-nxp:
-    url: "https://github.com/Advantech-EECC/meta-isar-modular-bsp-nxp.git"
+    url: "https://github.com/Advantech-EECC/meta-modular-bsp-isar.git"
     branch: "main"
-    path: "layers/meta-isar-modular-bsp-nxp"
+    path: "layers/meta-modular-bsp-isar"
     layers:
-      .:
+      meta-modular-bsp-nxp: 
