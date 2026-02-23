@@ -138,3 +138,7 @@ ros-mbsp machine="rsb3720" ros="humble" yocto="walnascar": docker-debian
 ros-shell machine="rsb3720" ros="humble" yocto="walnascar": docker-debian
     @. "{{ dotenv }}" && \
     KAS_BUILD_DIR="$PWD/build-ros-{{ros}}-mbsp-{{yocto}}-{{machine}}" kas-container shell adv-mbsp-oenxp-{{yocto}}-{{machine}}.yaml:features/ros2/{{ros}}.yml
+
+[group('qcom')]
+qcom-bsp machine yocto: docker-debian
+    @KAS_BUILD_DIR="$PWD/build-qcom-mbsp-{{yocto}}-{{machine}}" kas-container build bsp-oeqcom-{{yocto}}-{{machine}}.yaml
