@@ -435,12 +435,5 @@ This repository supports two build workflows:
 grep meta-eecc-nxp conf/bblayers.conf
 
 # Add if missing
-echo 'BBLAYERS += "${BSPDIR}/sources/meta-eecc-nxp"' >> conf/bblayers.conf
+echo 'BBLAYERS += "${BSPDIR}/sources/meta-modular-bsp-nxp"' >> conf/bblayers.conf
 ```
-
-### 9.2 Getting Help
-
-If you encounter issues:
-1. Check the [Yocto Project FAQ](https://www.yoctoproject.org/faq/)
-2. Review [Advantech BSP Registry Issues](https://github.com/Advantech-EECC/bsp-registry/issues)
-3. Consult the [Yocto Project Mailing Lists](https://lists.yoctoproject.org/g/yocto)
