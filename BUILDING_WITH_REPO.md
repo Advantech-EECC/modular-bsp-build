@@ -273,18 +273,18 @@ vi conf/bblayers.conf
 
 Add this line at the end:
 ```
-BBLAYERS += "${BSPDIR}/sources/meta-eecc-nxp"
+BBLAYERS += "${BSPDIR}/sources/meta-modular-bsp-nxp"
 ```
 
 **Alternative (automatic method):**
 ```bash
 # From your build directory
-echo 'BBLAYERS += "${BSPDIR}/sources/meta-eecc-nxp"' >> conf/bblayers.conf
+echo 'BBLAYERS += "${BSPDIR}/sources/meta-modular-bsp-nxp"' >> conf/bblayers.conf
 ```
 
 **Verify the layer is enabled:**
 ```bash
-bitbake-layers show-layers | grep meta-eecc-nxp
+bitbake-layers show-layers | grep meta-modular-bsp-nxp
 ```
 
 ## 5. Build Images
@@ -415,7 +415,6 @@ This repository supports two build workflows:
 ### 8.2 Advantech Resources
 - [imx-manifest Repository](https://github.com/Advantech-EECC/imx-manifest)
 - [meta-modular-bsp-nxp Layer](https://github.com/Advantech-EECC/meta-modular-bsp-nxp)
-- [meta-eecc-nxp Layer](https://github.com/Advantech-EECC/meta-eecc-nxp)
 
 ### 8.3 Google Repo Tool
 - [Repo Command Reference](https://source.android.com/docs/setup/reference/repo)
@@ -431,8 +430,8 @@ This repository supports two build workflows:
 
 **2. BitBake cannot find Advantech machines:**
 ```bash
-# Verify meta-eecc-nxp is in bblayers.conf
-grep meta-eecc-nxp conf/bblayers.conf
+# Verify meta-modular-bsp-nxp is in bblayers.conf
+grep meta-modular-bsp-nxp conf/bblayers.conf
 
 # Add if missing
 echo 'BBLAYERS += "${BSPDIR}/sources/meta-modular-bsp-nxp"' >> conf/bblayers.conf
