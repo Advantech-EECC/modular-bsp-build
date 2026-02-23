@@ -42,7 +42,7 @@ repos:
   meta-nxp-demo-experience:
     url: "https://github.com/nxp-imx-support/meta-nxp-demo-experience.git"
     branch: "scarthgap-6.6.23-2.0.0"
-    commit: "5c0d6796620b911f7445da5537a6d71cb9764ab4"
+    commit: "7b930c47d899ddc3de857a38be69d00e80cc27d6"
     path: "layers/meta-nxp-demo-experience"
     layers:
       .:
