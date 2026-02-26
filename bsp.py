@@ -240,12 +240,18 @@ class BSP:
         name: Unique BSP identifier
         description: Human-readable description
         os: Operating system configuration
-        build: Build configuration and setup
+        build: Build configuration and setup (v1.0 format)
+        device: Device reference key (v2.0 format)
+        release: Release reference key (v2.0 format)
+        features: List of feature reference keys (v2.0 format)
     """
     name: str
     description: str
-    build: BuildSetup
+    build: Optional[BuildSetup] = None
     os: Optional[OperatingSystem] = None
+    device: Optional[str] = None
+    release: Optional[str] = None
+    features: Optional[List[str]] = None
 
 @dataclass
 class Registry:
@@ -267,11 +273,17 @@ class RegistryRoot:
         registry: Main registry data containing BSP definitions
         containers: Dictionary of container definitions keyed by name
         environment: Global environment variables for all builds (supports expansion)
+        devices: Device definitions keyed by device name (v2.0)
+        releases: Release definitions keyed by release name (v2.0)
+        features: Feature definitions keyed by feature name (v2.0)
     """
     specification: Specification
     registry: Registry
     containers: Optional[Dict[str, Docker]] = field(default_factory=empty_dict)
     environment: Optional[List[EnvironmentVariable]] = field(default_factory=empty_list)
+    devices: Optional[Dict[str, Any]] = field(default_factory=empty_dict)
+    releases: Optional[Dict[str, Any]] = field(default_factory=empty_dict)
+    features: Optional[Dict[str, Any]] = field(default_factory=empty_dict)
 
 # =============================================================================
 # YAML Configuration Parser with Container Support
@@ -358,6 +370,32 @@ def convert_containers_list_to_dict(containers_list: List[Dict[str, Any]]) -> Di
     
     return containers_dict
 
+def convert_list_to_dict(items_list: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Convert a list of single-key dictionaries to a flat dictionary.
+    
+    Used for converting v2.0 sections (devices, releases, features) from their
+    YAML list-of-dicts format to a dictionary keyed by name.
+    
+    Example input:
+        [{"rsb3730": {"vendor": "Advantech", ...}}, {"aom5521a1": {...}}]
+    
+    Example output:
+        {"rsb3730": {"vendor": "Advantech", ...}, "aom5521a1": {...}}
+    
+    Args:
+        items_list: List of single-key dictionaries
+        
+    Returns:
+        Flat dictionary mapping names to their configurations
+    """
+    result = {}
+    for item in items_list:
+        if isinstance(item, dict):
+            for key, value in item.items():
+                result[key] = value
+    return result
+
 def get_registry_from_yaml_file(filename: Path) -> RegistryRoot:
     """
     Parse YAML file into structured RegistryRoot object using dacite.
@@ -381,6 +419,12 @@ def get_registry_from_yaml_file(filename: Path) -> RegistryRoot:
     if 'containers' in yaml_dict and isinstance(yaml_dict['containers'], list):
         logging.debug("Converting containers list to dictionary format")
         yaml_dict['containers'] = convert_containers_list_to_dict(yaml_dict['containers'])
+
+    # Pre-process v2.0 sections: devices, releases, features (list-of-dicts -> dict)
+    for section in ('devices', 'releases', 'features'):
+        if section in yaml_dict and isinstance(yaml_dict[section], list):
+            logging.debug(f"Converting {section} list to dictionary format")
+            yaml_dict[section] = convert_list_to_dict(yaml_dict[section])
 
     try:
         # Use dacite to convert dictionary to strongly-typed dataclass
@@ -1468,6 +1512,9 @@ class BspManager:
         self.model = None  # Will hold parsed registry configuration
         self.env_manager = None  # Environment configuration manager
         self.containers = {}  # Dictionary of container configurations
+        self.devices = {}  # Dictionary of device definitions (v2.0)
+        self.releases = {}  # Dictionary of release definitions (v2.0)
+        self.features = {}  # Dictionary of feature definitions (v2.0)
 
     def load_configuration(self) -> None:
         """
@@ -1489,6 +1536,17 @@ class BspManager:
             if self.model.containers:
                 self.containers = self.model.containers
                 logging.info(f"Loaded {len(self.containers)} container definitions")
+
+            # Store v2.0 sections from model
+            if self.model.devices:
+                self.devices = self.model.devices
+                logging.info(f"Loaded {len(self.devices)} device definitions")
+            if self.model.releases:
+                self.releases = self.model.releases
+                logging.info(f"Loaded {len(self.releases)} release definitions")
+            if self.model.features:
+                self.features = self.model.features
+                logging.info(f"Loaded {len(self.features)} feature definitions")
 
             # Initialize Environment manager if configuration exists
             if self.model.environment:
@@ -1588,6 +1646,21 @@ class BspManager:
         Raises:
             SystemExit: If container reference cannot be resolved or configuration is missing
         """
+        # v2.0 format: resolve container from release definition
+        if self._is_v2_format(bsp):
+            release_cfg = self.releases.get(bsp.release, {})
+            container_name = release_cfg.get('container', '')
+            if container_name and container_name in self.containers:
+                logging.info(f"Using container reference: {container_name}")
+                return self.containers[container_name]
+            else:
+                logging.error(f"Container '{container_name}' for release '{bsp.release}' not found in registry containers")
+                logging.info("Available containers:")
+                for name in self.containers.keys():
+                    logging.info(f"  - {name}")
+                sys.exit(1)
+
+        # v1.0 format: resolve container from build.environment
         build_env = bsp.build.environment
         
         # First check for container reference
@@ -1627,6 +1700,63 @@ class BspManager:
         logging.info(f"Preparing build directory: {build_path}")
         resolver.ensure_directory(build_path)
 
+    def _is_v2_format(self, bsp: BSP) -> bool:
+        """
+        Determine if a BSP uses the v2.0 format (device/release/features).
+        
+        Args:
+            bsp: BSP configuration object
+            
+        Returns:
+            True if BSP uses v2.0 format, False if it uses v1.0 build format
+        """
+        return bsp.build is None and bsp.device is not None
+
+    def _resolve_v2_bsp(self, bsp: BSP) -> tuple:
+        """
+        Resolve a v2.0 BSP entry into (configuration_files, build_path).
+        
+        For v2.0 BSP entries that use device/release/features references,
+        this method assembles the KAS configuration file list and build path
+        by looking up the device and release definitions.
+        
+        Args:
+            bsp: BSP configuration object with device/release/features fields
+            
+        Returns:
+            Tuple of (configuration_files: List[str], build_path: str)
+            
+        Raises:
+            SystemExit: If device or release is not found in the registry
+        """
+        # Look up device configuration
+        device_cfg = self.devices.get(bsp.device, {})
+        if not device_cfg:
+            logging.error(f"Device '{bsp.device}' not found in registry devices for BSP '{bsp.name}'")
+            sys.exit(1)
+
+        # Get configuration files for this device+release combination
+        device_releases = device_cfg.get('releases', {})
+        config_files = list(device_releases.get(bsp.release, []))
+        if not config_files:
+            logging.error(f"No configuration found for device '{bsp.device}' with release '{bsp.release}'")
+            sys.exit(1)
+
+        # Append feature configuration files
+        if bsp.features:
+            for feature_name in bsp.features:
+                feature_cfg = self.features.get(feature_name)
+                if feature_cfg is None:
+                    logging.error(f"Feature '{feature_name}' not found in registry features for BSP '{bsp.name}'")
+                    sys.exit(1)
+                feature_files = feature_cfg.get(bsp.release, [])
+                config_files.extend(feature_files)
+
+        # Derive build path from BSP name
+        build_path = f"build/{bsp.name}"
+
+        return config_files, build_path
+
     def _get_kas_manager_for_bsp(self, bsp: BSP, use_container: bool = True) -> KasManager:
         """
         Create and configure a KAS manager for the specified BSP.
@@ -1655,10 +1785,19 @@ class BspManager:
         if sstate:
             resolver.ensure_directory(sstate)
 
+        # Resolve configuration files and build path
+        if not self._is_v2_format(bsp):
+            # v1.0 format: use explicit build configuration
+            configuration = bsp.build.configuration
+            build_path = bsp.build.path
+        else:
+            # v2.0 format: resolve from device/release/features
+            configuration, build_path = self._resolve_v2_bsp(bsp)
+
         # Initialize KAS manager with environment configuration
         kas_mgr = KasManager(
-            bsp.build.configuration, 
-            bsp.build.path, 
+            configuration,
+            build_path,
             download_dir=downloads, 
             sstate_dir=sstate, 
             use_container=use_container, 
@@ -1712,7 +1851,8 @@ class BspManager:
             logging.info("Skipping Docker build in checkout mode")
         
         # Prepare build directory
-        self.prepare_build_directory(bsp.build.path)
+        build_path = bsp.build.path if not self._is_v2_format(bsp) else f"build/{bsp.name}"
+        self.prepare_build_directory(build_path)
         
         # Get KAS manager - use native KAS for checkout, container for builds
         kas_mgr = self._get_kas_manager_for_bsp(bsp, use_container=not checkout_only)
@@ -1769,7 +1909,8 @@ class BspManager:
             )
         
         # Prepare build directory
-        self.prepare_build_directory(bsp.build.path)
+        build_path = bsp.build.path if not self._is_v2_format(bsp) else f"build/{bsp.name}"
+        self.prepare_build_directory(build_path)
         
         # Get KAS manager and start shell session
         kas_mgr = self._get_kas_manager_for_bsp(bsp)
@@ -1816,9 +1957,15 @@ class BspManager:
 
         # Create a temporary build directory for export operations
         with tempfile.TemporaryDirectory(prefix=f"bsp_export_{bsp_name}_") as temp_dir:
+            # Resolve configuration files
+            if not self._is_v2_format(bsp):
+                configuration = bsp.build.configuration
+            else:
+                configuration, _ = self._resolve_v2_bsp(bsp)
+
             # Initialize KAS manager with environment configuration
             kas_mgr = KasManager(
-                bsp.build.configuration, 
+                configuration,
                 temp_dir,  # Use temporary directory for export
                 download_dir=downloads, 
                 sstate_dir=sstate, 
